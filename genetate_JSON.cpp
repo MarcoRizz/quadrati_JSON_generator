@@ -84,15 +84,6 @@ int main() {
         words_json.push_back(word);
     }
 
-    /*// converto i grid_links in JSON
-    json grid_links_json = json::array();
-    for (const auto& row : grid_links) {
-        json json_row = json::array();
-        for (const auto& link : row) {
-            json_row.push_back(link);
-        }
-        grid_links_json.push_back(json_row);
-    }*/
     // Converti grid_links in JSON
     json grid_links_json = json::array();
     for (int i = 0; i < DIM1; ++i) {
@@ -131,8 +122,11 @@ int main() {
             delete[] grid_links[i][j]; // Dealloca la memoria della terza dimensione
         }
         delete[] grid_links[i]; // Dealloca la memoria della seconda dimensione
+        delete[] link_sizes[i]; // Dealloca la memoria delle dimensioni della terza dimensione
     }
     delete[] grid_links; // Dealloca la memoria della prima dimensione
+    delete[] link_sizes; // Dealloca la memoria delle dimensioni della terza dimensione
+
 
     return 0;
 }
