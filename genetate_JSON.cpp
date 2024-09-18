@@ -6,6 +6,19 @@
 #include <string>
 #include "generate_JSON.h"
 
+const int MAX_LENGTH = 16; // Lunghezza massima delle parole
+const int MAX_WORDS = 10;  // Numero massimo di parole  //sarà da sostituire col numero di parole trovate (TODO)
+
+// Funzione per generare una parola casuale di lunghezza variabile (TEMP)
+String generate_random_word(int max_length) {
+    int length = 1 + std::rand() % max_length;  // Lunghezza variabile tra 1 e max_length
+    String word;
+    for (int i = 0; i < length; ++i) {
+        word += 'a' + std::rand() % 26;  // Genera una lettera casuale tra 'a' e 'z'
+    }
+    return word;
+}
+
 int main() {
     // Inizializza il seme del generatore di numeri casuali
     std::srand(std::time(0));
@@ -22,7 +35,13 @@ int main() {
 
     //qui devo calcolare l'elenco di parole trovate all'interno della griglia (TODO)
     // Lavoriamo con un vettore di parole (normale array C++)
-    std::vector<String> words = {"stocazzo", "pippo", "giovanni", "francesco", "gianfrancesco"};
+    // Creiamo un array statico per le parole
+    String words[MAX_WORDS];
+
+    // Popoliamo l'array con parole casuali
+    for (int i = 0; i < MAX_WORDS; ++i) {
+        words[i] = generate_random_word(MAX_LENGTH);
+    }
 
     //qui devo calcolare tutte le possibilità e calcolare quali parole possono passare da ciascuna lettera (TODO)
     // Lavoriamo con un vettore 2D di vettori per grid_links
