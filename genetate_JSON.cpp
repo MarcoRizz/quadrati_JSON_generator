@@ -14,6 +14,7 @@ const int MAX_LENGTH = 16; // Lunghezza massima delle parole
 String generate_random_word(int max_length);
 void add_word(String*& array, int& size, const String& word);
 void add_element_to_ij(int*& array, int& size, int value);
+int search_word(const std::string& word, const std::string& dir);
 
 int main() {
     // Inizializza il seme del generatore di numeri casuali
@@ -27,7 +28,7 @@ int main() {
     // Popoliamo grid con lettere casuali
     for (int i = 0; i < DIM1; ++i) {
         for (int j = 0; j < DIM2; ++j) {
-            grid[i][j] = 'A' + std::rand() % 26;  // Lettera casuale tra 'A' e 'Z'
+            grid[i][j] = 'a' + std::rand() % 26;  // Lettera casuale tra 'a' e 'z' (lavoro con lettere minuscole perché il dizionario usa solo minuscole. Converto in CAPS quando scrivo il JSON)
         }
     }
 
@@ -84,8 +85,9 @@ int main() {
     for (int i = 0; i < DIM1; ++i) {
         json row = json::array();
         for (int j = 0; j < DIM2; ++j) {
+            grid[i][j] += 'A' - 'a'; //trasforma in CAP letter
             printf("%s ", String(1, grid[i][j]).c_str());
-            row.push_back(grid[i][j]);  // converto il char in stringa per il JSON
+            row.push_back(String(1, grid[i][j]));  // converto il char in stringa per il JSON
         }
         grid_json.push_back(row);
         printf("\n");
@@ -94,6 +96,7 @@ int main() {
     // converto le parole in JSON
     json words_json = json::array();
     for (int i = 0; i < words_size; ++i) {
+        std::transform(words[i].begin(), words[i].end(), words[i].begin(), ::toupper); // Converte ogni carattere in maiuscolo
         printf("%s\n", words[i].c_str());
         words_json.push_back(words[i]);
     }
@@ -144,6 +147,11 @@ int main() {
 
     return 0;
 }
+
+
+/***********************************************************************************
+// FUNZIONI
+***********************************************************************************/
 
 // Funzione per generare una parola casuale di lunghezza variabile (TEMP)
 String generate_random_word(int max_length) {
@@ -199,16 +207,9 @@ int search_word(const std::string& word, const std::string& dir) {
         return -1; // Errore nell'aprire il file
     }
 
-    int letter_0 = (int)word[0];
-    if (letter_0 >= 'A' & letter_0 <= 'A' + 26) { //ho valori maiuscoli
-        letter_0 += 'a' - 'A';
-    }
-    if (letter_0 < 'a' | letter_0 > 'a' + 26) {
-        return -1; //char iniziale non lettera
-    }
-
-    int start = dictionary_index[letter_0 - 'a'];
-    int end = dictionary_index[letter_0 - 'a' + 1];
+    int index = (int)word[0] - 'a';
+    int start = dictionary_index[index];
+    int end = dictionary_index[index + 1];
 
     String line;
     bool exact_match_found = false;
