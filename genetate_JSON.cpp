@@ -11,21 +11,13 @@ const int DIM2 = 4;
 const int MAX_LENGTH = 16; // Lunghezza massima delle parole
 int MAX_WORDS = 10;  // Numero massimo di parole  //sarà da sostituire col numero di parole trovate (TODO)
 
-// Funzione per generare una parola casuale di lunghezza variabile (TEMP)
-String generate_random_word(int max_length) {
-    int length = 1 + std::rand() % max_length;  // Lunghezza variabile tra 1 e max_length
-    String word;
-    for (int i = 0; i < length; ++i) {
-        word += 'a' + std::rand() % 26;  // Genera una lettera casuale tra 'a' e 'z'
-    }
-    return word;
-}
+String generate_random_word(int max_length);
 
 int main() {
     // Inizializza il seme del generatore di numeri casuali
     std::srand(std::time(0));
 
-    // Creiamo un array 2D normale per la griglia
+    // CREAZIONE MATRICE GRID
     char grid[DIM1][DIM2];
 
     // Popoliamo grid con lettere casuali
@@ -36,25 +28,28 @@ int main() {
     }
 
     //qui devo calcolare l'elenco di parole trovate all'interno della griglia (TODO)
-    // Lavoriamo con un vettore di parole (normale array C++)
-    // Creiamo un array statico per le parole
+
+    // CREAZIONE ARRAY WORDS
     String words[MAX_WORDS];
 
-    // Popoliamo l'array con parole casuali
+    // Popoliamo l'array con parole casuali (TEMP)
     for (int i = 0; i < MAX_WORDS; ++i) {
         words[i] = generate_random_word(MAX_LENGTH);
     }
 
     //qui devo calcolare tutte le possibilità e calcolare quali parole possono passare da ciascuna lettera (TODO)
-    // Dichiarazione di un array di puntatori per la terza dimensione
+
+    // CREAZIONE ARRAY-3D GRID_LINKS
+    // la terza dimensione è variabile e archiviata in link_sizes
+    // per mantenere la terza dimensione variabile lavoro coi puntatori
     int*** grid_links = new int**[DIM1];
     int** link_sizes = new int*[DIM1]; // Array per memorizzare le dimensioni della terza dimensione
     for (int i = 0; i < DIM1; ++i) {
         grid_links[i] = new int*[DIM2];
-        link_sizes[i] = new int[DIM2]; // Memorizza la dimensione della terza dimensione per ogni [i][j]
+        link_sizes[i] = new int[DIM2];
         for (int j = 0; j < DIM2; ++j) {
             // Imposta dimensione variabile per la terza dimensione
-            link_sizes[i][j] = 1 + std::rand() % MAX_WORDS; // Numero casuale di link tra 1 e MAX_WORDS
+            link_sizes[i][j] = 1 + std::rand() % MAX_WORDS; // Numero casuale di link tra 1 e MAX_WORDS (TEMP) -> deve diventare: calcolo parole passanti  // Memorizza la dimensione della terza dimensione per ogni [i][j]
             grid_links[i][j] = new int[link_sizes[i][j]];
 
             // Inizializzazione dell'array
@@ -129,4 +124,14 @@ int main() {
 
 
     return 0;
+}
+
+// Funzione per generare una parola casuale di lunghezza variabile (TEMP)
+String generate_random_word(int max_length) {
+    int length = 1 + std::rand() % max_length;  // Lunghezza variabile tra 1 e max_length
+    String word;
+    for (int i = 0; i < length; ++i) {
+        word += 'a' + std::rand() % 26;  // Genera una lettera casuale tra 'a' e 'z'
+    }
+    return word;
 }
