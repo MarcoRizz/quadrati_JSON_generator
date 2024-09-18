@@ -5,6 +5,7 @@
 #include <vector>   // Per std::vector
 #include <string>
 #include "generate_JSON.h"
+#include "libs/dictionary_dir.h"
 
 const int DIM1 = 4;
 const int DIM2 = 4;
@@ -117,7 +118,7 @@ int main() {
     data["grid_links"] = grid_links_json;
 
     // Salvare il JSON in un file
-    std::ofstream file("output.json");
+    std::ofstream file("output.json"); //da generare un nome basato sul giorno (TODO)
     if (file.is_open()) {
         file << std::setw(2) << data << std::endl;  // Usa std::setw(2) per una formattazione leggibile
         file.close();
@@ -172,4 +173,65 @@ void add_element_to_ij(int*& array, int& size, int value) {
     array = new_array;
     array[size] = value;
     size = new_size;
+}
+
+int search_word(const std::string& word, const std::string& dir) {
+    //cerca la parola nel dizionario. Return 0 se parola non trovata, 1 se parola trovata, 2 se la parola è solo l'inizio di una esistente; -1 errore
+    std::ifstream file(dir);
+
+    // Verifica se il file è stato aperto correttamente
+    if (!file.is_open()) {
+        return -1; // Errore nell'aprire il file
+    }
+
+    int letter_0 = (int)word[0];
+    if (letter_0 >= 'A' & letter_0 <= 'A' + 26) { //ho valori maiuscoli
+        letter_0 += 'a' - 'A';
+    }
+    if (letter_0 < 'a' | letter_0 > 'a' + 26) {
+        return -1; //char iniziale non lettera
+    }
+
+    int start = dictionary_index[letter_0 - 'a'];
+    int end = dictionary_index[letter_0 - 'a' + 1];
+
+    String line;
+    bool exact_match_found = false;
+    bool contains_match_found = false;
+    int current_line = 0;
+
+    // Leggi il file riga per riga e controlla solo tra 'start' e 'end'
+    while (std::getline(file, line)) {
+        current_line++;
+
+        // Continua fino a raggiungere la riga 'start'
+        if (current_line < start) {
+            continue;
+        }
+
+        // Interrompi se abbiamo superato la riga 'end'
+        if (current_line > end) {
+            break;
+        }
+        // Controlla se la riga contiene la parola come sottostringa all'indice 0
+        if (line.find(word) == 0) { // La parola è all'inizio della riga
+            // Controlla se c'è una corrispondenza esatta
+            if (line == word) {
+                exact_match_found = true; // Parola esatta trovata
+            } else {
+                contains_match_found = true; // È stata trovata una parola che inizia con la parola cercata
+            }
+            break;
+        }
+    }
+
+    file.close();
+
+    if (exact_match_found) {
+        return 1; // Parola esatta trovata
+    } else if (contains_match_found) {
+        return 2; // Almeno una parola contiene la sottostringa all'inizio
+    } else {
+        return 0; // Nessuna parola trovata
+    }
 }
