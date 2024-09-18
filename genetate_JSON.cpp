@@ -12,7 +12,7 @@ const int DIM2 = 4;
 const int MAX_LENGTH = 16; // Lunghezza massima delle parole
 
 String generate_random_word(int max_length);
-void add_word(std::string*& array, int& size, const std::string& word);
+void add_word(String*& array, int& size, const String& word);
 void add_element_to_ij(int*& array, int& size, int value);
 
 int main() {
@@ -84,14 +84,17 @@ int main() {
     for (int i = 0; i < DIM1; ++i) {
         json row = json::array();
         for (int j = 0; j < DIM2; ++j) {
-            row.push_back(String(1, grid[i][j]));  // converto il char in stringa per il JSON
+            printf("%s ", String(1, grid[i][j]).c_str());
+            row.push_back(grid[i][j]);  // converto il char in stringa per il JSON
         }
         grid_json.push_back(row);
+        printf("\n");
     }
 
     // converto le parole in JSON
     json words_json = json::array();
     for (int i = 0; i < words_size; ++i) {
+        printf("%s\n", words[i].c_str());
         words_json.push_back(words[i]);
     }
 
@@ -153,15 +156,27 @@ String generate_random_word(int max_length) {
 }
 
 // Funzione per aggiungere una nuova stringa a un array dinamico di stringhe
-void add_word(std::string*& array, int& size, const std::string& word) {
+void add_word(String*& array, int& size, const String& word) {
+    // Alloca un nuovo array di dimensione aumentata
     int new_size = size + 1;
-    std::string* new_array = new std::string[new_size];
-    std::memcpy(new_array, array, size * sizeof(std::string));
+    String* new_array = new String[new_size];
+
+    // Copia manualmente i valori dall'array esistente
+    for (int i = 0; i < size; ++i) {
+        new_array[i] = array[i];  // Usa l'assegnazione di String per copiare
+    }
+
+    // Aggiungi la nuova parola alla fine
+    new_array[size] = word;
+
+    // Dealloca la vecchia memoria e aggiorna il puntatore
     delete[] array;
     array = new_array;
-    array[size] = word;
+
+    // Aggiorna la dimensione dell'array
     size = new_size;
 }
+
 
 // Funzione per aggiungere un nuovo elemento a un array dinamico
 void add_element_to_ij(int*& array, int& size, int value) {
