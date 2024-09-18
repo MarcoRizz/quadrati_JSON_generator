@@ -36,17 +36,12 @@ int main() {
         {{3, 4}, {0, 4}, {0}, {1}}
     };
 
-    json words = {"stocazzo", "pippo", "giovanni", "francesco", "gianfrancesco"};
+    //se una lettera rimane priva di link devo sostituirla con una nuova lettera e ripetere tutto il processo di calcolo (TODO)
 
-    // Riempire la sezione "today"
-    data["today"]["grid"] = grid;
-    data["today"]["grid_links"] = grid_links;
-    data["today"]["words"] = words;
-
-    // Riempire la sezione "yesterday" (stessa struttura di "today")
-    data["yesterday"]["grid"] = grid;
-    data["yesterday"]["grid_links"] = grid_links;
-    data["yesterday"]["words"] = words;
+    // Riempire la sezione
+    data["grid"] = grid;
+    data["words"] = words;
+    data["grid_links"] = grid_links;
 
     // Salvare il JSON in un file
     std::ofstream file("output.json");
