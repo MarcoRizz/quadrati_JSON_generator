@@ -12,12 +12,15 @@ const int MAX_LENGTH = 16; // Lunghezza massima delle parole
 int MAX_WORDS = 10;  // Numero massimo di parole  //sarà da sostituire col numero di parole trovate (TODO)
 
 String generate_random_word(int max_length);
+void add_element(int*& array, int& size, int value);
 
 int main() {
     // Inizializza il seme del generatore di numeri casuali
     std::srand(std::time(0));
 
-    // CREAZIONE MATRICE GRID
+    /***********************************************************************************
+    // CREAZIONE ARRAY-2D GRID
+    ***********************************************************************************/
     char grid[DIM1][DIM2];
 
     // Popoliamo grid con lettere casuali
@@ -29,7 +32,9 @@ int main() {
 
     //qui devo calcolare l'elenco di parole trovate all'interno della griglia (TODO)
 
-    // CREAZIONE ARRAY WORDS
+    /***********************************************************************************
+    // CREAZIONE ARRAY-1D WORDS
+    ***********************************************************************************/
     String words[MAX_WORDS];
 
     // Popoliamo l'array con parole casuali (TEMP)
@@ -39,7 +44,9 @@ int main() {
 
     //qui devo calcolare tutte le possibilità e calcolare quali parole possono passare da ciascuna lettera (TODO)
 
+    /***********************************************************************************
     // CREAZIONE ARRAY-3D GRID_LINKS
+    ***********************************************************************************/
     // la terza dimensione è variabile e archiviata in link_sizes
     // per mantenere la terza dimensione variabile lavoro coi puntatori
     int*** grid_links = new int**[DIM1];
@@ -49,20 +56,25 @@ int main() {
         link_sizes[i] = new int[DIM2];
         for (int j = 0; j < DIM2; ++j) {
             // Imposta dimensione variabile per la terza dimensione
-            link_sizes[i][j] = 1 + std::rand() % MAX_WORDS; // Numero casuale di link tra 1 e MAX_WORDS (TEMP) -> deve diventare: calcolo parole passanti  // Memorizza la dimensione della terza dimensione per ogni [i][j]
-            grid_links[i][j] = new int[link_sizes[i][j]];
-
-            // Inizializzazione dell'array
-            for (int k = 0; k < link_sizes[i][j]; ++k) {
-                grid_links[i][j][k] = std::rand() % 10; // Valori casuali per esempio
-            }
+            link_sizes[i][j] = 0; // Memorizza la dimensione della terza dimensione per ogni [i][j]
+            grid_links[i][j] = nullptr; // Puntatore inizialmente nullo
         }
     }
 
+    //assegno i link tra lettere e parole
+    // Popola con valori casuali (TEMP)
+    int num_new_elements = 1 + std::rand() % (MAX_WORDS * DIM1 * DIM2); // Numero casuale di nuovi elementi
+    for (int k = 0; k < num_new_elements; ++k) {
+        int casual_i = std::rand() % DIM1;
+        int casual_j = std::rand() % DIM2;
+        add_element(grid_links[casual_i][casual_j], link_sizes[casual_i][casual_j], std::rand() % 10); // Aggiungo elemento a grid_links[casual_i][casual_j]
+    }
+
     //se una lettera rimane priva di link, dovrò sostituirla e ripetere il calcolo (TODO)
-
-    // Alla fine, converto tutto in JSON prima della scrittura
-
+    
+    /***********************************************************************************
+    // Converto tutto in JSON e scrivo il file
+    ***********************************************************************************/
     // converto la griglia in JSON
     json grid_json = json::array();
     for (int i = 0; i < DIM1; ++i) {
@@ -122,7 +134,6 @@ int main() {
     delete[] grid_links; // Dealloca la memoria della prima dimensione
     delete[] link_sizes; // Dealloca la memoria delle dimensioni della terza dimensione
 
-
     return 0;
 }
 
@@ -134,4 +145,16 @@ String generate_random_word(int max_length) {
         word += 'a' + std::rand() % 26;  // Genera una lettera casuale tra 'a' e 'z'
     }
     return word;
+}
+
+// Funzione per aggiungere un nuovo elemento a un array dinamico
+void add_element(int*& array, int& size, int value) {
+    // Realloca l'array se necessario
+    int new_size = size + 1;
+    int* new_array = new int[new_size];
+    std::memcpy(new_array, array, size * sizeof(int));
+    delete[] array;
+    array = new_array;
+    array[size] = value;
+    size = new_size;
 }
