@@ -2,6 +2,7 @@
 #include <fstream>
 #include <cstdlib>  // Per rand() e srand()
 #include <ctime>    // Per time()
+#include <chrono>
 #include <string>
 #include "generate_JSON.h"
 #include "libs/json.hpp"
@@ -11,18 +12,23 @@
 
 using json = nlohmann::json;
 
+char grid[DIM1][DIM2];
+int attempts_size = 0;
+String* attempts = nullptr;
+
 String generate_random_word(int max_length);
 void add_element_to_ij(int*& array, int& size, int value);
+int* search_words(String* words, int words_size, const String& dir);
+void filter_words(String* words, int* results, int size, String*& filtered_words, int& filtered_size);
 
 int main() {
     // Inizializza il seme del generatore di numeri casuali
+    auto timer_overall_start = std::chrono::high_resolution_clock::now();
     std::srand(std::time(0));
 
     /***********************************************************************************
     // CREAZIONE ARRAY-2D GRID
     ***********************************************************************************/
-    char grid[DIM1][DIM2];
-
     // Popoliamo grid con lettere casuali
     for (int i = 0; i < DIM1; ++i) {
         for (int j = 0; j < DIM2; ++j) {
@@ -30,30 +36,58 @@ int main() {
         }
     }
 
+    //stampo grid[][]
+    for (int i = 0; i < DIM1; ++i) {
+        for (int j = 0; j < DIM2; ++j) {
+            std::cout << String(1, grid[i][j] + 'A' - 'a').c_str() << " ";
+        }
+        std::cout << std::endl;
+    }
+    auto timer_end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> duration = timer_end - timer_overall_start;
+    std::cout << "Array GRID creato - elapsed time: " << duration.count() << " ms" << std::endl;
+
     /***********************************************************************************
     // CREAZIONE ARRAY-1D WORDS
     ***********************************************************************************/
     int words_size = 0;
     String* words = nullptr;
 
-    //int ottal_dir = 012; // un numero che inizia con 0 è per definizione ottale (a base 8): 012 è 10 in decimale
     //qui devo calcolare l'elenco di parole trovate all'interno della griglia (TODO)
-
-    for (int path_size = 4; path_size <= 16; ++path_size) {
-        std::cout << "Percorsi con " << path_size << " passi:" << std::endl;
+    
+    for (int path_size = 4; path_size <= /*DIM1 * DIM2*/5; ++path_size) {
+        std::cout << "Percorsi con " << path_size << " passi" << std::endl;
         for (int i = 0; i < DIM1; ++i) {
             for (int j = 0; j < DIM2; ++j) {
-                findPaths(i, j, 0, path_size);
+                findPaths(i, j, 0, path_size);  //qui dentro compongo attempts[] con add_word()
             }
         }
-        std::cout << std::endl;
     }
+
+    timer_end = std::chrono::high_resolution_clock::now();
+    duration = timer_end - timer_overall_start;
+    std::cout << "Array ATTTEMPTS creato, "<< attempts_size << " valori - elapsed time: " << duration.count() << " ms" << std::endl;
+
+    int* search_results = search_words(attempts, attempts_size, DICTIONARY_PATH);
+
+    timer_end = std::chrono::high_resolution_clock::now();
+    duration = timer_end - timer_overall_start;
+    std::cout << "Array RESULTS creato - elapsed time: " << duration.count() << " ms" << std::endl;
+
+    filter_words(attempts, search_results, attempts_size, words, words_size);
+    
+    delete[] search_results;
+    delete[] attempts; // Dealloca la memoria dei tentativi
+
+    timer_end = std::chrono::high_resolution_clock::now();
+    duration = timer_end - timer_overall_start;
+    std::cout << "Array WORDS creato, "<< words_size << " valori rimasti - elapsed time: " << duration.count() << " ms" << std::endl;
     
     // Popoliamo l'array con parole casuali (TEMP)
-    int num_new_words = 3 + std::rand() % 5; // Numero casuale di parole tra 3 e 7
+    /*int num_new_words = 3 + std::rand() % 5; // Numero casuale di parole tra 3 e 7
     for (int i = 0; i < num_new_words; ++i) {
         add_word(words, words_size, generate_random_word(MAX_LENGTH));
-    }
+    }*/
 
     /***********************************************************************************
     // CREAZIONE ARRAY-3D GRID_LINKS
@@ -170,19 +204,35 @@ String generate_random_word(int max_length) {
     return word;
 }
 
-// Funzione per aggiungere una nuova stringa a un array dinamico di stringhe
+// Funzione per aggiungere una nuova stringa in ordine alfabetico a un array dinamico di stringhe
 void add_word(String*& array, int& size, const String& word) {
-    // Alloca un nuovo array di dimensione aumentata
     int new_size = size + 1;
-    String* new_array = new String[new_size];
-
-    // Copia manualmente i valori dall'array esistente
-    for (int i = 0; i < size; ++i) {
-        new_array[i] = array[i];  // Usa l'assegnazione di String per copiare
+    
+    // Trova la posizione in cui inserire la nuova parola
+    int insert_pos = 0;
+    while (insert_pos < size && array[insert_pos] < word) {
+        insert_pos++;
     }
 
-    // Aggiungi la nuova parola alla fine
-    new_array[size] = word;
+    if (insert_pos < size && array[insert_pos] == word) { //trovata una parola uguale già inserita
+        return;
+    }
+
+    // Alloca un nuovo array di dimensione aumentata
+    String* new_array = new String[new_size];
+
+    // Copia gli elementi prima della posizione di inserimento
+    for (int i = 0; i < insert_pos; ++i) {
+        new_array[i] = array[i];
+    }
+
+    // Inserisce la nuova parola nella posizione corretta
+    new_array[insert_pos] = word;
+
+    // Copia gli elementi dopo la posizione di inserimento
+    for (int i = insert_pos; i < size; ++i) {
+        new_array[i + 1] = array[i];
+    }
 
     // Dealloca la vecchia memoria e aggiorna il puntatore
     delete[] array;
@@ -190,6 +240,21 @@ void add_word(String*& array, int& size, const String& word) {
 
     // Aggiorna la dimensione dell'array
     size = new_size;
+}
+
+
+void filter_words(String* words, int* results, int size, String*& filtered_words, int& filtered_size) {
+    // Inizializza il nuovo array e la sua dimensione
+    filtered_size = 0;
+    filtered_words = nullptr;  // Puntatore inizialmente nullo
+    
+    // Itera su tutte le parole
+    for (int i = 0; i < size; ++i) {
+        if (results[i] == 1) {
+            // Se il risultato è 1, aggiungi la parola all'array filtered_words
+            add_word(filtered_words, filtered_size, words[i]);
+        }
+    }
 }
 
 
@@ -205,56 +270,77 @@ void add_element_to_ij(int*& array, int& size, int value) {
     size = new_size;
 }
 
-int search_word(const std::string& word, const std::string& dir) {
-    //cerca la parola nel dizionario. Return 0 se parola non trovata, 1 se parola trovata, 2 se la parola è solo l'inizio di una esistente; -1 errore
-    std::ifstream file(dir);
+// Funzione per cercare parole in un file ordinato e indicizzato
+int* search_words(String* words, int words_size, const String& dir) {
+    int* results = new int[words_size]; // Array dinamico per i risultati
+    std::memset(results, 0, words_size * sizeof(int)); // Inizializza tutti i risultati a 0
 
+    std::ifstream file(dir);
+    
     // Verifica se il file è stato aperto correttamente
     if (!file.is_open()) {
-        return -1; // Errore nell'aprire il file
+        std::fill(results, results + words_size, -1); // Errore apertura file
+        return results;
     }
 
-    int index = (int)word[0] - 'a';
-    int start = dictionary_index[index];
-    int end = dictionary_index[index + 1];
-
     String line;
-    bool exact_match_found = false;
-    bool contains_match_found = false;
-    int current_line = 0;
+    int w = 0;  // Indice per l'array `words`
 
-    // Leggi il file riga per riga e controlla solo tra 'start' e 'end'
-    while (std::getline(file, line)) {
-        current_line++;
+    // Loop attraverso ogni parola da cercare
+    while (w < words_size) {
+        char first_letter = words[w][0];
+        
+        // Determina l'indice corrispondente all'inizio della lettera
+        int index = first_letter - 'a'; // Ottiene l'indice basato sulla lettera iniziale
 
-        // Continua fino a raggiungere la riga 'start'
-        if (current_line < start) {
+        if (index < 0 || index > 25) { // Se la lettera non è nell'intervallo 'a'...'z'
+            results[w] = -1; // Lettera non valida
+            w++;
             continue;
         }
 
-        // Interrompi se abbiamo superato la riga 'end'
-        if (current_line > end) {
-            break;
+        // Ottiene i limiti tra i quali cercare nel file
+        int start = dictionary_index[index];
+        int end = dictionary_index[index + 1];
+
+        // Salta fino alla riga `start`
+        file.clear();
+        file.seekg(0); // Torna all'inizio del file
+        for (int current_line = 0; current_line < start; ++current_line) {
+            std::getline(file, line); // Scarta le righe precedenti
         }
-        // Controlla se la riga contiene la parola come sottostringa all'indice 0
-        if (line.find(word) == 0) { // La parola è all'inizio della riga
-            // Controlla se c'è una corrispondenza esatta
-            if (line == word) {
-                exact_match_found = true; // Parola esatta trovata
-            } else {
-                contains_match_found = true; // È stata trovata una parola che inizia con la parola cercata
+
+        bool exact_match_found = false;
+        bool contains_match_found = false;
+
+        // Leggi solo le righe tra `start` e `end`
+        for (int current_line = start; current_line < end; ++current_line) {
+            if (!std::getline(file, line)) {
+                break; // Esci se non ci sono più righe
             }
-            break;
+
+            if (line.find(words[w]) == 0) { // La parola è all'inizio della riga
+                if (line == words[w]) {
+                    exact_match_found = true;
+                    break; // Parola esatta trovata, possiamo interrompere
+                } else {
+                    contains_match_found = true; // Parola esiste come prefisso
+                }
+            }
         }
+
+        // Imposta il risultato appropriato
+        if (exact_match_found) {
+            results[w] = 1; // Parola esatta trovata
+        } else if (contains_match_found) {
+            results[w] = 2; // Parola trovata come prefisso
+        } else {
+            results[w] = 0; // Parola non trovata
+        }
+
+        w++; // Passa alla parola successiva
     }
 
     file.close();
-
-    if (exact_match_found) {
-        return 1; // Parola esatta trovata
-    } else if (contains_match_found) {
-        return 2; // Almeno una parola contiene la sottostringa all'inizio
-    } else {
-        return 0; // Nessuna parola trovata
-    }
+    return results; // Restituisce l'array dei risultati
 }

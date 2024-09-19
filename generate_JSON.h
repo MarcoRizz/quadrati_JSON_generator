@@ -11,7 +11,7 @@ extern int search_word(const std::string& word, const std::string& dir);
 extern void add_word(String*& array, int& size, const String& word);
 
 extern char grid[DIM1][DIM2];
-extern int words_size;
-extern String* words;
+extern int attempts_size;
+extern String* attempts;
 
 #endif
