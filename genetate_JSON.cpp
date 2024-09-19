@@ -2,19 +2,17 @@
 #include <fstream>
 #include <cstdlib>  // Per rand() e srand()
 #include <ctime>    // Per time()
-#include <vector>   // Per std::vector
 #include <string>
 #include "generate_JSON.h"
+#include "libs/json.hpp"
 #include "libs/dictionary_dir.h"
+#include "dictionary_ref.h"
+#include "findPath.h"
 
-const int DIM1 = 4;
-const int DIM2 = 4;
-const int MAX_LENGTH = 16; // Lunghezza massima delle parole
+using json = nlohmann::json;
 
 String generate_random_word(int max_length);
-void add_word(String*& array, int& size, const String& word);
 void add_element_to_ij(int*& array, int& size, int value);
-int search_word(const std::string& word, const std::string& dir);
 
 int main() {
     // Inizializza il seme del generatore di numeri casuali
@@ -32,16 +30,25 @@ int main() {
         }
     }
 
-    //qui devo calcolare l'elenco di parole trovate all'interno della griglia (TODO)
-
     /***********************************************************************************
     // CREAZIONE ARRAY-1D WORDS
     ***********************************************************************************/
     int words_size = 0;
     String* words = nullptr;
 
-    //qui devo calcolare tutte le possibilità e calcolare quali parole possono passare da ciascuna lettera (TODO)
+    //int ottal_dir = 012; // un numero che inizia con 0 è per definizione ottale (a base 8): 012 è 10 in decimale
+    //qui devo calcolare l'elenco di parole trovate all'interno della griglia (TODO)
 
+    for (int path_size = 4; path_size <= 16; ++path_size) {
+        std::cout << "Percorsi con " << path_size << " passi:" << std::endl;
+        for (int i = 0; i < DIM1; ++i) {
+            for (int j = 0; j < DIM2; ++j) {
+                findPaths(i, j, 0, path_size);
+            }
+        }
+        std::cout << std::endl;
+    }
+    
     // Popoliamo l'array con parole casuali (TEMP)
     int num_new_words = 3 + std::rand() % 5; // Numero casuale di parole tra 3 e 7
     for (int i = 0; i < num_new_words; ++i) {
@@ -65,7 +72,7 @@ int main() {
         }
     }
 
-    //qui devo assegnare i link tra lettere e parole
+    //qui devo calcolare tutte le possibilità e calcolare quali parole possono passare da ciascuna lettera (TODO)
 
     // Popola con valori casuali (TEMP)
     int num_new_elements = 1 + std::rand() % (words_size * DIM1 * DIM2); // Numero casuale di nuovi elementi
