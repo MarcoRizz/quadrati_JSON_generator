@@ -11,6 +11,8 @@
 #include "findPath.h"
 #include "tools/dictionary_tree_generator.h"
 
+#define PATH_MAX_STEPS 7
+
 using json = nlohmann::json;
 
 char grid[DIM1][DIM2];
@@ -56,7 +58,7 @@ int main() {
 
     //qui devo calcolare l'elenco di parole trovate all'interno della griglia (TODO)
     
-    for (int path_size = 4; path_size <= /*DIM1 * DIM2*/5; ++path_size) {
+    for (int path_size = 4; path_size <= /*DIM1 * DIM2*/PATH_MAX_STEPS; ++path_size) {
         std::cout << "Percorsi con " << path_size << " passi" << std::endl;
         for (int i = 0; i < DIM1; ++i) {
             for (int j = 0; j < DIM2; ++j) {
