@@ -19,7 +19,6 @@ void completePath(int pathLength) {
     for (int i = 0; i < pathLength; ++i) {
         parola += grid[path[i].first][path[i].second];
     }
-    //attempts.add_word(parola);
     if (dizionario.cercaParola(parola)) {
         words.add_word(parola);
     }

@@ -18,16 +18,20 @@ WordList::~WordList() {
     delete[] array;
 }
 
-void WordList::add_word(const String& word) {
-    // Se l'array è pieno, rialloca con una capacità maggiore
-    if (size == capacity) {
-        resize(capacity > 0 ? capacity * 2 : 1);
-    }
-
+bool WordList::add_word(const String& word) {
     // Trova la posizione in cui inserire la nuova parola
     int insert_pos = 0;
     while (insert_pos < size && array[insert_pos] < word) {
         insert_pos++;
+    }
+
+    if (insert_pos < size && array[insert_pos] == word) { //parola già inserita esco senza modifiche
+        return false;
+    }
+    
+    // Se l'array è pieno, rialloca con una capacità maggiore
+    if (size == capacity) {
+        resize(capacity > 0 ? capacity * 2 : 1);
     }
 
     // Sposta gli elementi a destra per fare spazio alla nuova parola
@@ -40,6 +44,7 @@ void WordList::add_word(const String& word) {
 
     // Aggiorna la dimensione dell'array
     size++;
+    return true;
 }
 
 // Restituisce la dimensione dell'array

@@ -23,7 +23,7 @@ public:
     ~WordList();
 
     // Aggiunge una nuova parola in ordine alfabetico
-    void add_word(const String& word);
+    bool add_word(const String& word);
 
     // Restituisce la dimensione dell'array
     int get_size() const;

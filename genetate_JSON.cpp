@@ -8,7 +8,7 @@
 #include "libs/json.hpp"
 #include "findPath.h"
 
-#define PATH_MAX_STEPS 6
+#define PATH_MAX_STEPS 8
 
 using json = nlohmann::json;
 
