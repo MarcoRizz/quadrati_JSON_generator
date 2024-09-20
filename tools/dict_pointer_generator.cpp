@@ -3,6 +3,11 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <fstream>
+#include "../libs/json.hpp"
+
+// Definizione dello spazio dei nomi per la libreria json
+using json = nlohmann::json;
 
 // Definizione della classe Lettera
 class Lettera {
@@ -29,6 +34,55 @@ public:
             return it->second.get();
         }
         return nullptr;
+    }
+
+    // Funzione ricorsiva per serializzare il nodo e i suoi figli
+    json to_json() const {
+        json j;
+        if (lettera != '\0') { // Escludiamo la lettera della radice se è '\0'
+            j["L"] = std::string(1, lettera);
+        }
+        j["E"] = fineParola;
+        j["C"] = json::object();
+        //PER C++17
+        /*for (const auto& [c, figlio] : figli) {
+            j["C"][std::string(1, c)] = figlio->to_json();
+        }*/
+        //PER C++14
+        for (const auto& pair : figli) {
+            char c = pair.first;
+            const std::unique_ptr<Lettera>& figlio = pair.second;
+            j["C"][std::string(1, c)] = figlio->to_json();
+        }
+        return j;
+    }
+
+    // Funzione ricorsiva per deserializzare il nodo e i suoi figli
+    static std::unique_ptr<Lettera> from_json(const json& j) {
+        std::unique_ptr<Lettera> nodo;
+        if (j.contains("L")) {
+            std::string letteraStr = j["L"];
+            if (!letteraStr.empty()) {
+                nodo = std::make_unique<Lettera>(letteraStr[0]);
+            } else {
+                nodo = std::make_unique<Lettera>();
+            }
+        } else {
+            nodo = std::make_unique<Lettera>();
+        }
+
+        if (j.contains("E")) {
+            nodo->fineParola = j["E"];
+        }
+
+        if (j.contains("C")) {
+            for (auto it = j["C"].begin(); it != j["C"].end(); ++it) {
+                char c = it.key()[0];
+                nodo->figli[c] = Lettera::from_json(it.value());
+            }
+        }
+
+        return nodo;
     }
 };
 
@@ -67,15 +121,43 @@ public:
         return contaParoleRicorsivo(radice.get());
     }
 
+    // Metodo per serializzare il dizionario e salvarlo in un file
+    bool salvaInFile(const std::string& percorsoFile) const {
+        json j = radice->to_json();
+        std::ofstream file(percorsoFile);
+        if (!file.is_open()) {
+            std::cerr << "Errore nell'aprire il file per la scrittura: " << percorsoFile << std::endl;
+            return false;
+        }
+        file << j.dump(4); // Dump con indentazione di 4 spazi
+        file.close();
+        return true;
+    }
+
+    // Metodo per caricare il dizionario da un file JSON
+    bool caricaDaFile(const std::string& percorsoFile) {
+        std::ifstream file(percorsoFile);
+        if (!file.is_open()) {
+            std::cerr << "Errore nell'aprire il file per la lettura: " << percorsoFile << std::endl;
+            return false;
+        }
+        json j;
+        file >> j;
+        file.close();
+
+        radice = Lettera::from_json(j);
+        return true;
+    }
+
 private:
     // Metodo ricorsivo per contare le parole
     int contaParoleRicorsivo(const Lettera* nodo) const {
         int count = nodo->fineParola ? 1 : 0;
-        //PER C++17
+        //PER C**17
         /*for (const auto& [c, figlio] : nodo->figli) {
             count += contaParoleRicorsivo(figlio.get());
-        }
-        return count;*/
+        }*/
+        //PER C++14
         for (const auto& pair : nodo->figli) {
             const std::unique_ptr<Lettera>& figlio = pair.second;
             count += contaParoleRicorsivo(figlio.get());
@@ -84,7 +166,6 @@ private:
     }
 };
 
-// Funzione main per dimostrare l'uso del Dizionario
 int main() {
     Dizionario dizionario;
 
@@ -109,6 +190,31 @@ int main() {
     // Conteggio delle parole nel dizionario
     int totaleParole = dizionario.contaParole();
     std::cout << "\nNumero totale di parole nel dizionario: " << totaleParole << std::endl;
+
+    // Serializzazione del dizionario
+    std::string percorsoFile = "dizionario.json";
+    if (dizionario.salvaInFile(percorsoFile)) {
+        std::cout << "Dizionario salvato correttamente in \"" << percorsoFile << "\"." << std::endl;
+    }
+
+    // Creazione di un nuovo dizionario e deserializzazione da file
+    Dizionario nuovoDizionario;
+    if (nuovoDizionario.caricaDaFile(percorsoFile)) {
+        std::cout << "Dizionario caricato correttamente da \"" << percorsoFile << "\"." << std::endl;
+    }
+
+    // Verifica delle parole nel nuovo dizionario
+    for (const auto& parola : paroleDaCercare) {
+        if (nuovoDizionario.cercaParola(parola)) {
+            std::cout << "La parola \"" << parola << "\" esiste nel nuovo dizionario." << std::endl;
+        } else {
+            std::cout << "La parola \"" << parola << "\" non esiste nel nuovo dizionario." << std::endl;
+        }
+    }
+
+    // Conteggio delle parole nel nuovo dizionario
+    int totaleParoleNuovo = nuovoDizionario.contaParole();
+    std::cout << "\nNumero totale di parole nel nuovo dizionario: " << totaleParoleNuovo << std::endl;
 
     return 0;
 }
