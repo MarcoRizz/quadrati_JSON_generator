@@ -1,7 +1,6 @@
 #include <iostream>
+#include "findPath.h"
 #include "generate_JSON.h"
-#include "libs/dictionary_dir.h"
-#include "dictionary_ref.h"
 
 bool visited[DIM1][DIM2] = {false}; // Array di visitati
 std::pair<int, int> path[DIM1 * DIM2]; // Array per memorizzare il percorso
@@ -20,7 +19,10 @@ void completePath(int pathLength) {
     for (int i = 0; i < pathLength; ++i) {
         parola += grid[path[i].first][path[i].second];
     }
-    add_word(attempts, attempts_size, parola);
+    //attempts.add_word(parola);
+    if (dizionario.cercaParola(parola)) {
+        words.add_word(parola);
+    }
 }
 
 void findPaths(int x, int y, int step, int path_size) {

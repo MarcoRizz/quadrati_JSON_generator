@@ -1,5 +1,8 @@
 #include "dictionary_tree_generator.h"
 
+//(TEMP)
+#define DICTIONARY_PATH ""
+
 int main() {
     auto timer_start = std::chrono::high_resolution_clock::now();
     Dizionario dizionario;
