@@ -1,58 +1,116 @@
 #include <iostream>
-#include <fstream>
-#include <string>
 #include <vector>
-#include <cstddef> // Per std::size_t
-#include "..\libs\dictionary_dir.h"
-
-#include <iostream>
-#include <fstream>
+#include <memory>
 #include <string>
-#include <vector>
-#include <map>
+#include <unordered_map>
 
-#define ALPHABET_SIZE 26
+// Definizione della classe Lettera
+class Lettera {
+public:
+    char lettera; // La lettera rappresentata dall'oggetto
+    bool fineParola; // Flag per indicare la fine di una parola
+    std::unordered_map<char, std::unique_ptr<Lettera>> figli; // Figli dell'oggetto corrente
 
-// Funzione per generare gli indici di inizio delle righe per prefissi fino a 4 lettere
-void generate_prefix_indices(const std::string& file_path, std::map<std::string, std::streampos>& indices) {
-    std::ifstream file(file_path, std::ios::in | std::ios::binary);
+    // Costruttore
+    Lettera(char c = '\0') : lettera(c), fineParola(false) {}
 
-    if (!file.is_open()) {
-        std::cerr << "Errore nell'apertura del file!" << std::endl;
-        return;
+    // Metodo per aggiungere una lettera figlia
+    Lettera* aggiungiFiglio(char c) {
+        if (figli.find(c) == figli.end()) {
+            figli[c] = std::make_unique<Lettera>(c);
+        }
+        return figli[c].get();
     }
 
-    std::string line;
-    std::streampos current_position = 0;
-    std::string prefix;
+    // Metodo per ottenere un figlio
+    Lettera* getFiglio(char c) const {
+        auto it = figli.find(c);
+        if (it != figli.end()) {
+            return it->second.get();
+        }
+        return nullptr;
+    }
+};
 
-    while (std::getline(file, line)) {
-        current_position = file.tellg(); // Ottieni la posizione corrente nel file
-        if (!line.empty()) {
-            // Usa solo le prime 4 lettere della riga come prefisso
-            for (std::size_t i = 0; i < line.size() && i < 4; ++i) {
-                prefix += line[i];
-                if (indices.find(prefix) == indices.end()) {
-                    indices[prefix] = current_position;
-                }
+// Definizione della classe Dizionario
+class Dizionario {
+private:
+    std::unique_ptr<Lettera> radice;
+
+public:
+    // Costruttore
+    Dizionario() : radice(std::make_unique<Lettera>()) {}
+
+    // Metodo per inserire una parola nel dizionario
+    void inserisciParola(const std::string& parola) {
+        Lettera* corrente = radice.get();
+        for (char c : parola) {
+            corrente = corrente->aggiungiFiglio(c);
+        }
+        corrente->fineParola = true; // Contrassegna la fine della parola
+    }
+
+    // Metodo per cercare una parola nel dizionario
+    bool cercaParola(const std::string& parola) const {
+        Lettera* corrente = radice.get();
+        for (char c : parola) {
+            corrente = corrente->getFiglio(c);
+            if (!corrente) {
+                return false; // Lettera non trovata
             }
-            // Azzera il prefisso per la prossima riga
-            prefix.clear();
+        }
+        return corrente->fineParola; // Verifica se è la fine di una parola
+    }
+
+    // Metodo per stampare tutte le parole nel dizionario
+    void stampaParole() const {
+        stampaParoleRicorsivo(radice.get(), "");
+    }
+
+private:
+    // Metodo ricorsivo per stampare le parole
+    void stampaParoleRicorsivo(const Lettera* nodo, const std::string& prefisso) const {
+        if (nodo->fineParola) {
+            std::cout << prefisso << std::endl;
+        }
+        // PER C++17
+        /*for (const auto& [c, figlio] : nodo->figli) {
+            stampaParoleRicorsivo(figlio.get(), prefisso + c);
+        }*/
+        //PER C++14
+        for (const auto& pair : nodo->figli) {
+            char c = pair.first;
+            const std::unique_ptr<Lettera>& figlio = pair.second;
+            stampaParoleRicorsivo(figlio.get(), prefisso + c);
+        }
+    }
+};
+
+// Funzione main per dimostrare l'uso del Dizionario
+int main() {
+    Dizionario dizionario;
+
+    // Inserimento di parole nel dizionario
+    dizionario.inserisciParola("cane");
+    dizionario.inserisciParola("casa");
+    dizionario.inserisciParola("caro");
+    dizionario.inserisciParola("care");
+    dizionario.inserisciParola("cat");
+    dizionario.inserisciParola("cane"); // Parola duplicata
+
+    // Ricerca di parole
+    std::string paroleDaCercare[] = {"cane", "casa", "caro", "care", "cat", "cate", "can"};
+    for (const auto& parola : paroleDaCercare) {
+        if (dizionario.cercaParola(parola)) {
+            std::cout << "La parola \"" << parola << "\" esiste nel dizionario." << std::endl;
+        } else {
+            std::cout << "La parola \"" << parola << "\" non esiste nel dizionario." << std::endl;
         }
     }
 
-    file.close();
-}
-
-int main() {
-    // Mappa per memorizzare le posizioni degli indici dei prefissi
-    std::map<std::string, std::streampos> prefix_indices;
-    generate_prefix_indices(DICTIONARY_PATH, prefix_indices);
-
-    // Stampa le posizioni degli indici per i prefissi
-    for (const auto& entry : prefix_indices) {
-        std::cout << "Prefisso: " << entry.first << " - Posizione: " << entry.second << std::endl;
-    }
+    // Stampa di tutte le parole nel dizionario
+    std::cout << "\nParole nel dizionario:" << std::endl;
+    dizionario.stampaParole();
 
     return 0;
 }
