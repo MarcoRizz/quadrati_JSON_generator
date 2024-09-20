@@ -4,10 +4,13 @@
 #include <string>
 #include <unordered_map>
 #include <fstream>
+#include <chrono>
 #include "../libs/json.hpp"
+#include "../libs/dictionary_dir.h"
 
 // Definizione dello spazio dei nomi per la libreria json
 using json = nlohmann::json;
+using String = std::string;
 
 // Definizione della classe Lettera
 class Lettera {
@@ -167,15 +170,41 @@ private:
 };
 
 int main() {
+    auto timer_overall_start = std::chrono::high_resolution_clock::now();
     Dizionario dizionario;
 
-    // Inserimento di parole nel dizionario
+    //---------------------------------------------
+    //sezione di creazione del dizionario
+
+    int max_words = 10000;
+    std::ifstream file(DICTIONARY_PATH);
+    String line;
+    // Verifica se il file è stato aperto correttamente
+    if (!file.is_open()) {
+        std::cout << "Errore nell'apertura del dizionario." << std::endl; // Errore apertura file
+        return 0;
+    }
+
+    int word_i = 0;
+    while (word_i < max_words) {
+        if (!std::getline(file, line)) {
+            break; // Esci se non ci sono più righe
+        }
+        dizionario.inserisciParola(line);
+        word_i++;
+    }
+    
+    auto timer_end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> duration = timer_end - timer_overall_start;
+    std::cout << "Elapsed time: " << duration.count() << " ms" << std::endl;
+
+    /*// Inserimento di parole nel dizionario
     dizionario.inserisciParola("cane");
     dizionario.inserisciParola("casa");
     dizionario.inserisciParola("caro");
     dizionario.inserisciParola("care");
     dizionario.inserisciParola("cat");
-    dizionario.inserisciParola("cane"); // Parola duplicata
+    dizionario.inserisciParola("cane"); // Parola duplicata*/
 
     // Ricerca di parole
     std::string paroleDaCercare[] = {"cane", "casa", "caro", "care", "cat", "cate", "can"};
