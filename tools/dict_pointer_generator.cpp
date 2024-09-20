@@ -15,17 +15,16 @@ using String = std::string;
 // Definizione della classe Lettera
 class Lettera {
 public:
-    char lettera; // La lettera rappresentata dall'oggetto
     bool fineParola; // Flag per indicare la fine di una parola
     std::unordered_map<char, std::unique_ptr<Lettera>> figli; // Figli dell'oggetto corrente
 
     // Costruttore
-    Lettera(char c = '\0') : lettera(c), fineParola(false) {}
+    Lettera() : fineParola(false) {}
 
     // Metodo per aggiungere una lettera figlia
     Lettera* aggiungiFiglio(char c) {
         if (figli.find(c) == figli.end()) {
-            figli[c] = std::make_unique<Lettera>(c);
+            figli[c] = std::make_unique<Lettera>();
         }
         return figli[c].get();
     }
@@ -39,52 +38,34 @@ public:
         return nullptr;
     }
 
-    // Funzione ricorsiva per serializzare il nodo e i suoi figli
-    json to_json() const {
+    // Funzione ricorsiva per serializzare il nodo e i suoi figli in formato compatto
+    json to_json_compatto() const {
         json j;
-        if (lettera != '\0') { // Escludiamo la lettera della radice se è '\0'
-            j["L"] = std::string(1, lettera);
-        }
-        j["E"] = fineParola;
-        j["C"] = json::object();
-        //PER C++17
-        /*for (const auto& [c, figlio] : figli) {
-            j["C"][std::string(1, c)] = figlio->to_json();
-        }*/
-        //PER C++14
-        for (const auto& pair : figli) {
-            char c = pair.first;
-            const std::unique_ptr<Lettera>& figlio = pair.second;
-            j["C"][std::string(1, c)] = figlio->to_json();
+        j["f"] = fineParola;
+        if (!figli.empty()) {
+            json figli_json;
+            for (const auto& pair : figli) {
+                char c = pair.first;
+                const std::unique_ptr<Lettera>& figlio = pair.second;
+                figli_json[std::string(1, c)] = figlio->to_json_compatto();
+            }
+            j["c"] = figli_json;
         }
         return j;
     }
 
-    // Funzione ricorsiva per deserializzare il nodo e i suoi figli
-    static std::unique_ptr<Lettera> from_json(const json& j) {
-        std::unique_ptr<Lettera> nodo;
-        if (j.contains("L")) {
-            std::string letteraStr = j["L"];
-            if (!letteraStr.empty()) {
-                nodo = std::make_unique<Lettera>(letteraStr[0]);
-            } else {
-                nodo = std::make_unique<Lettera>();
-            }
-        } else {
-            nodo = std::make_unique<Lettera>();
+    // Funzione ricorsiva per deserializzare il nodo e i suoi figli dal formato compatto
+    static std::unique_ptr<Lettera> from_json_compatto(const json& j) {
+        auto nodo = std::make_unique<Lettera>();
+        if (j.contains("f")) {
+            nodo->fineParola = j["f"].get<bool>();
         }
-
-        if (j.contains("E")) {
-            nodo->fineParola = j["E"];
-        }
-
-        if (j.contains("C")) {
-            for (auto it = j["C"].begin(); it != j["C"].end(); ++it) {
+        if (j.contains("c")) {
+            for (auto it = j["c"].begin(); it != j["c"].end(); ++it) {
                 char c = it.key()[0];
-                nodo->figli[c] = Lettera::from_json(it.value());
+                nodo->figli[c] = from_json_compatto(it.value());
             }
         }
-
         return nodo;
     }
 };
@@ -124,22 +105,22 @@ public:
         return contaParoleRicorsivo(radice.get());
     }
 
-    // Metodo per serializzare il dizionario e salvarlo in un file
-    bool salvaInFile(const std::string& percorsoFile) const {
-        json j = radice->to_json();
-        std::ofstream file(percorsoFile);
+    // Metodo per serializzare il dizionario e salvarlo in un file in formato compatto
+    bool salvaInFileCompatto(const std::string& percorsoFile) const {
+        json j = radice->to_json_compatto();
+        std::ofstream file(percorsoFile, std::ios::binary);
         if (!file.is_open()) {
             std::cerr << "Errore nell'aprire il file per la scrittura: " << percorsoFile << std::endl;
             return false;
         }
-        file << j.dump(4); // Dump con indentazione di 4 spazi
+        file << j.dump(); // Dump senza indentazione per risparmiare spazio
         file.close();
         return true;
     }
 
-    // Metodo per caricare il dizionario da un file JSON
-    bool caricaDaFile(const std::string& percorsoFile) {
-        std::ifstream file(percorsoFile);
+    // Metodo per caricare il dizionario da un file JSON compatto
+    bool caricaDaFileCompatto(const std::string& percorsoFile) {
+        std::ifstream file(percorsoFile, std::ios::binary);
         if (!file.is_open()) {
             std::cerr << "Errore nell'aprire il file per la lettura: " << percorsoFile << std::endl;
             return false;
@@ -148,7 +129,7 @@ public:
         file >> j;
         file.close();
 
-        radice = Lettera::from_json(j);
+        radice = Lettera::from_json_compatto(j);
         return true;
     }
 
@@ -156,11 +137,6 @@ private:
     // Metodo ricorsivo per contare le parole
     int contaParoleRicorsivo(const Lettera* nodo) const {
         int count = nodo->fineParola ? 1 : 0;
-        //PER C**17
-        /*for (const auto& [c, figlio] : nodo->figli) {
-            count += contaParoleRicorsivo(figlio.get());
-        }*/
-        //PER C++14
         for (const auto& pair : nodo->figli) {
             const std::unique_ptr<Lettera>& figlio = pair.second;
             count += contaParoleRicorsivo(figlio.get());
@@ -176,7 +152,7 @@ int main() {
     //---------------------------------------------
     //sezione di creazione del dizionario
 
-    int max_words = 10000;
+    int max_words = 1000000;
     std::ifstream file(DICTIONARY_PATH);
     String line;
     // Verifica se il file è stato aperto correttamente
@@ -222,13 +198,13 @@ int main() {
 
     // Serializzazione del dizionario
     std::string percorsoFile = "dizionario.json";
-    if (dizionario.salvaInFile(percorsoFile)) {
+    if (dizionario.salvaInFileCompatto(percorsoFile)) {
         std::cout << "Dizionario salvato correttamente in \"" << percorsoFile << "\"." << std::endl;
     }
 
     // Creazione di un nuovo dizionario e deserializzazione da file
     Dizionario nuovoDizionario;
-    if (nuovoDizionario.caricaDaFile(percorsoFile)) {
+    if (nuovoDizionario.caricaDaFileCompatto(percorsoFile)) {
         std::cout << "Dizionario caricato correttamente da \"" << percorsoFile << "\"." << std::endl;
     }
 
