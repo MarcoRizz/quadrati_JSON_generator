@@ -1,3 +1,6 @@
+#ifndef DICTIONARY_TREE_GENERATOR_H
+#define DICTIONARY_TREE_GENERATOR_H
+
 #include <iostream>
 #include <vector>
 #include <memory>
@@ -7,6 +10,8 @@
 #include <chrono>
 #include "../libs/json.hpp"
 #include "../libs/dictionary_dir.h"
+
+#define PERCORSO_TREE_DICTIONARY "dizionario.json"
 
 // Definizione dello spazio dei nomi per la libreria json
 using json = nlohmann::json;
@@ -47,7 +52,7 @@ public:
             for (const auto& pair : figli) {
                 char c = pair.first;
                 const std::unique_ptr<Lettera>& figlio = pair.second;
-                figli_json[std::string(1, c)] = figlio->to_json_compatto();
+                figli_json[String(1, c)] = figlio->to_json_compatto();
             }
             j["c"] = figli_json;
         }
@@ -80,7 +85,7 @@ public:
     Dizionario() : radice(std::make_unique<Lettera>()) {}
 
     // Metodo per inserire una parola nel dizionario
-    void inserisciParola(const std::string& parola) {
+    void inserisciParola(const String& parola) {
         Lettera* corrente = radice.get();
         for (char c : parola) {
             corrente = corrente->aggiungiFiglio(c);
@@ -89,7 +94,7 @@ public:
     }
 
     // Metodo per cercare una parola nel dizionario
-    bool cercaParola(const std::string& parola) const {
+    bool cercaParola(const String& parola) const {
         Lettera* corrente = radice.get();
         for (char c : parola) {
             corrente = corrente->getFiglio(c);
@@ -106,7 +111,7 @@ public:
     }
 
     // Metodo per serializzare il dizionario e salvarlo in un file in formato compatto
-    bool salvaInFileCompatto(const std::string& percorsoFile) const {
+    bool salvaInFileCompatto(const String& percorsoFile) const {
         json j = radice->to_json_compatto();
         std::ofstream file(percorsoFile, std::ios::binary);
         if (!file.is_open()) {
@@ -119,7 +124,7 @@ public:
     }
 
     // Metodo per caricare il dizionario da un file JSON compatto
-    bool caricaDaFileCompatto(const std::string& percorsoFile) {
+    bool caricaDaFileCompatto(const String& percorsoFile) {
         std::ifstream file(percorsoFile, std::ios::binary);
         if (!file.is_open()) {
             std::cerr << "Errore nell'aprire il file per la lettura: " << percorsoFile << std::endl;
@@ -145,86 +150,4 @@ private:
     }
 };
 
-int main() {
-    auto timer_start = std::chrono::high_resolution_clock::now();
-    Dizionario dizionario;
-
-    //---------------------------------------------
-    //sezione di creazione del dizionario
-
-    std::ifstream file(DICTIONARY_PATH);
-    String line;
-    // Verifica se il file è stato aperto correttamente
-    if (!file.is_open()) {
-        std::cout << "Errore nell'apertura del dizionario." << std::endl; // Errore apertura file
-        return 0;
-    }
-
-    while (std::getline(file, line)) {
-        dizionario.inserisciParola(line);
-    }
-    
-    auto timer_end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double, std::milli> duration = timer_end - timer_start;
-    std::cout << "Elapsed time: " << duration.count() << " ms" << std::endl;
-    
-    /*// Inserimento di parole nel dizionario
-    dizionario.inserisciParola("cane");
-    dizionario.inserisciParola("casa");
-    dizionario.inserisciParola("caro");
-    dizionario.inserisciParola("care");
-    dizionario.inserisciParola("cat");
-    dizionario.inserisciParola("cane"); // Parola duplicata*/
-
-    // Ricerca di parole
-    std::string paroleDaCercare[] = {"cane", "casa", "caro", "care", "cat", "cate", "can"};
-    for (const auto& parola : paroleDaCercare) {
-        if (dizionario.cercaParola(parola)) {
-            std::cout << "La parola \"" << parola << "\" esiste nel dizionario." << std::endl;
-        } else {
-            std::cout << "La parola \"" << parola << "\" non esiste nel dizionario." << std::endl;
-        }
-    }
-
-    // Conteggio delle parole nel dizionario
-    int totaleParole = dizionario.contaParole();
-    std::cout << "\nNumero totale di parole nel dizionario: " << totaleParole << std::endl;
-
-    timer_start = std::chrono::high_resolution_clock::now();
-
-    // Serializzazione del dizionario
-    std::string percorsoFile = "dizionario.json";
-    if (dizionario.salvaInFileCompatto(percorsoFile)) {
-        std::cout << "Dizionario salvato correttamente in \"" << percorsoFile << "\"." << std::endl;
-    }
-
-    timer_end = std::chrono::high_resolution_clock::now();
-    duration = timer_end - timer_start;
-    std::cout << "Operation time: " << duration.count() << " ms" << std::endl;
-    timer_start = std::chrono::high_resolution_clock::now();
-
-    // Creazione di un nuovo dizionario e deserializzazione da file
-    Dizionario nuovoDizionario;
-    if (nuovoDizionario.caricaDaFileCompatto(percorsoFile)) {
-        std::cout << "Dizionario caricato correttamente da \"" << percorsoFile << "\"." << std::endl;
-    }
-
-    timer_end = std::chrono::high_resolution_clock::now();
-    duration = timer_end - timer_start;
-    std::cout << "Operation time: " << duration.count() << " ms" << std::endl;
-
-    // Verifica delle parole nel nuovo dizionario
-    for (const auto& parola : paroleDaCercare) {
-        if (nuovoDizionario.cercaParola(parola)) {
-            std::cout << "La parola \"" << parola << "\" esiste nel nuovo dizionario." << std::endl;
-        } else {
-            std::cout << "La parola \"" << parola << "\" non esiste nel nuovo dizionario." << std::endl;
-        }
-    }
-
-    // Conteggio delle parole nel nuovo dizionario
-    int totaleParoleNuovo = nuovoDizionario.contaParole();
-    std::cout << "\nNumero totale di parole nel nuovo dizionario: " << totaleParoleNuovo << std::endl;
-
-    return 0;
-}
+#endif

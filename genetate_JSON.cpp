@@ -9,6 +9,7 @@
 #include "libs/dictionary_dir.h"
 #include "dictionary_ref.h"
 #include "findPath.h"
+#include "tools/dictionary_tree_generator.h"
 
 using json = nlohmann::json;
 
@@ -272,13 +273,17 @@ void add_element_to_ij(int*& array, int& size, int value) {
 
 // Funzione per cercare parole in un file ordinato e indicizzato
 int* search_words(String* words, int words_size, const String& dir) {
+
+    Dizionario dizionario; //classe dizionario creata col tool dictionary_tree_generator
+    String dictionary_path = (String)"tools\\" + PERCORSO_TREE_DICTIONARY;
+
     int* results = new int[words_size]; // Array dinamico per i risultati
     std::memset(results, 0, words_size * sizeof(int)); // Inizializza tutti i risultati a 0
 
     std::ifstream file(dir);
     
     // Verifica se il file è stato aperto correttamente
-    if (!file.is_open()) {
+    if (!dizionario.caricaDaFileCompatto(dictionary_path)) {
         std::fill(results, results + words_size, -1); // Errore apertura file
         return results;
     }
@@ -288,46 +293,11 @@ int* search_words(String* words, int words_size, const String& dir) {
 
     // Loop attraverso ogni parola da cercare
     while (w < words_size) {
-        char first_letter = words[w][0];
         
-        // Determina l'indice corrispondente all'inizio della lettera
-        int index = first_letter - 'a'; // Ottiene l'indice basato sulla lettera iniziale
-
-        if (index < 0 || index > 25) { // Se la lettera non è nell'intervallo 'a'...'z'
-            results[w] = -1; // Lettera non valida
-            w++;
-            continue;
-        }
-
-        // Ottiene i limiti tra i quali cercare nel file
-        int start = dictionary_index[index];
-        int end = dictionary_index[index + 1];
-
-        // Salta fino alla riga `start`
-        file.clear();
-        file.seekg(0); // Torna all'inizio del file
-        for (int current_line = 0; current_line < start; ++current_line) {
-            std::getline(file, line); // Scarta le righe precedenti
-        }
-
         bool exact_match_found = false;
         bool contains_match_found = false;
 
-        // Leggi solo le righe tra `start` e `end`
-        for (int current_line = start; current_line < end; ++current_line) {
-            if (!std::getline(file, line)) {
-                break; // Esci se non ci sono più righe
-            }
-
-            if (line.find(words[w]) == 0) { // La parola è all'inizio della riga
-                if (line == words[w]) {
-                    exact_match_found = true;
-                    break; // Parola esatta trovata, possiamo interrompere
-                } else {
-                    contains_match_found = true; // Parola esiste come prefisso
-                }
-            }
-        }
+        exact_match_found = dizionario.cercaParola(words[w]);
 
         // Imposta il risultato appropriato
         if (exact_match_found) {
