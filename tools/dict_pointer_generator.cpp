@@ -62,27 +62,25 @@ public:
         return corrente->fineParola; // Verifica se è la fine di una parola
     }
 
-    // Metodo per stampare tutte le parole nel dizionario
-    void stampaParole() const {
-        stampaParoleRicorsivo(radice.get(), "");
+    // Metodo per contare il numero di parole nel dizionario
+    int contaParole() const {
+        return contaParoleRicorsivo(radice.get());
     }
 
 private:
-    // Metodo ricorsivo per stampare le parole
-    void stampaParoleRicorsivo(const Lettera* nodo, const std::string& prefisso) const {
-        if (nodo->fineParola) {
-            std::cout << prefisso << std::endl;
-        }
-        // PER C++17
+    // Metodo ricorsivo per contare le parole
+    int contaParoleRicorsivo(const Lettera* nodo) const {
+        int count = nodo->fineParola ? 1 : 0;
+        //PER C++17
         /*for (const auto& [c, figlio] : nodo->figli) {
-            stampaParoleRicorsivo(figlio.get(), prefisso + c);
-        }*/
-        //PER C++14
-        for (const auto& pair : nodo->figli) {
-            char c = pair.first;
-            const std::unique_ptr<Lettera>& figlio = pair.second;
-            stampaParoleRicorsivo(figlio.get(), prefisso + c);
+            count += contaParoleRicorsivo(figlio.get());
         }
+        return count;*/
+        for (const auto& pair : nodo->figli) {
+            const std::unique_ptr<Lettera>& figlio = pair.second;
+            count += contaParoleRicorsivo(figlio.get());
+        }
+        return count;
     }
 };
 
@@ -108,9 +106,9 @@ int main() {
         }
     }
 
-    // Stampa di tutte le parole nel dizionario
-    std::cout << "\nParole nel dizionario:" << std::endl;
-    dizionario.stampaParole();
+    // Conteggio delle parole nel dizionario
+    int totaleParole = dizionario.contaParole();
+    std::cout << "\nNumero totale di parole nel dizionario: " << totaleParole << std::endl;
 
     return 0;
 }
