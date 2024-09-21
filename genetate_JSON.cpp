@@ -15,6 +15,8 @@ using json = nlohmann::json;
 char grid[DIM1][DIM2];
 WordList words;
 Dizionario dizionario;
+std::vector<std::vector<DinArray>> passingWords(DIM1, std::vector<DinArray>(DIM2, DinArray(words.get_size())));
+std::vector<std::vector<DinArray>> startingWords(DIM1, std::vector<DinArray>(DIM2, DinArray(words.get_size())));
 
 void add_element_to_ij(int*& array, int& size, int value);
 
@@ -61,7 +63,7 @@ int main() {
         std::cout << "Percorsi con " << path_size << " passi" << std::endl;
         for (int i = 0; i < DIM1; ++i) {
             for (int j = 0; j < DIM2; ++j) {
-                findPaths(i, j, 0, path_size);  //qui dentro riempio attemts
+                findPaths(i, j, 0, path_size);  //qui dentro riempio words
             }
         }
     }
@@ -77,28 +79,14 @@ int main() {
     /***********************************************************************************
     // CREAZIONE ARRAY-3D GRID_LINKS
     ***********************************************************************************/
-    // la terza dimensione è variabile e archiviata in links_size
-    // per mantenere la terza dimensione variabile lavoro coi puntatori
-    int*** grid_links = new int**[DIM1];
-    int** links_size = new int*[DIM1]; // Array per memorizzare le dimensioni della terza dimensione
-    for (int i = 0; i < DIM1; ++i) {
-        grid_links[i] = new int*[DIM2];
-        links_size[i] = new int[DIM2];
-        for (int j = 0; j < DIM2; ++j) {
-            // Imposta dimensione variabile per la terza dimensione
-            links_size[i][j] = 0; // Memorizza la dimensione della terza dimensione per ogni [i][j]
-            grid_links[i][j] = nullptr; // Puntatore inizialmente nullo
-        }
-    }
-
     //qui devo calcolare tutte le possibilità e calcolare quali parole possono passare da ciascuna lettera (TODO)
 
-    // Popola con valori casuali (TEMP)
-    int num_new_elements = 1 + std::rand() % (words.get_size() * DIM1 * DIM2); // Numero casuale di nuovi elementi
-    for (int k = 0; k < num_new_elements; ++k) {
-        int casual_i = std::rand() % DIM1;
-        int casual_j = std::rand() % DIM2;
-        add_element_to_ij(grid_links[casual_i][casual_j], links_size[casual_i][casual_j], std::rand() % 10); // Aggiungo elemento a grid_links[casual_i][casual_j]
+    for (int word_i = 0; word_i < words.get_size(); ++word_i) {
+        for (int i = 0; i < DIM1; ++i) {
+            for (int j = 0; j < DIM2; ++j) {
+                findWordPaths(i, j, 0, words.get_word(word_i), word_i);  //qui dentro riempio passingWords e startingWords
+            }
+        }
     }
 
     //se una lettera rimane priva di link, dovrò sostituirla e ripetere il calcolo (TODO)
@@ -106,7 +94,7 @@ int main() {
     /***********************************************************************************
     // Converto tutto in JSON e scrivo il file
     ***********************************************************************************/
-    std::cout << "JSON finale:" << std::endl;
+    std::cout << "------------" << std::endl << "JSON FINALE:" << std::endl << std::endl << "grid:" << std::endl;
     // converto la griglia in JSON
     json grid_json = json::array();
     for (int i = 0; i < DIM1; ++i) {
@@ -129,16 +117,20 @@ int main() {
     }
 
     // Converti grid_links in JSON
+    std::cout << "wold links:" << std::endl;
     json grid_links_json = json::array();
     for (int i = 0; i < DIM1; ++i) {
         json json_row = json::array();
         for (int j = 0; j < DIM2; ++j) {
             json json_link = json::array();
-            int num_links = links_size[i][j]; // Ottieni la dimensione della terza dimensione per [i][j]
+            int num_links = passingWords[i][j].get_size(); // Ottieni il numero di collegamenti
             for (int k = 0; k < num_links; ++k) {
-                json_link.push_back(grid_links[i][j][k]);
+                int value = passingWords[i][j].get_value(k);
+                std::cout << value << " ";
+                json_link.push_back(value);
             }
             json_row.push_back(json_link);
+            std::cout << std::endl;
         }
         grid_links_json.push_back(json_row);
     }
@@ -159,17 +151,6 @@ int main() {
     } else {
         std::cerr << "Errore durante l'apertura del file!" << std::endl;
     }
-
-    // Deallocazione della memoria
-    for (int i = 0; i < DIM1; ++i) {
-        for (int j = 0; j < DIM2; ++j) {
-            delete[] grid_links[i][j]; // Dealloca la memoria della terza dimensione
-        }
-        delete[] grid_links[i]; // Dealloca la memoria della seconda dimensione
-        delete[] links_size[i]; // Dealloca la memoria delle dimensioni della terza dimensione
-    }
-    delete[] grid_links; // Dealloca la memoria della prima dimensione
-    delete[] links_size; // Dealloca la memoria delle dimensioni della terza dimensione
 
     return 0;
 }
