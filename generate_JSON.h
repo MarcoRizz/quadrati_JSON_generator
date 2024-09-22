@@ -3,7 +3,7 @@
 
 #include "WordList.h"
 #include "Dizionario.h"
-#include "DinArray.h"
+#include "DynArray.h"
 
 using String = std::string;
 
@@ -15,7 +15,7 @@ extern char grid[DIM1][DIM2];
 extern WordList words;
 extern Dizionario dizionario;
 
-extern std::vector<std::vector<DinArray>> passingWords;
-extern std::vector<std::vector<DinArray>> startingWords;
+extern std::vector<std::vector<DynArray>> passingWords;
+extern std::vector<std::vector<DynArray>> startingWords;
 
 #endif
