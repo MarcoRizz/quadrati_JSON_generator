@@ -55,15 +55,20 @@ void findPaths(int x, int y, int step, int path_size) {
 //IDENTIFICO I PERCORSI DI UNA PAROLA
 
 void returnFinalPath(int pathLength, int wordIndex) {
-    std::cout << wordIndex << "->found path" << std::endl;
+    bool nuovoPath = false;
     for (int i = 0; i < pathLength; ++i) {
-        std::cout << "{" << path[i].first << ", " << path[i].second << "}, ";
-        passingWords[path[i].first][path[i].second].add_value(wordIndex);
+        nuovoPath |= passingWords[path[i].first][path[i].second].add_value(wordIndex);
         if (i == 0) {
             startingWords[path[i].first][path[i].second].add_value(wordIndex);
         }
     }
-    std::cout << std::endl;
+    if (nuovoPath) {
+        std::cout << words.get_word(wordIndex) << " -> nuovo path: ";
+        for (int i = 0; i < pathLength; ++i) {
+            std::cout << "{" << path[i].first << ", " << path[i].second << "}, ";
+        }
+        std::cout << std::endl;
+    }
 }
 
 //cerca tutti i possibili percorsi di una specifica parola

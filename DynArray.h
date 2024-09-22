@@ -18,7 +18,7 @@ public:
     int get_size() const;
 
     // Aggiunge un elemento
-    void add_value(int value);
+    bool add_value(int value);
 
     // Fornisce un elemento
     int get_value(int index) const;

@@ -43,7 +43,7 @@ bool WordList::add_word(const String& word) {
     array[insert_pos] = word;
 
     // Aggiorna la dimensione dell'array
-    size++;
+    std::cout <<"Parola #" << size++ << ": " << word << std::endl;
     return true;
 }
 

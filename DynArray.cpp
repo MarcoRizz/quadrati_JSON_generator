@@ -10,12 +10,18 @@ int DynArray:: get_size() const {
     return static_cast<int>(array.size());
 }
 
-void DynArray::add_value(int value) {
-    // Se l'array non è vuoto e l'ultimo valore è uguale a 'value', non fare nulla
-    if (!array.empty() && array.back() == value) {
-        return;
+bool DynArray::add_value(int value) {
+    // Trova la posizione dove inserire 'value' mantenendo l'ordine crescente
+    auto pos = std::lower_bound(array.begin(), array.end(), value);
+
+    // Se il valore è già presente, non fare nulla
+    if (pos != array.end() && *pos == value) {
+        return false;
     }
-    array.push_back(value);
+
+    // Inserisce il valore nella posizione corretta
+    array.insert(pos, value);
+    return true;
 }
 
 int DynArray::get_value(int index) const {
