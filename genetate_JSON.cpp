@@ -8,6 +8,8 @@
 #include "libs/json.hpp"
 #include "findPath.h"
 
+#define SERIAL_NUMBER 1
+
 #define PATH_MAX_STEPS 10
 #define MAX_LOOPS 10
 
@@ -205,7 +207,9 @@ int main() {
     data["grid_startingLinks"] = grid_startingLinks_json;
 
     // Salvare il JSON in un file
-    std::ofstream file("output.json"); //da generare un nome basato sul giorno (TODO)
+    String json_name = "quadrati_" + std::to_string(SERIAL_NUMBER) + ".json";
+
+    std::ofstream file(json_name); //da generare un nome basato sul giorno (TODO)
     if (file.is_open()) {
         file << std::setw(2) << data << std::endl;  // Usa std::setw(2) per una formattazione leggibile
         file.close();
