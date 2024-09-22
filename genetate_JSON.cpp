@@ -4,11 +4,11 @@
 #include <ctime>    // Per time()
 #include <chrono>
 #include <string>
+#include <ctime>
+#include <cmath>  // Per std::difftime e std::abs
 #include "generate_JSON.h"
 #include "libs/json.hpp"
 #include "findPath.h"
-
-#define SERIAL_NUMBER 1
 
 //#define PATH_MAX_STEPS 15
 #define MAX_LOOPS 10
@@ -21,7 +21,21 @@ Dizionario dizionario;
 std::vector<std::vector<DynArray>> passingWords(DIM1, std::vector<DynArray>(DIM2, DynArray(words.get_size())));
 std::vector<std::vector<DynArray>> startingWords(DIM1, std::vector<DynArray>(DIM2, DynArray(words.get_size())));
 
+int calcolaDifferenzaGiorni(const std::tm& giorno1, const std::tm& giorno2);
+
 int main() {
+    // Giorno di lancio: 1 gennaio 2024
+    std::tm giornoDiLancioTm = {};
+    giornoDiLancioTm.tm_year = 2024 - 1900; // Anno (2024: 2024 - 1900)
+    giornoDiLancioTm.tm_mon = 9;            // Mese (gennaio: 0 in 0-based)
+    giornoDiLancioTm.tm_mday = 1;           // Giorno del mese
+
+    // Giorno X: 20 maggio 2024
+    std::tm giornoX = {};
+    giornoX.tm_year = 2024 - 1900; // Anno (2024: 2024 - 1900)
+    giornoX.tm_mon = 9;            // Mese (maggio: 4 in 0-based)
+    giornoX.tm_mday = 1;          // Giorno del mese
+
     // Inizializza il seme del generatore di numeri casuali
     auto timer_overall_start = std::chrono::high_resolution_clock::now();
     std::srand(std::time(0));
@@ -213,7 +227,7 @@ int main() {
     data["grid_startingLinks"] = grid_startingLinks_json;
 
     // Salvare il JSON in un file
-    String json_name = "quadrati_" + std::to_string(SERIAL_NUMBER) + ".json";
+    String json_name = "quadrati#" + std::to_string(calcolaDifferenzaGiorni(giornoDiLancioTm, giornoX) + 1) + ".json";
 
     std::ofstream file(json_name); //da generare un nome basato sul giorno (TODO)
     if (file.is_open()) {
@@ -231,3 +245,15 @@ int main() {
 /***********************************************************************************
 // FUNZIONI
 ***********************************************************************************/
+
+int calcolaDifferenzaGiorni(const std::tm& giorno1, const std::tm& giorno2) {
+    // Converti le strutture tm in time_t (secondi dal 1 gennaio 1970)
+    std::time_t time1 = std::mktime(const_cast<std::tm*>(&giorno1));
+    std::time_t time2 = std::mktime(const_cast<std::tm*>(&giorno2));
+
+    // Calcola la differenza in secondi e dividila per i secondi in un giorno
+    double diffInSeconds = std::difftime(time2, time1);
+    int diffInDays = std::abs(diffInSeconds / (60 * 60 * 24));  // Converti i secondi in giorni
+
+    return diffInDays;
+}
