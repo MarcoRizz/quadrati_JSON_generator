@@ -10,7 +10,7 @@
 
 #define SERIAL_NUMBER 1
 
-#define PATH_MAX_STEPS 10
+//#define PATH_MAX_STEPS 15
 #define MAX_LOOPS 10
 
 using json = nlohmann::json;
@@ -72,7 +72,13 @@ int main() {
         #ifdef PATH_MAX_STEPS
         std::cout << "Numero massimo di passi impostato: " << PATH_MAX_STEPS << std::endl;
         #endif
-        for (int path_size = 4; path_size <= /*DIM1 * DIM2*/PATH_MAX_STEPS; ++path_size) {
+        for (
+                #ifdef PATH_MAX_STEPS
+                    int path_size = 4;path_size <= PATH_MAX_STEPS; ++path_size
+                #else
+                    int path_size = 4;path_size <= DIM1 * DIM2; ++path_size
+                #endif
+            ) {
             for (int i = 0; i < DIM1; ++i) {
                 for (int j = 0; j < DIM2; ++j) {
                     findPaths(i, j, 0, path_size);  //qui dentro riempio words
