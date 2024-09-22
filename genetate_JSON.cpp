@@ -15,10 +15,8 @@ using json = nlohmann::json;
 char grid[DIM1][DIM2];
 WordList words;
 Dizionario dizionario;
-std::vector<std::vector<DinArray>> passingWords(DIM1, std::vector<DinArray>(DIM2, DinArray(words.get_size())));
-std::vector<std::vector<DinArray>> startingWords(DIM1, std::vector<DinArray>(DIM2, DinArray(words.get_size())));
-
-void add_element_to_ij(int*& array, int& size, int value);
+std::vector<std::vector<DynArray>> passingWords(DIM1, std::vector<DynArray>(DIM2, DynArray(words.get_size())));
+std::vector<std::vector<DynArray>> startingWords(DIM1, std::vector<DynArray>(DIM2, DynArray(words.get_size())));
 
 int main() {
     // Inizializza il seme del generatore di numeri casuali
@@ -34,10 +32,10 @@ int main() {
             grid[i][j] = 'a' + std::rand() % 26;  // Lettera casuale tra 'a' e 'z' (lavoro con lettere minuscole perché il dizionario usa solo minuscole. Converto in CAPS quando scrivo il JSON)
         }
     }
-
+    
     //stampo grid[][]
-    for (int i = 0; i < DIM1; ++i) {
-        for (int j = 0; j < DIM2; ++j) {
+    for (int j = 0; j < DIM2; ++j) {
+        for (int i = 0; i < DIM1; ++i) {
             std::cout << String(1, grid[i][j] + 'A' - 'a').c_str() << " ";
         }
         std::cout << std::endl;
@@ -73,18 +71,22 @@ int main() {
     std::cout << "Array WORDS creato, "<< words.get_size() << " valori - elapsed time: " << duration.count() << " ms" << std::endl;
 
     for (int i = 0; i < words.get_size(); ++i) {
-        std::cout <<"Parola #" << i + 1 << ": " << words.get_word(i) << std::endl;
+        std::cout <<"Parola #" << i << ": " << words.get_word(i) << std::endl;
     }
     
     /***********************************************************************************
     // CREAZIONE ARRAY-3D GRID_LINKS
     ***********************************************************************************/
-    //qui devo calcolare tutte le possibilità e calcolare quali parole possono passare da ciascuna lettera (TODO)
+    //qui devo calcolare tutte le possibilità e calcolare quali parole possono passare da ciascuna lettera (e quali possono iniziare)
 
     for (int word_i = 0; word_i < words.get_size(); ++word_i) {
+        String running_word = words.get_word(word_i);
+        std::cout << "Cerco: " << running_word << std::endl;
         for (int i = 0; i < DIM1; ++i) {
             for (int j = 0; j < DIM2; ++j) {
-                findWordPaths(i, j, 0, words.get_word(word_i), word_i);  //qui dentro riempio passingWords e startingWords
+                if(grid[i][j] == running_word[0]) {
+                    findWordPaths(i, j, 0, running_word, word_i);  //qui dentro riempio passingWords e startingWords
+                }
             }
         }
     }
@@ -101,10 +103,15 @@ int main() {
         json row = json::array();
         for (int j = 0; j < DIM2; ++j) {
             grid[i][j] += 'A' - 'a'; //trasforma in CAP letter
-            std::cout << grid[i][j] << " ";
             row.push_back(String(1, grid[i][j]));  // converto il char in stringa per il JSON
         }
         grid_json.push_back(row);
+    }
+    //stampo grid[][]
+    for (int j = 0; j < DIM2; ++j) {
+        for (int i = 0; i < DIM1; ++i) {
+            std::cout << grid[i][j] << " ";
+        }
         std::cout << std::endl;
     }
 
@@ -159,15 +166,3 @@ int main() {
 /***********************************************************************************
 // FUNZIONI
 ***********************************************************************************/
-
-// Funzione per aggiungere un nuovo elemento a un array dinamico (TEMP)
-void add_element_to_ij(int*& array, int& size, int value) {
-    // Realloca l'array se necessario
-    int new_size = size + 1;
-    int* new_array = new int[new_size];
-    std::memcpy(new_array, array, size * sizeof(int));
-    delete[] array;
-    array = new_array;
-    array[size] = value;
-    size = new_size;
-}
