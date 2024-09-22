@@ -25,14 +25,6 @@ int main() {
     auto timer_end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> duration = timer_end - timer_start;
     std::cout << "Elapsed time: " << duration.count() << " ms" << std::endl;
-    
-    /*// Inserimento di parole nel dizionario
-    dizionario.inserisciParola("cane");
-    dizionario.inserisciParola("casa");
-    dizionario.inserisciParola("caro");
-    dizionario.inserisciParola("care");
-    dizionario.inserisciParola("cat");
-    dizionario.inserisciParola("cane"); // Parola duplicata*/
 
     // Ricerca di parole
     String paroleDaCercare[] = {"cane", "casa", "caro", "care", "cat", "cate", "can"};

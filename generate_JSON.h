@@ -1,9 +1,9 @@
 #ifndef GENERATE_JSON_H
 #define GENERATE_JSON_H
 
-#include "WordList.h"
-#include "Dizionario.h"
-#include "DynArray.h"
+#include "Classes/WordList.h"
+#include "Classes/Dizionario.h"
+#include "Classes/DynArray.h"
 
 using String = std::string;
 

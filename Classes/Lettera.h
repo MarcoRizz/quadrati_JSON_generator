@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <unordered_map>
-#include "libs/json.hpp"
+#include "../libs/json.hpp"
 
 #define PERCORSO_TREE_DICTIONARY "dizionario.json"
 
