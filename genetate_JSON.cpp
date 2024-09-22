@@ -155,8 +155,8 @@ int main() {
     }
 
     // Converti grid_links in JSON
-    std::cout << std::endl << "words links:" << std::endl;
-    json grid_links_json = json::array();
+    std::cout << std::endl << "words passingLinks:" << std::endl;
+    json grid_passingLinks_json = json::array();
     for (int i = 0; i < DIM1; ++i) {
         json json_row = json::array();
         for (int j = 0; j < DIM2; ++j) {
@@ -172,7 +172,28 @@ int main() {
             json_row.push_back(json_link);
             std::cout << std::endl;
         }
-        grid_links_json.push_back(json_row);
+        grid_passingLinks_json.push_back(json_row);
+    }
+
+    // Converti grid_links in JSON
+    std::cout << std::endl << "words startingLinks:" << std::endl;
+    json grid_startingLinks_json = json::array();
+    for (int i = 0; i < DIM1; ++i) {
+        json json_row = json::array();
+        for (int j = 0; j < DIM2; ++j) {
+            json json_link = json::array();
+            int num_links = startingWords[i][j].get_size(); // Ottieni il numero di collegamenti
+
+            std::cout << "[" << i << "][" << j << "]: ";
+            for (int k = 0; k < num_links; ++k) {
+                int value = startingWords[i][j].get_value(k);
+                std::cout << value << " ";
+                json_link.push_back(value);
+            }
+            json_row.push_back(json_link);
+            std::cout << std::endl;
+        }
+        grid_startingLinks_json.push_back(json_row);
     }
 
 
@@ -180,7 +201,8 @@ int main() {
     json data;
     data["grid"] = grid_json;
     data["words"] = words_json;
-    data["grid_links"] = grid_links_json;
+    data["grid_passingLinks"] = grid_passingLinks_json;
+    data["grid_startingLinks"] = grid_startingLinks_json;
 
     // Salvare il JSON in un file
     std::ofstream file("output.json"); //da generare un nome basato sul giorno (TODO)
