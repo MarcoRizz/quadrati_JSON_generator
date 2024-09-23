@@ -188,8 +188,12 @@ int main() {
             int num_links = passingWords[i][j].get_size(); // Ottieni il numero di collegamenti
 
             std::cout << "[" << i << "][" << j << "]: ";
+            DynArray alphabetical_index;
             for (int k = 0; k < num_links; ++k) {
-                int value = words.get_alphabetical_index(passingWords[i][j].get_value(k));
+                alphabetical_index.add_value(words.get_alphabetical_index(passingWords[i][j].get_value(k)));
+            }
+            for (int k = 0; k < num_links; ++k) {
+                int value = alphabetical_index.get_value(k);
                 std::cout << value << " ";
                 json_link.push_back(value);
             }
