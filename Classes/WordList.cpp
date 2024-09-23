@@ -47,6 +47,19 @@ bool WordList::add_word(const String& word) {
     return true;
 }
 
+// Aggiunge una tessera di partenza alla parola con indice di inserimento insertIndex
+bool WordList::add_startingTile_by_insertion(const std::pair<int, int> startingTile, int insertIndex) {
+    if (insertIndex >= 0 && insertIndex < size) {
+        for (int i = 0; i < size; ++i) {
+            if (array[i].index == insertIndex) {
+                array[i].startingTile = startingTile;
+                return true;
+            }
+        }
+    }
+    return false; // O lancia un'eccezione se preferisci
+}
+
 // Restituisce la dimensione dell'array
 int WordList::get_size() const {
     return size;
@@ -70,6 +83,26 @@ String WordList::get_word_by_alphabetical(int index) const {
         return array[index].word; // Stessa logica di accesso
     }
     return ""; // O lancia un'eccezione se preferisci
+}
+
+// Restituisce la Tile di partenza in base all'ordine alfabetico
+std::pair<int, int> WordList::get_startingTile_by_alphabetical(int index) {
+    if (index >= 0 && index < size) {
+        return array[index].startingTile; // Stessa logica di accesso
+    }
+    return std::make_pair(-1, -1); // O lancia un'eccezione se preferisci
+}
+
+// Restituisce la Tile di partenza in base all'ordine di inserimento
+std::pair<int, int> WordList::get_startingTile_by_insertion(int index) {
+    if (index >= 0 && index < size) {
+        for (int i = 0; i < size; ++i) {
+            if (array[i].index == index) {
+                return array[i].startingTile;
+            }
+        }
+    }
+    return std::make_pair(-1, -1); // O lancia un'eccezione se preferisci
 }
 
 // Implementazione della funzione get_alphabetical_index

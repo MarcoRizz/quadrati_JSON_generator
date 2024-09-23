@@ -54,12 +54,12 @@ void findPaths(int x, int y, int step, int path_size) {
 //--------------------------------------------------------------------------------
 //IDENTIFICO I PERCORSI DI UNA PAROLA
 
-void returnFinalPath(int pathLength, int wordIndex) {
+void returnFinalPath(int pathLength, int wordIndex, std::pair<int, int>& startingtile) {
     bool nuovoPath = false;
     for (int i = 0; i < pathLength; ++i) { 
         nuovoPath |= passingWords[path[i].first][path[i].second].add_value(wordIndex);
-        if (i == 0 && startingWords.at(wordIndex) == std::make_pair(-1, -1)) {
-            startingWords.at(wordIndex) = path[i];
+        if (i == 0 && startingtile == std::make_pair(-1, -1)) {
+            startingtile = path[i];
         }
     }
     if (nuovoPath) {
@@ -68,23 +68,24 @@ void returnFinalPath(int pathLength, int wordIndex) {
             std::cout << "{" << path[i].first << ", " << path[i].second << "}, ";
         }
         std::cout << std::endl;
+        n_paths++;
     }
 }
 
 //cerca tutti i possibili percorsi di una specifica parola
-void findWordPaths(int x, int y, int step, String word, int wordIndex) {
+void findWordPaths(int x, int y, int step, String word, int wordIndex, std::pair<int, int>& startingtile) {
     path[step] = {x, y};
     visited[x][y] = true;
 
     // Se abbiamo raggiunto il numero di passi massimo, stampiamo il percorso
     if (step + 1 == word.size()) {
-        returnFinalPath(step + 1, wordIndex);
+        returnFinalPath(step + 1, wordIndex, startingtile);
     } else {
         for (int i = 0; i < DIRECTIONS_n; ++i) {
             int newX = x + directions[i].first;
             int newY = y + directions[i].second;
             if (isValid(newX, newY) && grid[newX][newY] == word[step + 1]) {
-                findWordPaths(newX, newY, step + 1, word, wordIndex);
+                findWordPaths(newX, newY, step + 1, word, wordIndex, startingtile);
             }
         }
     }

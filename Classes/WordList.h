@@ -9,14 +9,16 @@ using String = std::string;
 class WordList {
 private:
     struct WordEntry {
-        String word;  // Parola
-        int index;    // Indice di inserimento
+        String word;                      // Parola
+        int index;                        // Indice di inserimento
+        std::pair<int, int> startingTile; //casella di partenza
 
         // Costruttore
-        WordEntry(const String& w, int idx) : word(w), index(idx) {}
+        WordEntry(const String& w, int idx, std::pair<int, int> start) : word(w), index(idx), startingTile(start) {}
+        WordEntry(const String& w, int idx) : word(w), index(idx), startingTile(-1, -1) {}
 
         // Costruttore predefinito
-        WordEntry() : word(""), index(-1) {}
+        WordEntry() : word(""), index(-1), startingTile(-1, -1) {}
     };
 
     WordEntry* array;   // Array dinamico di parole
@@ -36,6 +38,9 @@ public:
     // Aggiunge una nuova parola in ordine alfabetico
     bool add_word(const String& word);
 
+    // Aggiunge una tessera di partenza alla parola con indice di inserimento insertIndex
+    bool add_startingTile_by_insertion(const std::pair<int, int> startingTile, int insertIndex);
+
     // Restituisce la dimensione dell'array
     int get_size() const;
 
@@ -44,6 +49,12 @@ public:
 
     // Restituisce la parola in base all'ordine alfabetico
     String get_word_by_alphabetical(int index) const;
+
+    // Restituisce la Tile di partenza in base all'ordine alfabetico
+    std::pair<int, int> get_startingTile_by_alphabetical(int index);
+
+    // Restituisce la Tile di partenza in base all'ordine di inserimento
+    std::pair<int, int> get_startingTile_by_insertion(int index);
 
     // Restituisce l'indice alfabetico dato l'indice di inserimento
     int get_alphabetical_index(int insertion_index) const;

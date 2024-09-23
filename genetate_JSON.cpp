@@ -19,7 +19,10 @@ char grid[DIM1][DIM2];
 WordList words;
 Dizionario dizionario;
 std::vector<std::vector<DynArray>> passingWords(DIM1, std::vector<DynArray>(DIM2, DynArray(words.get_size())));
-std::vector<std::pair<int, int>> startingWords;
+
+int n_words_old = 0;
+int n_paths_old = 0;
+int n_paths = 0;
 
 int calcolaDifferenzaGiorni(const std::tm& giorno1, const std::tm& giorno2);
 
@@ -102,27 +105,32 @@ int main() {
 
         timer_end = std::chrono::high_resolution_clock::now();
         duration = timer_end - timer_overall_start;
-        std::cout << "Array WORDS: "<< words.get_size() << " valori totali - elapsed time: " << duration.count() << " ms" << std::endl;
+        std::cout << "Array WORDS: "<< words.get_size() - n_words_old << " nuove parole - elapsed time: " << duration.count() << " ms" << std::endl;
+        n_words_old = words.get_size();
         
         /***********************************************************************************
         // CREAZIONE ARRAY-3D GRID_LINKS
         ***********************************************************************************/
         //qui devo calcolare tutte le possibilità e calcolare quali parole possono passare da ciascuna lettera (e quali possono iniziare)
 
-        startingWords.resize(words.get_size(), std::make_pair(-1, -1));
-
         for (int word_i = 0; word_i < words.get_size(); ++word_i) {
             String running_word = words.get_word_by_insertion(word_i);
+            std::pair<int, int> running_start = words.get_startingTile_by_insertion(word_i);
             for (int i = 0; i < DIM1; ++i) {
                 for (int j = 0; j < DIM2; ++j) {
                     if(grid[i][j] == running_word[0]) {
-                        findWordPaths(i, j, 0, running_word, word_i);  //qui dentro riempio passingWords e startingWords
+                        findWordPaths(i, j, 0, running_word, word_i, running_start);  //qui dentro riempio passingWords e startingWords
                     }
                 }
             }
+            words.add_startingTile_by_insertion(running_start, word_i);
         }
 
-        //se una lettera rimane priva di link, dovrò sostituirla e ripetere il calcolo (TODO)
+        timer_end = std::chrono::high_resolution_clock::now();
+        duration = timer_end - timer_overall_start;
+        std::cout << "Array PASSINGWORDS: "<< n_paths - n_paths_old << " nuovi percorsi - elapsed time: " << duration.count() << " ms" << std::endl;
+        n_paths_old = n_paths;
+        //se una lettera rimane priva di link, dovrò sostituirla e ripetere il calcolo
         completed_grid = true;
         for (int i = 0; i < DIM1; ++i) {
             for (int j = 0; j < DIM2; ++j) {
@@ -180,14 +188,14 @@ int main() {
 
     // Converti grid_links in JSON
     std::cout << std::endl << "words passingLinks:" << std::endl;
-    json grid_passingLinks_json = json::array();
+    json passingLinks_json = json::array();
     for (int i = 0; i < DIM1; ++i) {
         json json_row = json::array();
         for (int j = 0; j < DIM2; ++j) {
             json json_link = json::array();
             int num_links = passingWords[i][j].get_size(); // Ottieni il numero di collegamenti
 
-            std::cout << "[" << i << "][" << j << "]: ";
+            std::cout << "{" << i << ", " << j << "}: ";
             DynArray alphabetical_index;
             for (int k = 0; k < num_links; ++k) {
                 alphabetical_index.add_value(words.get_alphabetical_index(passingWords[i][j].get_value(k)));
@@ -200,18 +208,19 @@ int main() {
             json_row.push_back(json_link);
             std::cout << std::endl;
         }
-        grid_passingLinks_json.push_back(json_row);
+        passingLinks_json.push_back(json_row);
     }
 
     // Converti grid_links in JSON
     std::cout << std::endl << "words startingLinks:" << std::endl;
-    json grid_startingLinks_json = json::array();
+    json startingLinks_json = json::array();
     for (int i = 0; i < words.get_size(); ++i) {
         json json_pair = json::array();
-        std::cout << "#" << i << " -> {" << startingWords.at(i).first << ", " << startingWords.at(i).second << "}" << std::endl;
-        json_pair.push_back(startingWords.at(i).first);
-        json_pair.push_back(startingWords.at(i).second);
-        grid_startingLinks_json.push_back(json_pair);
+        std::pair<int, int> startingTile = words.get_startingTile_by_alphabetical(i);
+        std::cout << "#" << i << " -> {" << startingTile.first << ", " << startingTile.second << "}" << std::endl;
+        json_pair.push_back(startingTile.first);
+        json_pair.push_back(startingTile.second);
+        startingLinks_json.push_back(json_pair);
     }
 
 
@@ -219,8 +228,8 @@ int main() {
     json data;
     data["grid"] = grid_json;
     data["words"] = words_json;
-    data["grid_passingLinks"] = grid_passingLinks_json;
-    data["grid_startingLinks"] = grid_startingLinks_json;
+    data["passingLinks"] = passingLinks_json;
+    data["startingLinks"] = startingLinks_json;
 
     // Salvare il JSON in un file
     String json_name = "quadrati#" + std::to_string(calcolaDifferenzaGiorni(giornoDiLancioTm, giornoX) + 1) + ".json";

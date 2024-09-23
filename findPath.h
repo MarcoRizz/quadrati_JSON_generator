@@ -4,6 +4,6 @@
 using String = std::string;
 
 extern void findPaths(int x, int y, int step, int max_size);
-extern void findWordPaths(int x, int y, int step, String word, int wordIndex);
+extern void findWordPaths(int x, int y, int step, String word, int wordIndex, std::pair<int, int>& startingtile);
 
 #endif
