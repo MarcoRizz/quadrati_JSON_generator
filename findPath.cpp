@@ -56,14 +56,14 @@ void findPaths(int x, int y, int step, int path_size) {
 
 void returnFinalPath(int pathLength, int wordIndex) {
     bool nuovoPath = false;
-    for (int i = 0; i < pathLength; ++i) {
+    for (int i = 0; i < pathLength; ++i) { 
         nuovoPath |= passingWords[path[i].first][path[i].second].add_value(wordIndex);
-        if (i == 0) {
-            startingWords[path[i].first][path[i].second].add_value(wordIndex);
+        if (i == 0 && startingWords.at(wordIndex) == std::make_pair(-1, -1)) {
+            startingWords.at(wordIndex) = path[i];
         }
     }
     if (nuovoPath) {
-        std::cout << words.get_word(wordIndex) << " -> nuovo path: ";
+        std::cout << words.get_word_by_insertion(wordIndex) << " -> nuovo path: ";
         for (int i = 0; i < pathLength; ++i) {
             std::cout << "{" << path[i].first << ", " << path[i].second << "}, ";
         }

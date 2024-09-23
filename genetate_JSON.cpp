@@ -19,7 +19,7 @@ char grid[DIM1][DIM2];
 WordList words;
 Dizionario dizionario;
 std::vector<std::vector<DynArray>> passingWords(DIM1, std::vector<DynArray>(DIM2, DynArray(words.get_size())));
-std::vector<std::vector<DynArray>> startingWords(DIM1, std::vector<DynArray>(DIM2, DynArray(words.get_size())));
+std::vector<std::pair<int, int>> startingWords;
 
 int calcolaDifferenzaGiorni(const std::tm& giorno1, const std::tm& giorno2);
 
@@ -109,8 +109,10 @@ int main() {
         ***********************************************************************************/
         //qui devo calcolare tutte le possibilità e calcolare quali parole possono passare da ciascuna lettera (e quali possono iniziare)
 
+        startingWords.resize(words.get_size(), std::make_pair(-1, -1));
+
         for (int word_i = 0; word_i < words.get_size(); ++word_i) {
-            String running_word = words.get_word(word_i);
+            String running_word = words.get_word_by_insertion(word_i);
             for (int i = 0; i < DIM1; ++i) {
                 for (int j = 0; j < DIM2; ++j) {
                     if(grid[i][j] == running_word[0]) {
@@ -138,7 +140,7 @@ int main() {
     }
 
     if (loop == MAX_LOOPS) {
-        std::cerr << "Numero massimo di iterazioni raggiunto, non è stata trovata una griglia" << std::endl;
+        std::cerr << "Numero massimo di iterazioni raggiunto, griglia non trovata" << std::endl;
         return -1;
     } else {
         std::cout << "Loops: " << loop << std::endl;
@@ -170,7 +172,7 @@ int main() {
     // converto le parole in JSON
     json words_json = json::array();
     for (int i = 0; i < words.get_size(); ++i) {
-        String word_i = words.get_word(i);
+        String word_i = words.get_word_by_alphabetical(i);
         std::cout << "#" << i << ":" << word_i << std::endl;
         std::transform(word_i.begin(), word_i.end(), word_i.begin(), ::toupper); // Converte ogni carattere in maiuscolo
         words_json.push_back(word_i);
@@ -187,7 +189,7 @@ int main() {
 
             std::cout << "[" << i << "][" << j << "]: ";
             for (int k = 0; k < num_links; ++k) {
-                int value = passingWords[i][j].get_value(k);
+                int value = words.get_alphabetical_index(passingWords[i][j].get_value(k));
                 std::cout << value << " ";
                 json_link.push_back(value);
             }
@@ -200,22 +202,12 @@ int main() {
     // Converti grid_links in JSON
     std::cout << std::endl << "words startingLinks:" << std::endl;
     json grid_startingLinks_json = json::array();
-    for (int i = 0; i < DIM1; ++i) {
-        json json_row = json::array();
-        for (int j = 0; j < DIM2; ++j) {
-            json json_link = json::array();
-            int num_links = startingWords[i][j].get_size(); // Ottieni il numero di collegamenti
-
-            std::cout << "[" << i << "][" << j << "]: ";
-            for (int k = 0; k < num_links; ++k) {
-                int value = startingWords[i][j].get_value(k);
-                std::cout << value << " ";
-                json_link.push_back(value);
-            }
-            json_row.push_back(json_link);
-            std::cout << std::endl;
-        }
-        grid_startingLinks_json.push_back(json_row);
+    for (int i = 0; i < words.get_size(); ++i) {
+        json json_pair = json::array();
+        std::cout << "#" << i << " -> {" << startingWords.at(i).first << ", " << startingWords.at(i).second << "}" << std::endl;
+        json_pair.push_back(startingWords.at(i).first);
+        json_pair.push_back(startingWords.at(i).second);
+        grid_startingLinks_json.push_back(json_pair);
     }
 
 

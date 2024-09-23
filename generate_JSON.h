@@ -16,6 +16,6 @@ extern WordList words;
 extern Dizionario dizionario;
 
 extern std::vector<std::vector<DynArray>> passingWords;
-extern std::vector<std::vector<DynArray>> startingWords;
+extern std::vector<std::pair<int, int>> startingWords;
 
 #endif
