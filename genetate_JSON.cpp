@@ -225,14 +225,16 @@ int main() {
 
 
     // creo il contenuto JSON finale
+    int todaysNum = calcolaDifferenzaGiorni(giornoDiLancioTm, giornoX) + 1;
     json data;
+    data["todaysNum"] = todaysNum;
     data["grid"] = grid_json;
     data["words"] = words_json;
     data["passingLinks"] = passingLinks_json;
     data["startingLinks"] = startingLinks_json;
 
     // Salvare il JSON in un file
-    String json_name = "quadrati#" + std::to_string(calcolaDifferenzaGiorni(giornoDiLancioTm, giornoX) + 1) + ".json";
+    String json_name = "quadrati#" + std::to_string(todaysNum) + ".json";
 
     std::ofstream file(json_name); //da generare un nome basato sul giorno (TODO)
     if (file.is_open()) {
