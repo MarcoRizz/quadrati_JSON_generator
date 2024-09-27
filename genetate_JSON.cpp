@@ -30,8 +30,8 @@ int main() {
     // Giorno di lancio: 1 gennaio 2024
     std::tm giornoDiLancioTm = {};
     giornoDiLancioTm.tm_year = 2024 - 1900; // Anno (2024: 2024 - 1900)
-    giornoDiLancioTm.tm_mon = 9;            // Mese (gennaio: 0 in 0-based)
-    giornoDiLancioTm.tm_mday = 1;           // Giorno del mese
+    giornoDiLancioTm.tm_mon = 8;            // Mese (gennaio: 0 in 0-based)
+    giornoDiLancioTm.tm_mday = 26;           // Giorno del mese
 
     // Giorno X: 20 maggio 2024
     std::tm giornoX = {};
