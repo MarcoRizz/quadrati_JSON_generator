@@ -61,6 +61,9 @@ public:
     
     // Stampa tutte le parole nell'array
     void print() const;
+
+    //resetto l'oggetto
+    void clear();
 };
 
 #endif

@@ -37,7 +37,7 @@ int main() {
     std::tm giornoX = {};
     giornoX.tm_year = 2024 - 1900; // Anno (2024: 2024 - 1900)
     giornoX.tm_mon = 9;            // Mese (maggio: 4 in 0-based)
-    giornoX.tm_mday = 1;          // Giorno del mese
+    //giornoX.tm_mday = 3;          // Giorno del mese
 
     // Inizializza il seme del generatore di numeri casuali
     auto timer_overall_start = std::chrono::high_resolution_clock::now();
@@ -54,195 +54,209 @@ int main() {
     std::chrono::duration<double, std::milli> duration = timer_end - timer_overall_start;
     std::cout << "Dizionario caricato - elapsed time: " << duration.count() << " ms" << std::endl;
     
-    bool completed_grid = false;
-    int loop = 0;
+    for (giornoX.tm_mday = 25; giornoX.tm_mday < 32; ++giornoX.tm_mday) {
+        bool completed_grid = false;
+        int loop = 0;
 
-    while (!completed_grid  && loop < MAX_LOOPS) {
-        /***********************************************************************************
-        // CREAZIONE ARRAY-2D GRID
-        ***********************************************************************************/
-        // Popoliamo grid con lettere casuali
-        for (int i = 0; i < DIM1; ++i) {
-            for (int j = 0; j < DIM2; ++j) {
-                if (passingWords[i][j].get_size() == 0) {
-                    grid[i][j] = 'a' + std::rand() % 26;  // Lettera casuale tra 'a' e 'z' (lavoro con lettere minuscole perché il dizionario usa solo minuscole. Converto in CAPS quando scrivo il JSON)
-                }
-            }
-        }
-        
-        //stampo grid[][]
-        for (int j = 0; j < DIM2; ++j) {
-            for (int i = 0; i < DIM1; ++i) {
-                std::cout << String(1, grid[i][j] + 'A' - 'a').c_str() << " ";
-            }
-            std::cout << std::endl;
-        }
-        timer_end = std::chrono::high_resolution_clock::now();
-        duration = timer_end - timer_overall_start;
-        std::cout << "Array GRID creato - elapsed time: " << duration.count() << " ms" << std::endl;
-
-        /***********************************************************************************
-        // CREAZIONE ARRAY-1D WORDS
-        ***********************************************************************************/
-        //qui devo calcolare l'elenco di parole trovate all'interno della griglia
-
-        #ifdef PATH_MAX_STEPS
-        std::cout << "Numero massimo di passi impostato: " << PATH_MAX_STEPS << std::endl;
-        #endif
-        for (
-                #ifdef PATH_MAX_STEPS
-                    int path_size = 4;path_size <= PATH_MAX_STEPS; ++path_size
-                #else
-                    int path_size = 4;path_size <= DIM1 * DIM2; ++path_size
-                #endif
-            ) {
+        while (!completed_grid  && loop < MAX_LOOPS) {
+            /***********************************************************************************
+            // CREAZIONE ARRAY-2D GRID
+            ***********************************************************************************/
+            // Popoliamo grid con lettere casuali
             for (int i = 0; i < DIM1; ++i) {
                 for (int j = 0; j < DIM2; ++j) {
-                    findPaths(i, j, 0, path_size);  //qui dentro riempio words
-                }
-            }
-        }
-
-        timer_end = std::chrono::high_resolution_clock::now();
-        duration = timer_end - timer_overall_start;
-        std::cout << "Array WORDS: "<< words.get_size() - n_words_old << " nuove parole - elapsed time: " << duration.count() << " ms" << std::endl;
-        n_words_old = words.get_size();
-        
-        /***********************************************************************************
-        // CREAZIONE ARRAY-3D GRID_LINKS
-        ***********************************************************************************/
-        //qui devo calcolare tutte le possibilità e calcolare quali parole possono passare da ciascuna lettera (e quali possono iniziare)
-
-        for (int word_i = 0; word_i < words.get_size(); ++word_i) {
-            String running_word = words.get_word_by_insertion(word_i);
-            std::pair<int, int> running_start = words.get_startingTile_by_insertion(word_i);
-            for (int i = 0; i < DIM1; ++i) {
-                for (int j = 0; j < DIM2; ++j) {
-                    if(grid[i][j] == running_word[0]) {
-                        findWordPaths(i, j, 0, running_word, word_i, running_start);  //qui dentro riempio passingWords e startingWords
+                    if (passingWords[i][j].get_size() == 0) {
+                        grid[i][j] = 'a' + std::rand() % 26;  // Lettera casuale tra 'a' e 'z' (lavoro con lettere minuscole perché il dizionario usa solo minuscole. Converto in CAPS quando scrivo il JSON)
                     }
                 }
             }
-            words.add_startingTile_by_insertion(running_start, word_i);
-        }
-
-        timer_end = std::chrono::high_resolution_clock::now();
-        duration = timer_end - timer_overall_start;
-        std::cout << "Array PASSINGWORDS: "<< n_paths - n_paths_old << " nuovi percorsi - elapsed time: " << duration.count() << " ms" << std::endl;
-        n_paths_old = n_paths;
-        //se una lettera rimane priva di link, dovrò sostituirla e ripetere il calcolo
-        completed_grid = true;
-        for (int i = 0; i < DIM1; ++i) {
+            
+            //stampo grid[][]
             for (int j = 0; j < DIM2; ++j) {
-                if (passingWords[i][j].get_size() == 0) {
-                    completed_grid = false;
+                for (int i = 0; i < DIM1; ++i) {
+                    std::cout << String(1, grid[i][j] + 'A' - 'a').c_str() << " ";
+                }
+                std::cout << std::endl;
+            }
+            timer_end = std::chrono::high_resolution_clock::now();
+            duration = timer_end - timer_overall_start;
+            std::cout << "Array GRID creato - elapsed time: " << duration.count() << " ms" << std::endl;
+
+            /***********************************************************************************
+            // CREAZIONE ARRAY-1D WORDS
+            ***********************************************************************************/
+            //qui devo calcolare l'elenco di parole trovate all'interno della griglia
+
+            #ifdef PATH_MAX_STEPS
+            std::cout << "Numero massimo di passi impostato: " << PATH_MAX_STEPS << std::endl;
+            #endif
+            for (
+                    #ifdef PATH_MAX_STEPS
+                        int path_size = 4;path_size <= PATH_MAX_STEPS; ++path_size
+                    #else
+                        int path_size = 4;path_size <= DIM1 * DIM2; ++path_size
+                    #endif
+                ) {
+                for (int i = 0; i < DIM1; ++i) {
+                    for (int j = 0; j < DIM2; ++j) {
+                        findPaths(i, j, 0, path_size);  //qui dentro riempio words
+                    }
+                }
+            }
+
+            timer_end = std::chrono::high_resolution_clock::now();
+            duration = timer_end - timer_overall_start;
+            std::cout << "Array WORDS: "<< words.get_size() - n_words_old << " nuove parole - elapsed time: " << duration.count() << " ms" << std::endl;
+            n_words_old = words.get_size();
+            
+            /***********************************************************************************
+            // CREAZIONE ARRAY-3D GRID_LINKS
+            ***********************************************************************************/
+            //qui devo calcolare tutte le possibilità e calcolare quali parole possono passare da ciascuna lettera (e quali possono iniziare)
+
+            for (int word_i = 0; word_i < words.get_size(); ++word_i) {
+                String running_word = words.get_word_by_insertion(word_i);
+                std::pair<int, int> running_start = words.get_startingTile_by_insertion(word_i);
+                for (int i = 0; i < DIM1; ++i) {
+                    for (int j = 0; j < DIM2; ++j) {
+                        if(grid[i][j] == running_word[0]) {
+                            findWordPaths(i, j, 0, running_word, word_i, running_start);  //qui dentro riempio passingWords e startingWords
+                        }
+                    }
+                }
+                words.add_startingTile_by_insertion(running_start, word_i);
+            }
+
+            timer_end = std::chrono::high_resolution_clock::now();
+            duration = timer_end - timer_overall_start;
+            std::cout << "Array PASSINGWORDS: "<< n_paths - n_paths_old << " nuovi percorsi - elapsed time: " << duration.count() << " ms" << std::endl;
+            n_paths_old = n_paths;
+            //se una lettera rimane priva di link, dovrò sostituirla e ripetere il calcolo
+            completed_grid = true;
+            for (int i = 0; i < DIM1; ++i) {
+                for (int j = 0; j < DIM2; ++j) {
+                    if (passingWords[i][j].get_size() == 0) {
+                        completed_grid = false;
+                        break;
+                    }
+                }
+                if (!completed_grid) {
+                    std::cout << "Elaboro una nuova griglia sostituendo le lettere inutilizzate (iterazione " << loop + 1 << ")" << std::endl << std::endl;
                     break;
                 }
             }
-            if (!completed_grid) {
-                std::cout << "Elaboro una nuova griglia sostituendo le lettere inutilizzate (iterazione " << loop + 1 << ")" << std::endl << std::endl;
-                break;
-            }
+            loop++;
         }
-        loop++;
-    }
 
-    if (loop == MAX_LOOPS) {
-        std::cerr << "Numero massimo di iterazioni raggiunto, griglia non trovata" << std::endl;
-        return -1;
-    } else {
-        std::cout << "Loops: " << loop << std::endl;
-    }
-
-    /***********************************************************************************
-    // Converto tutto in JSON e scrivo il file
-    ***********************************************************************************/
-    std::cout << "------------" << std::endl << "JSON FINALE:" << std::endl << std::endl << "grid:" << std::endl;
-    // converto la griglia in JSON
-    json grid_json = json::array();
-    for (int i = 0; i < DIM1; ++i) {
-        json row = json::array();
-        for (int j = 0; j < DIM2; ++j) {
-            grid[i][j] += 'A' - 'a'; //trasforma in CAP letter
-            row.push_back(String(1, grid[i][j]));  // converto il char in stringa per il JSON
+        if (loop == MAX_LOOPS) {
+            std::cerr << "Numero massimo di iterazioni raggiunto, griglia non trovata" << std::endl;
+            //return -1;
+            continue;
+        } else {
+            std::cout << "Loops: " << loop << std::endl;
         }
-        grid_json.push_back(row);
-    }
-    //stampo grid[][]
-    for (int j = 0; j < DIM2; ++j) {
+
+        /***********************************************************************************
+        // Converto tutto in JSON e scrivo il file
+        ***********************************************************************************/
+        std::cout << "------------" << std::endl << "JSON FINALE:" << std::endl << std::endl << "grid:" << std::endl;
+        // converto la griglia in JSON
+        json grid_json = json::array();
         for (int i = 0; i < DIM1; ++i) {
-            std::cout << grid[i][j] << " ";
+            json row = json::array();
+            for (int j = 0; j < DIM2; ++j) {
+                grid[i][j] += 'A' - 'a'; //trasforma in CAP letter
+                row.push_back(String(1, grid[i][j]));  // converto il char in stringa per il JSON
+            }
+            grid_json.push_back(row);
         }
-        std::cout << std::endl;
-    }
-
-    std::cout << std::endl << "words:" << std::endl;
-    // converto le parole in JSON
-    json words_json = json::array();
-    for (int i = 0; i < words.get_size(); ++i) {
-        String word_i = words.get_word_by_alphabetical(i);
-        std::cout << "#" << i << ":" << word_i << std::endl;
-        std::transform(word_i.begin(), word_i.end(), word_i.begin(), ::toupper); // Converte ogni carattere in maiuscolo
-        words_json.push_back(word_i);
-    }
-
-    // Converti grid_links in JSON
-    std::cout << std::endl << "words passingLinks:" << std::endl;
-    json passingLinks_json = json::array();
-    for (int i = 0; i < DIM1; ++i) {
-        json json_row = json::array();
+        //stampo grid[][]
         for (int j = 0; j < DIM2; ++j) {
-            json json_link = json::array();
-            int num_links = passingWords[i][j].get_size(); // Ottieni il numero di collegamenti
-
-            std::cout << "{" << i << ", " << j << "}: ";
-            DynArray alphabetical_index;
-            for (int k = 0; k < num_links; ++k) {
-                alphabetical_index.add_value(words.get_alphabetical_index(passingWords[i][j].get_value(k)));
+            for (int i = 0; i < DIM1; ++i) {
+                std::cout << grid[i][j] << " ";
             }
-            for (int k = 0; k < num_links; ++k) {
-                int value = alphabetical_index.get_value(k);
-                std::cout << value << " ";
-                json_link.push_back(value);
-            }
-            json_row.push_back(json_link);
             std::cout << std::endl;
         }
-        passingLinks_json.push_back(json_row);
-    }
 
-    // Converti grid_links in JSON
-    std::cout << std::endl << "words startingLinks:" << std::endl;
-    json startingLinks_json = json::array();
-    for (int i = 0; i < words.get_size(); ++i) {
-        json json_pair = json::array();
-        std::pair<int, int> startingTile = words.get_startingTile_by_alphabetical(i);
-        std::cout << "#" << i << " -> {" << startingTile.first << ", " << startingTile.second << "}" << std::endl;
-        json_pair.push_back(startingTile.first);
-        json_pair.push_back(startingTile.second);
-        startingLinks_json.push_back(json_pair);
-    }
+        std::cout << std::endl << "words:" << std::endl;
+        // converto le parole in JSON
+        json words_json = json::array();
+        for (int i = 0; i < words.get_size(); ++i) {
+            String word_i = words.get_word_by_alphabetical(i);
+            std::cout << "#" << i << ":" << word_i << std::endl;
+            std::transform(word_i.begin(), word_i.end(), word_i.begin(), ::toupper); // Converte ogni carattere in maiuscolo
+            words_json.push_back(word_i);
+        }
+
+        // Converti grid_links in JSON
+        std::cout << std::endl << "words passingLinks:" << std::endl;
+        json passingLinks_json = json::array();
+        for (int i = 0; i < DIM1; ++i) {
+            json json_row = json::array();
+            for (int j = 0; j < DIM2; ++j) {
+                json json_link = json::array();
+                int num_links = passingWords[i][j].get_size(); // Ottieni il numero di collegamenti
+
+                std::cout << "{" << i << ", " << j << "}: ";
+                DynArray alphabetical_index;
+                for (int k = 0; k < num_links; ++k) {
+                    alphabetical_index.add_value(words.get_alphabetical_index(passingWords[i][j].get_value(k)));
+                }
+                for (int k = 0; k < num_links; ++k) {
+                    int value = alphabetical_index.get_value(k);
+                    std::cout << value << " ";
+                    json_link.push_back(value);
+                }
+                json_row.push_back(json_link);
+                std::cout << std::endl;
+            }
+            passingLinks_json.push_back(json_row);
+        }
+
+        // Converti grid_links in JSON
+        std::cout << std::endl << "words startingLinks:" << std::endl;
+        json startingLinks_json = json::array();
+        for (int i = 0; i < words.get_size(); ++i) {
+            json json_pair = json::array();
+            std::pair<int, int> startingTile = words.get_startingTile_by_alphabetical(i);
+            std::cout << "#" << i << " -> {" << startingTile.first << ", " << startingTile.second << "}" << std::endl;
+            json_pair.push_back(startingTile.first);
+            json_pair.push_back(startingTile.second);
+            startingLinks_json.push_back(json_pair);
+        }
 
 
-    // creo il contenuto JSON finale
-    int todaysNum = calcolaDifferenzaGiorni(giornoDiLancioTm, giornoX) + 1;
-    json data;
-    data["todaysNum"] = todaysNum;
-    data["grid"] = grid_json;
-    data["words"] = words_json;
-    data["passingLinks"] = passingLinks_json;
-    data["startingLinks"] = startingLinks_json;
+        // creo il contenuto JSON finale
+        int todaysNum = calcolaDifferenzaGiorni(giornoDiLancioTm, giornoX) + 1;
+        json data;
+        data["todaysNum"] = todaysNum;
+        data["grid"] = grid_json;
+        data["words"] = words_json;
+        data["passingLinks"] = passingLinks_json;
+        data["startingLinks"] = startingLinks_json;
 
-    // Salvare il JSON in un file
-    String json_name = "quadrati#" + std::to_string(todaysNum) + ".json";
+        // Salvare il JSON in un file
+        String json_name = "quadrati#" + std::to_string(todaysNum) + ".json";
 
-    std::ofstream file(json_name); //da generare un nome basato sul giorno (TODO)
-    if (file.is_open()) {
-        file << std::setw(2) << data << std::endl;  // Usa std::setw(2) per una formattazione leggibile
-        file.close();
-        std::cout << "File JSON generato correttamente!" << std::endl;
-    } else {
-        std::cerr << "Errore durante l'apertura del file!" << std::endl;
+        std::ofstream file(json_name);
+        if (file.is_open()) {
+            file << std::setw(2) << data << std::endl;  // Usa std::setw(2) per una formattazione leggibile
+            file.close();
+            std::cout << "File JSON #" + std::to_string(todaysNum) + "generato correttamente! (giorno " + std::asctime(&giornoX) + ")" << std::endl;
+        } else {
+            std::cerr << "Errore durante l'apertura del file!" << std::endl;
+        }
+
+        //riazzero le variabili ad ogni iterazione
+        words.clear();
+        passingWords.clear();
+        passingWords = std::vector<std::vector<DynArray>>(DIM1, std::vector<DynArray>(DIM2, DynArray(words.get_size())));
+        
+
+
+        n_words_old = 0;
+        n_paths_old = 0;
+        n_paths = 0;
     }
 
     return 0;

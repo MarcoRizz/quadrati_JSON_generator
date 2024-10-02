@@ -126,3 +126,12 @@ void WordList::print() const {
         std::cout << array[i].word << " (Indice di inserimento: " << array[i].index << ")\n";
     }
 }
+
+// svuoto l'oggetto
+void WordList::clear() {
+    delete[] array;
+    array = nullptr;
+    size = 0;
+    capacity = 100;
+    array = new WordEntry[capacity];
+}
