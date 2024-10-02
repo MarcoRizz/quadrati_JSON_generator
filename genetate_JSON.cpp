@@ -54,7 +54,11 @@ int main() {
     std::chrono::duration<double, std::milli> duration = timer_end - timer_overall_start;
     std::cout << "Dizionario caricato - elapsed time: " << duration.count() << " ms" << std::endl;
     
-    for (giornoX.tm_mday = 25; giornoX.tm_mday < 32; ++giornoX.tm_mday) {
+    for (giornoX.tm_mday = 16; giornoX.tm_mday < 17; ++giornoX.tm_mday) {
+        n_words_old = 0;
+        n_paths_old = 0;
+        n_paths = 0;
+
         bool completed_grid = false;
         int loop = 0;
 
@@ -150,7 +154,14 @@ int main() {
 
         if (loop == MAX_LOOPS) {
             std::cerr << "Numero massimo di iterazioni raggiunto, griglia non trovata" << std::endl;
-            //return -1;
+            
+            //riazzero le variabili ad ogni iterazione
+            words.clear();
+            passingWords.clear();
+            passingWords = std::vector<std::vector<DynArray>>(DIM1, std::vector<DynArray>(DIM2, DynArray(words.get_size())));
+
+            --giornoX.tm_mday;  //torno indietro per ripetere il giorno
+
             continue;
         } else {
             std::cout << "Loops: " << loop << std::endl;
@@ -251,12 +262,6 @@ int main() {
         words.clear();
         passingWords.clear();
         passingWords = std::vector<std::vector<DynArray>>(DIM1, std::vector<DynArray>(DIM2, DynArray(words.get_size())));
-        
-
-
-        n_words_old = 0;
-        n_paths_old = 0;
-        n_paths = 0;
     }
 
     return 0;
