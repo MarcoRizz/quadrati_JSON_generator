@@ -11,7 +11,7 @@ private:
     struct WordEntry {
         String word;                      // Parola
         int index;                        // Indice di inserimento
-        std::pair<int, int> startingTile; //casella di partenza
+        std::pair<int, int> startingTile; // Casella di partenza
 
         // Costruttore
         WordEntry(const String& w, int idx, std::pair<int, int> start) : word(w), index(idx), startingTile(start) {}

@@ -3,8 +3,14 @@
 
 void WordList::resize(int new_capacity) {
     WordEntry* new_array = new WordEntry[new_capacity];
-    std::memcpy(new_array, array, size * sizeof(WordEntry));
+    
+    // Usa std::copy per copiare gli oggetti in modo sicuro
+    std::copy(array, array + size, new_array);
+    
+    // Dealloca la vecchia memoria
     delete[] array;
+    
+    // Aggiorna array e capacity
     array = new_array;
     capacity = new_capacity;
 }

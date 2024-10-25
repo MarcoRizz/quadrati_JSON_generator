@@ -36,7 +36,7 @@ int main() {
     // Giorno X: 20 maggio 2024
     std::tm giornoX = {};
     giornoX.tm_year = 2024 - 1900; // Anno (2024: 2024 - 1900)
-    giornoX.tm_mon = 9;            // Mese (maggio: 4 in 0-based)
+    giornoX.tm_mon = 10;            // Mese (maggio: 4 in 0-based)
     //giornoX.tm_mday = 3;          // Giorno del mese
 
     // Inizializza il seme del generatore di numeri casuali
@@ -54,7 +54,7 @@ int main() {
     std::chrono::duration<double, std::milli> duration = timer_end - timer_overall_start;
     std::cout << "Dizionario caricato - elapsed time: " << duration.count() << " ms" << std::endl;
     
-    for (giornoX.tm_mday = 16; giornoX.tm_mday < 17; ++giornoX.tm_mday) {
+    for (giornoX.tm_mday = 1; giornoX.tm_mday < 31; ++giornoX.tm_mday) {
         n_words_old = 0;
         n_paths_old = 0;
         n_paths = 0;
@@ -253,7 +253,7 @@ int main() {
         if (file.is_open()) {
             file << std::setw(2) << data << std::endl;  // Usa std::setw(2) per una formattazione leggibile
             file.close();
-            std::cout << "File JSON #" + std::to_string(todaysNum) + "generato correttamente! (giorno " + std::asctime(&giornoX) + ")" << std::endl;
+            std::cout << "File JSON #" + std::to_string(todaysNum) + "generato correttamente --> giorno " + std::asctime(&giornoX) << std::endl;
         } else {
             std::cerr << "Errore durante l'apertura del file!" << std::endl;
         }
