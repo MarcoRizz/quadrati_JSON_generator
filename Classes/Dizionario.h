@@ -15,6 +15,9 @@ public:
     // Metodo per inserire una parola nel dizionario
     void inserisciParola(const String& parola);
 
+    // Metodo per rimuovere una parola dal dizionario
+    bool Dizionario::rimuoviParola(const String& parola);
+
     // Metodo per cercare una parola nel dizionario
     bool cercaParola(const String& parola) const;
 
@@ -28,6 +31,9 @@ public:
     bool caricaDaFileCompatto(const String& percorsoFile);
 
 private:
+    // Metodo ricorsivo per eliminare una parola
+    bool Dizionario::rimuoviParolaRicorsivo(Lettera* nodo, const String& parola, int indice);
+
     // Metodo ricorsivo per contare le parole
     int contaParoleRicorsivo(const Lettera* nodo) const;
 };

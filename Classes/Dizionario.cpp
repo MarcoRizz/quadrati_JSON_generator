@@ -10,6 +10,10 @@ void Dizionario::inserisciParola(const String& parola) {
     corrente->fineParola = true; // Contrassegna la fine della parola
 }
 
+bool Dizionario::rimuoviParola(const String& parola) {
+    return rimuoviParolaRicorsivo(radice.get(), parola, 0);
+}
+
 bool Dizionario::cercaParola(const String& parola) const {
     Lettera* corrente = radice.get();
     for (char c : parola) {
@@ -49,6 +53,34 @@ bool Dizionario::caricaDaFileCompatto(const String& percorsoFile) {
 
     radice = Lettera::from_json_compatto(j);
     return true;
+}
+
+bool Dizionario::rimuoviParolaRicorsivo(Lettera* nodo, const String& parola, int indice) {
+    if (indice == parola.size()) {
+        // Raggiunta la fine della parola
+        if (!nodo->fineParola) {
+            return false;  // La parola non esiste
+        }
+        nodo->fineParola = false;  // Deseleziona il flag di fine parola
+        return nodo->figli.empty();  // Ritorna true se questo nodo può essere rimosso
+    }
+
+    char c = parola[indice];
+    Lettera* figlio = nodo->getFiglio(c);
+    if (!figlio) {
+        return false;  // La parola non esiste
+    }
+
+    // Chiama ricorsivamente per rimuovere il nodo successivo
+    bool eliminaFiglio = rimuoviParolaRicorsivo(figlio, parola, indice + 1);
+
+    // Se il nodo successivo può essere rimosso, toglilo dalla mappa dei figli
+    if (eliminaFiglio) {
+        nodo->rimuoviFiglio(c);
+    }
+
+    // Ritorna true se il nodo attuale può essere rimosso
+    return nodo->figli.empty() && !nodo->fineParola;
 }
 
 int Dizionario::contaParoleRicorsivo(const Lettera* nodo) const {

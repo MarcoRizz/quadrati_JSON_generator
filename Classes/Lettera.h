@@ -22,6 +22,9 @@ public:
     // Metodo per aggiungere una lettera figlia
     Lettera* aggiungiFiglio(char c);
 
+    // Metodo per rimuovere una lettera figlia
+    bool Lettera::rimuoviFiglio(char c);
+
     // Metodo per ottenere un figlio
     Lettera* getFiglio(char c) const;
 

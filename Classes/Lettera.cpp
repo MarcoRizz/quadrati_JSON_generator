@@ -9,6 +9,15 @@ Lettera* Lettera::aggiungiFiglio(char c) {
     return figli[c].get();
 }
 
+bool Lettera::rimuoviFiglio(char c) {
+    auto it = figli.find(c);
+    if (it != figli.end()) {
+        figli.erase(it);
+        return true;  // Figlio trovato e rimosso
+    }
+    return false;  // Figlio non trovato
+}
+
 Lettera* Lettera::getFiglio(char c) const {
     auto it = figli.find(c);
     if (it != figli.end()) {
