@@ -44,7 +44,7 @@ int main() {
     std::srand(std::time(0));
 
     //apro il dizionario
-    String dictionary_path = (String)"tools\\" + PERCORSO_TREE_DICTIONARY;
+    String dictionary_path = (String)"tools\\Dizionari\\dizionario.json";
     
     if (!dizionario.caricaDaFileCompatto(dictionary_path)) {
         std::cout << "errore nell'apertura del file al percorso: " << dictionary_path << std::endl;

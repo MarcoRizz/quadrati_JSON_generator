@@ -4,6 +4,6 @@
 #include "../Classes/Dizionario.h"
 #include "../libs/json.hpp"
 
-#define PERCORSO_TREE_DICTIONARY "dizionario.json"
+#define PERCORSO_TREE_DICTIONARY "..\\Dizionari\\dizionario.json"
 
 #endif

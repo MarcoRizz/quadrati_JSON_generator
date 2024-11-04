@@ -5,8 +5,6 @@
 #include <unordered_map>
 #include "../libs/json.hpp"
 
-#define PERCORSO_TREE_DICTIONARY "dizionario.json"
-
 // Definizione dello spazio dei nomi per la libreria json
 using json = nlohmann::json;
 using String = std::string;
