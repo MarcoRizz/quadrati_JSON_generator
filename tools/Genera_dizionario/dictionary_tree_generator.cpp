@@ -1,30 +1,50 @@
+#include <codecvt>
+#include <locale>
+#include <string>
 #include "dictionary_tree_generator.h"
 
 //(TEMP)
-#define DICTIONARY_PATH ""
+#define DICTIONARY_PATH1 "..\\Dizionari\\dizionario_parole.txt"
+#define DICTIONARY_PATH2 "..\\Dizionari\\dizionario_coniugazioni.txt"
+
+std::vector<String> dictionaryPaths = {DICTIONARY_PATH1, DICTIONARY_PATH2}; // Aggiungi quanti file desideri
+String line;
+
+String rimuoviAccenti(const String& input);
 
 int main() {
     auto timer_start = std::chrono::high_resolution_clock::now();
+    auto timer_end = timer_start;
+    std::chrono::duration<double, std::milli> duration = timer_end - timer_start;
     Dizionario dizionario;
 
     //---------------------------------------------
     //sezione di creazione del dizionario
 
-    std::ifstream file(DICTIONARY_PATH);
-    String line;
-    // Verifica se il file è stato aperto correttamente
-    if (!file.is_open()) {
-        std::cout << "Errore nell'apertura del dizionario." << std::endl; // Errore apertura file
-        return 0;
-    }
+    // Itera su ogni percorso di file nel vettore
+    for (const auto& path : dictionaryPaths) {
+        std::ifstream file(path);
 
-    while (std::getline(file, line)) {
-        dizionario.inserisciParola(line);
+        // Verifica se il file è stato aperto correttamente
+        if (!file.is_open()) {
+            std::cout << "Errore nell'apertura del dizionario: " << path << std::endl;
+            continue; // Passa al file successivo
+        }
+
+        // Legge e inserisce le parole dal file corrente
+        while (std::getline(file, line)) {
+            std::string parolaPulita = rimuoviAccenti(line);
+            dizionario.inserisciParola(parolaPulita);
+        }
+
+        // Chiude il file al termine della lettura
+        file.close();
+
+        timer_end = std::chrono::high_resolution_clock::now();
+        duration = timer_end - timer_start;
+        std::cout << path << " added. Operation time: " << duration.count() << " ms" << std::endl;
+        timer_start = timer_end;
     }
-    
-    auto timer_end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double, std::milli> duration = timer_end - timer_start;
-    std::cout << "Elapsed time: " << duration.count() << " ms" << std::endl;
 
     // Ricerca di parole
     String paroleDaCercare[] = {"cane", "casa", "caro", "care", "cat", "cate", "can"};
@@ -76,4 +96,25 @@ int main() {
     std::cout << "\nNumero totale di parole nel nuovo dizionario: " << totaleParoleNuovo << std::endl;
 
     return 0;
+}
+
+
+// Mappa dei caratteri accentati e le corrispondenti vocali senza accento
+String rimuoviAccenti(const String& input) {
+    static const std::unordered_map<char, char> accenti{
+        {'à', 'a'}, {'è', 'e'}, {'é', 'e'}, {'ì', 'i'}, {'ò', 'o'}, {'ù', 'u'},
+        {'À', 'A'}, {'È', 'E'}, {'É', 'E'}, {'Ì', 'I'}, {'Ò', 'O'}, {'Ù', 'U'}
+    };
+
+    String output;
+    output.reserve(input.size()); // Prealloca la memoria
+
+    for (char c : input) {
+        if (accenti.count(c)) {
+            output += accenti.at(c); // Sostituisci se è accentato
+        } else if (c >= 0 && c < 128) {
+            output += c; // Aggiungi i caratteri ASCII non accentati
+        }
+    }
+    return output;
 }

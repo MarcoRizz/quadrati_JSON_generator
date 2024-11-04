@@ -17,7 +17,12 @@ using json = nlohmann::json;
 
 char grid[DIM1][DIM2];
 WordList words;
+WordList words_bonus;
 Dizionario dizionario;
+const String dictionary_path_json = (String)"tools\\Dizionari\\dizionario.json";
+std::ifstream dizionario_txt_accettate(DIZIONARIO_TXT_ACCETTATE_PATH);
+std::ifstream dizionario_txt_bonus(DIZIONARIO_TXT_BONUS_PATH);
+std::ifstream dizionario_txt_rifiutate(DIZIONARIO_TXT_RIFIUTATE_PATH);
 std::vector<std::vector<DynArray>> passingWords(DIM1, std::vector<DynArray>(DIM2, DynArray(words.get_size())));
 
 int n_words_old = 0;
@@ -44,17 +49,16 @@ int main() {
     std::srand(std::time(0));
 
     //apro il dizionario
-    String dictionary_path = (String)"tools\\Dizionari\\dizionario.json";
-    
-    if (!dizionario.caricaDaFileCompatto(dictionary_path)) {
-        std::cout << "errore nell'apertura del file al percorso: " << dictionary_path << std::endl;
+    if (!dizionario.caricaDaFileCompatto(dictionary_path_json)) {
+        std::cout << "errore nell'apertura del file al percorso: " << dictionary_path_json << std::endl;
         return -1;
     }
+
     auto timer_end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> duration = timer_end - timer_overall_start;
     std::cout << "Dizionario caricato - elapsed time: " << duration.count() << " ms" << std::endl;
     
-    for (giornoX.tm_mday = 1; giornoX.tm_mday < 31; ++giornoX.tm_mday) {
+    for (giornoX.tm_mday = 5; giornoX.tm_mday < 31; ++giornoX.tm_mday) {
         n_words_old = 0;
         n_paths_old = 0;
         n_paths = 0;
@@ -96,9 +100,9 @@ int main() {
             #endif
             for (
                     #ifdef PATH_MAX_STEPS
-                        int path_size = 4;path_size <= PATH_MAX_STEPS; ++path_size
+                        int path_size = 4; path_size <= PATH_MAX_STEPS; ++path_size
                     #else
-                        int path_size = 4;path_size <= DIM1 * DIM2; ++path_size
+                        int path_size = 4; path_size <= DIM1 * DIM2; ++path_size
                     #endif
                 ) {
                 for (int i = 0; i < DIM1; ++i) {
@@ -124,11 +128,11 @@ int main() {
                 for (int i = 0; i < DIM1; ++i) {
                     for (int j = 0; j < DIM2; ++j) {
                         if(grid[i][j] == running_word[0]) {
-                            findWordPaths(i, j, 0, running_word, word_i, running_start);  //qui dentro riempio passingWords e startingWords
+                            findWordPaths(i, j, 0, running_word, word_i, running_start);  //qui dentro riempio passingWords
                         }
                     }
                 }
-                words.add_startingTile_by_insertion(running_start, word_i);
+                words.add_startingTile_by_insertion(running_start, word_i); // e con questo completo words.startingTile
             }
 
             timer_end = std::chrono::high_resolution_clock::now();
@@ -190,7 +194,7 @@ int main() {
         }
 
         std::cout << std::endl << "words:" << std::endl;
-        // converto le parole in JSON
+        // Converto le parole in JSON
         json words_json = json::array();
         for (int i = 0; i < words.get_size(); ++i) {
             String word_i = words.get_word_by_alphabetical(i);
@@ -199,7 +203,7 @@ int main() {
             words_json.push_back(word_i);
         }
 
-        // Converti grid_links in JSON
+        // Converto passingWords in JSON
         std::cout << std::endl << "words passingLinks:" << std::endl;
         json passingLinks_json = json::array();
         for (int i = 0; i < DIM1; ++i) {
@@ -224,7 +228,7 @@ int main() {
             passingLinks_json.push_back(json_row);
         }
 
-        // Converti grid_links in JSON
+        // Converti startingLinks in JSON
         std::cout << std::endl << "words startingLinks:" << std::endl;
         json startingLinks_json = json::array();
         for (int i = 0; i < words.get_size(); ++i) {
@@ -236,6 +240,29 @@ int main() {
             startingLinks_json.push_back(json_pair);
         }
 
+        // Converto words_bonus in JSON
+        json words_bonus_json = json::array();
+        for (int i = 0; i < words_bonus.get_size(); ++i) {
+            String word_bonus_i = words_bonus.get_word_by_alphabetical(i);
+
+            bool in_grid = false;
+            for (int i = 0; i < DIM1; ++i) {
+                for (int j = 0; j < DIM2; ++j) {
+                    in_grid = is_still_in_grid(i, j, 0, word_bonus_i);
+                    if (in_grid) {
+                        break;
+                    }
+                }
+                if (in_grid) {
+                    break;
+                }
+            }
+            if (in_grid) {
+                std::cout << "#" << i << ":" << word_bonus_i << std::endl;
+                std::transform(word_bonus_i.begin(), word_bonus_i.end(), word_bonus_i.begin(), ::toupper); // Converte ogni carattere in maiuscolo
+                words_bonus_json.push_back(word_bonus_i);
+            }
+        }
 
         // creo il contenuto JSON finale
         int todaysNum = calcolaDifferenzaGiorni(giornoDiLancioTm, giornoX) + 1;
@@ -245,6 +272,7 @@ int main() {
         data["words"] = words_json;
         data["passingLinks"] = passingLinks_json;
         data["startingLinks"] = startingLinks_json;
+        data["bonus"] = words_bonus_json;
 
         // Salvare il JSON in un file
         String json_name = "quadrati#" + std::to_string(todaysNum) + ".json";

@@ -34,6 +34,11 @@ json Lettera::to_json_compatto() const {
         for (const auto& pair : figli) {
             char c = pair.first;
             const std::unique_ptr<Lettera>& figlio = pair.second;
+            // Verifica se 'c' è un carattere ASCII stampabile (da 32 a 126)
+            if (c < 32 || c > 126) {
+                std::cerr << "Carattere non valido per JSON: " << static_cast<int>(c) << std::endl;
+                // Puoi decidere di gestire questo caso diversamente se necessario
+            }
             figli_json[String(1, c)] = figlio->to_json_compatto();
         }
         j["c"] = figli_json;
