@@ -99,22 +99,32 @@ int main() {
 }
 
 
-// Mappa dei caratteri accentati e le corrispondenti vocali senza accento
-String rimuoviAccenti(const String& input) {
-    static const std::unordered_map<char, char> accenti{
-        {'à', 'a'}, {'è', 'e'}, {'é', 'e'}, {'ì', 'i'}, {'ò', 'o'}, {'ù', 'u'},
-        {'À', 'A'}, {'È', 'E'}, {'É', 'E'}, {'Ì', 'I'}, {'Ò', 'O'}, {'Ù', 'U'}
+// Mappa dei caratteri accentati e le corrispondenti vocali senza accento (con wchar_t)
+std::string rimuoviAccenti(const std::string& input) {
+    // Converti std::string in std::wstring
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+    std::wstring wide_input = converter.from_bytes(input);
+
+    // Definisci la mappa dei caratteri accentati
+    static const std::unordered_map<wchar_t, wchar_t> accenti{
+        //{'à', 'a'}, {'è', 'e'}, {'é', 'e'}, {'ì', 'i'}, {'ò', 'o'}, {'ù', 'u'},
+        //{'À', 'A'}, {'È', 'E'}, {'É', 'E'}, {'Ì', 'I'}, {'Ò', 'O'}, {'Ù', 'U'}
+        {L'\u00E0', L'a'}, {L'\u00E8', L'e'}, {L'\u00E9', L'e'}, {L'\u00EC', L'i'}, {L'\u00F2', L'o'}, {L'\u00F9', L'u'},
+        {L'\u00C0', L'A'}, {L'\u00C8', L'E'}, {L'\u00C9', L'E'}, {L'\u00CC', L'I'}, {L'\u00D2', L'O'}, {L'\u00D9', L'U'}
     };
 
-    String output;
-    output.reserve(input.size()); // Prealloca la memoria
+    std::wstring wide_output;
+    wide_output.reserve(wide_input.size()); // Prealloca la memoria
 
-    for (char c : input) {
+    for (wchar_t c : wide_input) {
         if (accenti.count(c)) {
-            output += accenti.at(c); // Sostituisci se è accentato
+            wide_output += accenti.at(c); // Sostituisci se è accentato
         } else if (c >= 0 && c < 128) {
-            output += c; // Aggiungi i caratteri ASCII non accentati
+            wide_output += c; // Aggiungi i caratteri ASCII non accentati
         }
     }
+
+    // Converti std::wstring in std::string
+    std::string output = converter.to_bytes(wide_output);
     return output;
 }

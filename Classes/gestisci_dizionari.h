@@ -10,9 +10,8 @@ enum class ParolaStatus {
     Sconosciuta
 };
 
-ParolaStatus ask_the_boss(const std::string& parola);
-bool contieneParola(std::ifstream& file, const std::string& parola);
-bool rimuoviParola(std::ifstream& file, const std::string& filePath, const std::string& parola);
-bool aggiungiParola(std::ifstream& file, const std::string& filePath, const std::string& parola);
+bool contieneParola(const std::string& filePath, const std::string& parola);
+bool rimuoviParola(const std::string& filePath, const std::string& parola);
+bool aggiungiParola(const std::string& filePath, const std::string& parola);
 
 #endif
