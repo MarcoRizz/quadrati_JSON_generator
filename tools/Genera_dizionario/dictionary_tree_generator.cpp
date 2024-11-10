@@ -28,7 +28,7 @@ int main() {
     // Verifica se il file è stato aperto correttamente
     if (!file.is_open()) {
         std::cout << "Errore nell'apertura del dizionario: " << path << std::endl;
-        return 1; // Passa al file successivo
+        return -1; // Passa al file successivo
     }
 
     // Legge e inserisce le parole dal file corrente
@@ -51,7 +51,7 @@ int main() {
     // Verifica se il file è stato aperto correttamente
     if (!file2.is_open()) {
         std::cout << "Errore nell'apertura del dizionario: " << path << std::endl;
-        return 1; // Passa al file successivo
+        return -1; // Passa al file successivo
     }
 
     // Legge e inserisce le parole dal file corrente

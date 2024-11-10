@@ -12,12 +12,13 @@ using json = nlohmann::json;
 
 // Enum per le etichette (bitmasking)
 enum Labels : uint32_t {
-    Nessuna          = 0,       // 00000
-    DizionarioComune = 1u << 0, // 00001
-    Coniugazioni     = 1u << 1, // 00010
-    BonusAntico      = 1u << 2, // 00100
-    BonusPoetico     = 1u << 3, // 01000
-    BonusStraniero   = 1u << 4  // 10000
+    Nessuna          = 0,       // 000000
+    DizionarioComune = 1u << 0, // 000001
+    Coniugazioni     = 1u << 1, // 000010
+    BonusAntico      = 1u << 2, // 000100
+    BonusPoetico     = 1u << 3, // 001000
+    BonusStraniero   = 1u << 4, // 010000
+    BonusNome        = 1u << 5  // 100000
 };
 
 // Definizione degli operatori di bitmask per Labels

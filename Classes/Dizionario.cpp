@@ -17,6 +17,14 @@ bool Dizionario::rimuoviParola(const std::string& parola) {
     return rimuoviParolaRicorsivo(radice.get(), parolaPulita, 0);
 }
 
+bool Dizionario::riscriviEtichettaParola(const std::string& parola, Labels etichette) {
+    if (rimuoviParola(parola)) {
+        inserisciParola(parola, etichette);
+        return true;
+    }
+    return false;
+}
+
 bool Dizionario::cercaParola(const std::string& parola, Labels etichetta, bool OR_tra_etichette) const {
     std::string parolaPulita = rimuoviAccenti(parola);
     Lettera* corrente = radice.get();

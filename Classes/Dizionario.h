@@ -18,6 +18,9 @@ public:
     // Metodo per rimuovere una parola dal dizionario
     bool rimuoviParola(const std::string& parola);
 
+    // Metodo per modificare l'etichetta di una parola
+    bool riscriviEtichettaParola(const std::string& parola, Labels etichette = Labels::Nessuna);
+
     // Metodo per cercare una parola nel dizionario (opzionalmente con etichetta)
     bool cercaParola(const std::string& parola, Labels etichetta = Labels::Nessuna, bool OR_tra_etichette = false) const;  //cercaParola("parola", Labels::BonusAntico | Labels::BonusPoetico) per filtrare in base alle etichette
 
