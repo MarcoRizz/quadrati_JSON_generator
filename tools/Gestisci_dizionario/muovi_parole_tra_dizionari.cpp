@@ -11,9 +11,7 @@
 #define DIZIONARIO_TXT_BONUS_PATH "tools\\Dizionari\\dizionario_parole_bonus.txt"
 #define DIZIONARIO_TXT_RIFIUTATE_PATH "tools\\Dizionari\\dizionario_parole_rifiutate.txt"
 
-using String = std::string;
-
-String rimuoviAccenti(const String& input);
+std::string rimuoviAccenti(const std::string& input);
 void ensureFileExists(const std::string& filePath);
 
 // Inizializzazione di un array di std::string

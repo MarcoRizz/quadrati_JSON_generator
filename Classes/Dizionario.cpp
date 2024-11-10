@@ -2,34 +2,47 @@
 
 Dizionario::Dizionario() : radice(std::make_unique<Lettera>()) {}
 
-void Dizionario::inserisciParola(const String& parola) {
+void Dizionario::inserisciParola(const std::string& parola, Labels etichette) {
+    std::string parolaPulita = rimuoviAccenti(parola);
     Lettera* corrente = radice.get();
-    for (char c : parola) {
+    for (char c : parolaPulita) {
         corrente = corrente->aggiungiFiglio(c);
     }
-    corrente->fineParola = true; // Contrassegna la fine della parola
+    corrente->fineParola = true;
+    corrente->etichette |= etichette; // Aggiunge le etichette specificate
 }
 
-bool Dizionario::rimuoviParola(const String& parola) {
-    return rimuoviParolaRicorsivo(radice.get(), parola, 0);
+bool Dizionario::rimuoviParola(const std::string& parola) {
+    std::string parolaPulita = rimuoviAccenti(parola);
+    return rimuoviParolaRicorsivo(radice.get(), parolaPulita, 0);
 }
 
-bool Dizionario::cercaParola(const String& parola) const {
+bool Dizionario::cercaParola(const std::string& parola, Labels etichetta, bool OR_tra_etichette) const {
+    std::string parolaPulita = rimuoviAccenti(parola);
     Lettera* corrente = radice.get();
-    for (char c : parola) {
+    for (char c : parolaPulita) {
         corrente = corrente->getFiglio(c);
         if (!corrente) {
             return false; // Lettera non trovata
         }
     }
-    return corrente->fineParola; // Verifica se è la fine di una parola
+
+    // Verifica se la parola esiste e se le etichette corrispondono
+    bool etichettaValida = (etichetta == Labels::Nessuna) || 
+                           (OR_tra_etichette ? (corrente->etichette & etichetta) : (corrente->etichette & etichetta) == etichetta);
+    
+    return corrente->fineParola && etichettaValida;
 }
 
 int Dizionario::contaParole() const {
     return contaParoleRicorsivo(radice.get());
 }
 
-bool Dizionario::salvaInFileCompatto(const String& percorsoFile) const {
+int Dizionario::contaParoleConEtichetta(Labels etichetta, bool OR_tra_etichette) const {
+    return contaParoleConEtichettaRicorsivo(radice.get(), etichetta, OR_tra_etichette);
+}
+
+bool Dizionario::salvaInFileCompatto(const std::string& percorsoFile) const {
     json j = radice->to_json_compatto();
     std::ofstream file(percorsoFile, std::ios::binary);
     if (!file.is_open()) {
@@ -41,7 +54,7 @@ bool Dizionario::salvaInFileCompatto(const String& percorsoFile) const {
     return true;
 }
 
-bool Dizionario::caricaDaFileCompatto(const String& percorsoFile) {
+bool Dizionario::caricaDaFileCompatto(const std::string& percorsoFile) {
     std::ifstream file(percorsoFile, std::ios::binary);
     if (!file.is_open()) {
         std::cerr << "Errore nell'aprire il file per la lettura: " << percorsoFile << std::endl;
@@ -55,31 +68,27 @@ bool Dizionario::caricaDaFileCompatto(const String& percorsoFile) {
     return true;
 }
 
-bool Dizionario::rimuoviParolaRicorsivo(Lettera* nodo, const String& parola, int indice) {
+bool Dizionario::rimuoviParolaRicorsivo(Lettera* nodo, const std::string& parola, int indice) {
     if (indice == parola.size()) {
-        // Raggiunta la fine della parola
         if (!nodo->fineParola) {
-            return false;  // La parola non esiste
+            return false;
         }
-        nodo->fineParola = false;  // Deseleziona il flag di fine parola
-        return nodo->figli.empty();  // Ritorna true se questo nodo può essere rimosso
+        nodo->fineParola = false;
+        return nodo->figli.empty();
     }
 
     char c = parola[indice];
     Lettera* figlio = nodo->getFiglio(c);
     if (!figlio) {
-        return false;  // La parola non esiste
+        return false;
     }
 
-    // Chiama ricorsivamente per rimuovere il nodo successivo
     bool eliminaFiglio = rimuoviParolaRicorsivo(figlio, parola, indice + 1);
 
-    // Se il nodo successivo può essere rimosso, toglilo dalla mappa dei figli
     if (eliminaFiglio) {
         nodo->rimuoviFiglio(c);
     }
 
-    // Ritorna true se il nodo attuale può essere rimosso
     return nodo->figli.empty() && !nodo->fineParola;
 }
 
@@ -90,4 +99,44 @@ int Dizionario::contaParoleRicorsivo(const Lettera* nodo) const {
         count += contaParoleRicorsivo(figlio.get());
     }
     return count;
+}
+
+int Dizionario::contaParoleConEtichettaRicorsivo(const Lettera* nodo, Labels etichetta, bool OR_tra_etichette) const {
+    bool etichettaValida = OR_tra_etichette ? (nodo->etichette & etichetta) : (nodo->etichette & etichetta) == etichetta;
+    int count = (nodo->fineParola && etichettaValida) ? 1 : 0;
+    for (const auto& pair : nodo->figli) {
+        const std::unique_ptr<Lettera>& figlio = pair.second;
+        count += contaParoleConEtichettaRicorsivo(figlio.get(), etichetta, OR_tra_etichette);
+    }
+    return count;
+}
+
+// Mappa dei caratteri accentati e le corrispondenti vocali senza accento (con wchar_t)
+std::string Dizionario::rimuoviAccenti(const std::string& input) const {
+    // Converti std::string in std::wstring
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+    std::wstring wide_input = converter.from_bytes(input);
+
+    // Definisci la mappa dei caratteri accentati
+    static const std::unordered_map<wchar_t, wchar_t> accenti{
+        //{'à', 'a'}, {'è', 'e'}, {'é', 'e'}, {'ì', 'i'}, {'ò', 'o'}, {'ù', 'u'},
+        //{'À', 'A'}, {'È', 'E'}, {'É', 'E'}, {'Ì', 'I'}, {'Ò', 'O'}, {'Ù', 'U'}
+        {L'\u00E0', L'a'}, {L'\u00E8', L'e'}, {L'\u00E9', L'e'}, {L'\u00EC', L'i'}, {L'\u00F2', L'o'}, {L'\u00F9', L'u'},
+        {L'\u00C0', L'A'}, {L'\u00C8', L'E'}, {L'\u00C9', L'E'}, {L'\u00CC', L'I'}, {L'\u00D2', L'O'}, {L'\u00D9', L'U'}
+    };
+
+    std::wstring wide_output;
+    wide_output.reserve(wide_input.size()); // Prealloca la memoria
+
+    for (wchar_t c : wide_input) {
+        if (accenti.count(c)) {
+            wide_output += accenti.at(c); // Sostituisci se è accentato
+        } else if (c >= 0 && c < 128) {
+            wide_output += c; // Aggiungi i caratteri ASCII non accentati
+        }
+    }
+
+    // Converti std::wstring in std::string
+    std::string output = converter.to_bytes(wide_output);
+    return output;
 }

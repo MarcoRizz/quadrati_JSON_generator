@@ -24,7 +24,7 @@ WordList::~WordList() {
     delete[] array;
 }
 
-bool WordList::add_word(const String& word) {
+bool WordList::add_word(const std::string& word) {
     // Trova la posizione in cui inserire la nuova parola
     int insert_pos = 0;
     while (insert_pos < size && array[insert_pos].word < word) {
@@ -72,7 +72,7 @@ int WordList::get_size() const {
 }
 
 // Restituisce la parola all'indice specificato (in base all'ordine di inserimento)
-String WordList::get_word_by_insertion(int index) const {
+std::string WordList::get_word_by_insertion(int index) const {
     if (index >= 0 && index < size) {
         for (int i = 0; i < size; ++i) {
             if (array[i].index == index) {
@@ -84,7 +84,7 @@ String WordList::get_word_by_insertion(int index) const {
 }
 
 // Restituisce la parola in base all'ordine alfabetico
-String WordList::get_word_by_alphabetical(int index) const {
+std::string WordList::get_word_by_alphabetical(int index) const {
     if (index >= 0 && index < size) {
         return array[index].word; // Stessa logica di accesso
     }

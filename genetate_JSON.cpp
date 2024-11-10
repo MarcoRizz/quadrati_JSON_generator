@@ -19,7 +19,7 @@ char grid[DIM1][DIM2];
 WordList words;
 WordList words_bonus;
 Dizionario dizionario;
-const String dictionary_path_json = (String)"tools\\Dizionari\\dizionario.json";
+const std::string dictionary_path_json = (std::string)"tools\\Dizionari\\dizionario.json";
 std::ifstream dizionario_txt_accettate(DIZIONARIO_TXT_ACCETTATE_PATH);
 std::ifstream dizionario_txt_bonus(DIZIONARIO_TXT_BONUS_PATH);
 std::ifstream dizionario_txt_rifiutate(DIZIONARIO_TXT_RIFIUTATE_PATH);
@@ -82,7 +82,7 @@ int main() {
             //stampo grid[][]
             for (int j = 0; j < DIM2; ++j) {
                 for (int i = 0; i < DIM1; ++i) {
-                    std::cout << String(1, grid[i][j] + 'A' - 'a').c_str() << " ";
+                    std::cout << std::string(1, grid[i][j] + 'A' - 'a').c_str() << " ";
                 }
                 std::cout << std::endl;
             }
@@ -123,7 +123,7 @@ int main() {
             //qui devo calcolare tutte le possibilità e calcolare quali parole possono passare da ciascuna lettera (e quali possono iniziare)
 
             for (int word_i = 0; word_i < words.get_size(); ++word_i) {
-                String running_word = words.get_word_by_insertion(word_i);
+                std::string running_word = words.get_word_by_insertion(word_i);
                 std::pair<int, int> running_start = words.get_startingTile_by_insertion(word_i);
                 for (int i = 0; i < DIM1; ++i) {
                     for (int j = 0; j < DIM2; ++j) {
@@ -181,7 +181,7 @@ int main() {
             json row = json::array();
             for (int j = 0; j < DIM2; ++j) {
                 grid[i][j] += 'A' - 'a'; //trasforma in CAP letter
-                row.push_back(String(1, grid[i][j]));  // converto il char in stringa per il JSON
+                row.push_back(std::string(1, grid[i][j]));  // converto il char in stringa per il JSON
             }
             grid_json.push_back(row);
         }
@@ -197,7 +197,7 @@ int main() {
         // Converto le parole in JSON
         json words_json = json::array();
         for (int i = 0; i < words.get_size(); ++i) {
-            String word_i = words.get_word_by_alphabetical(i);
+            std::string word_i = words.get_word_by_alphabetical(i);
             std::cout << "#" << i << ":" << word_i << std::endl;
             std::transform(word_i.begin(), word_i.end(), word_i.begin(), ::toupper); // Converte ogni carattere in maiuscolo
             words_json.push_back(word_i);
@@ -243,7 +243,7 @@ int main() {
         // Converto words_bonus in JSON
         json words_bonus_json = json::array();
         for (int i = 0; i < words_bonus.get_size(); ++i) {
-            String word_bonus_i = words_bonus.get_word_by_alphabetical(i);
+            std::string word_bonus_i = words_bonus.get_word_by_alphabetical(i);
 
             bool in_grid = false;
             for (int i = 0; i < DIM1; ++i) {
@@ -275,7 +275,7 @@ int main() {
         data["bonus"] = words_bonus_json;
 
         // Salvare il JSON in un file
-        String json_name = "quadrati#" + std::to_string(todaysNum) + ".json";
+        std::string json_name = "quadrati#" + std::to_string(todaysNum) + ".json";
 
         std::ofstream file(json_name);
         if (file.is_open()) {

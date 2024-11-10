@@ -23,7 +23,7 @@ bool isValid(int x, int y) {
 //ELABORO TUTTI I POSSIBILI PERCORSI NELLA GRIGLIA
 
 void returnFinalWord(int pathLength) {
-    String parola;
+    std::string parola;
     for (int i = 0; i < pathLength; ++i) {
         parola += grid[path[i].first][path[i].second];
     }
@@ -91,7 +91,7 @@ void returnFinalPath(int pathLength, int wordIndex, std::pair<int, int>& startin
 }
 
 //cerca tutti i possibili percorsi di una specifica parola
-void findWordPaths(int x, int y, int step, String word, int wordIndex, std::pair<int, int>& startingtile) {
+void findWordPaths(int x, int y, int step, std::string word, int wordIndex, std::pair<int, int>& startingtile) {
     path[step] = {x, y};
     visited[x][y] = true;
 
@@ -117,7 +117,7 @@ void findWordPaths(int x, int y, int step, String word, int wordIndex, std::pair
 //VALUTO SE LA PAROLA È ANCORA NELLA GRIGLIA
 
 // Cerca il primo percorso possibile per una specifica parola
-bool is_still_in_grid(int x, int y, int step, const String& word) {
+bool is_still_in_grid(int x, int y, int step, const std::string& word) {
     // Segna la posizione attuale
     path[step] = {x, y};
     

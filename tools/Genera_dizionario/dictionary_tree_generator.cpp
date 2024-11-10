@@ -7,10 +7,10 @@
 #define DICTIONARY_PATH1 "..\\Dizionari\\dizionario_parole.txt"
 #define DICTIONARY_PATH2 "..\\Dizionari\\dizionario_coniugazioni.txt"
 
-std::vector<String> dictionaryPaths = {DICTIONARY_PATH1, DICTIONARY_PATH2}; // Aggiungi quanti file desideri
-String line;
+std::vector<std::string> dictionaryPaths = {DICTIONARY_PATH1, DICTIONARY_PATH2}; // Aggiungi quanti file desideri
+std::string line;
 
-String rimuoviAccenti(const String& input);
+std::string rimuoviAccenti(const std::string& input);
 
 int main() {
     auto timer_start = std::chrono::high_resolution_clock::now();
@@ -21,33 +21,57 @@ int main() {
     //---------------------------------------------
     //sezione di creazione del dizionario
 
-    // Itera su ogni percorso di file nel vettore
-    for (const auto& path : dictionaryPaths) {
-        std::ifstream file(path);
+    // INSERISCO DIZIONARIO COMUNE
+    std::string path = dictionaryPaths[0];
+    std::ifstream file(path);
 
-        // Verifica se il file è stato aperto correttamente
-        if (!file.is_open()) {
-            std::cout << "Errore nell'apertura del dizionario: " << path << std::endl;
-            continue; // Passa al file successivo
-        }
-
-        // Legge e inserisce le parole dal file corrente
-        while (std::getline(file, line)) {
-            std::string parolaPulita = rimuoviAccenti(line);
-            dizionario.inserisciParola(parolaPulita);
-        }
-
-        // Chiude il file al termine della lettura
-        file.close();
-
-        timer_end = std::chrono::high_resolution_clock::now();
-        duration = timer_end - timer_start;
-        std::cout << path << " added. Operation time: " << duration.count() << " ms" << std::endl;
-        timer_start = timer_end;
+    // Verifica se il file è stato aperto correttamente
+    if (!file.is_open()) {
+        std::cout << "Errore nell'apertura del dizionario: " << path << std::endl;
+        return 1; // Passa al file successivo
     }
 
+    // Legge e inserisce le parole dal file corrente
+    while (std::getline(file, line)) {
+        dizionario.inserisciParola(line, Labels::DizionarioComune);
+    }
+
+    // Chiude il file al termine della lettura
+    file.close();
+
+    timer_end = std::chrono::high_resolution_clock::now();
+    duration = timer_end - timer_start;
+    std::cout << path << " added. Operation time: " << duration.count() << " ms" << std::endl;
+    timer_start = timer_end;
+
+    // INSERISCO CONIUGAZIONI
+    path = dictionaryPaths[1];
+    std::ifstream file2(path);
+
+    // Verifica se il file è stato aperto correttamente
+    if (!file2.is_open()) {
+        std::cout << "Errore nell'apertura del dizionario: " << path << std::endl;
+        return 1; // Passa al file successivo
+    }
+
+    // Legge e inserisce le parole dal file corrente
+    while (std::getline(file2, line)) {
+        dizionario.inserisciParola(line, Labels::Coniugazioni);
+    }
+
+    // Chiude il file al termine della lettura
+    file2.close();
+
+    timer_end = std::chrono::high_resolution_clock::now();
+    duration = timer_end - timer_start;
+    std::cout << path << " added. Operation time: " << duration.count() << " ms" << std::endl;
+    timer_start = timer_end;
+
+    //---------------------------------------------
+    //sezione di check del dizionario
+
     // Ricerca di parole
-    String paroleDaCercare[] = {"cane", "casa", "caro", "care", "cat", "cate", "can"};
+    std::string paroleDaCercare[] = {"cane", "casa", "caro", "care", "cat", "cate", "can"};
     for (const auto& parola : paroleDaCercare) {
         if (dizionario.cercaParola(parola)) {
             std::cout << "La parola \"" << parola << "\" esiste nel dizionario." << std::endl;
@@ -96,35 +120,4 @@ int main() {
     std::cout << "\nNumero totale di parole nel nuovo dizionario: " << totaleParoleNuovo << std::endl;
 
     return 0;
-}
-
-
-// Mappa dei caratteri accentati e le corrispondenti vocali senza accento (con wchar_t)
-std::string rimuoviAccenti(const std::string& input) {
-    // Converti std::string in std::wstring
-    std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
-    std::wstring wide_input = converter.from_bytes(input);
-
-    // Definisci la mappa dei caratteri accentati
-    static const std::unordered_map<wchar_t, wchar_t> accenti{
-        //{'à', 'a'}, {'è', 'e'}, {'é', 'e'}, {'ì', 'i'}, {'ò', 'o'}, {'ù', 'u'},
-        //{'À', 'A'}, {'È', 'E'}, {'É', 'E'}, {'Ì', 'I'}, {'Ò', 'O'}, {'Ù', 'U'}
-        {L'\u00E0', L'a'}, {L'\u00E8', L'e'}, {L'\u00E9', L'e'}, {L'\u00EC', L'i'}, {L'\u00F2', L'o'}, {L'\u00F9', L'u'},
-        {L'\u00C0', L'A'}, {L'\u00C8', L'E'}, {L'\u00C9', L'E'}, {L'\u00CC', L'I'}, {L'\u00D2', L'O'}, {L'\u00D9', L'U'}
-    };
-
-    std::wstring wide_output;
-    wide_output.reserve(wide_input.size()); // Prealloca la memoria
-
-    for (wchar_t c : wide_input) {
-        if (accenti.count(c)) {
-            wide_output += accenti.at(c); // Sostituisci se è accentato
-        } else if (c >= 0 && c < 128) {
-            wide_output += c; // Aggiungi i caratteri ASCII non accentati
-        }
-    }
-
-    // Converti std::wstring in std::string
-    std::string output = converter.to_bytes(wide_output);
-    return output;
 }

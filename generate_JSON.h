@@ -5,12 +5,6 @@
 #include "Classes/Dizionario.h"
 #include "Classes/DynArray.h"
 
-using String = std::string;
-
-#define DIZIONARIO_TXT_ACCETTATE_PATH "tools\\Dizionari\\dizionario_parole_accettate.txt"
-#define DIZIONARIO_TXT_BONUS_PATH "tools\\Dizionari\\dizionario_parole_bonus.txt"
-#define DIZIONARIO_TXT_RIFIUTATE_PATH "tools\\Dizionari\\dizionario_parole_rifiutate.txt"
-
 const int DIM1 = 4;
 const int DIM2 = 4;
 const int MAX_LENGTH = 16; // Lunghezza massima delle parole
