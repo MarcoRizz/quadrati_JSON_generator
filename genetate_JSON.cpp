@@ -160,6 +160,7 @@ int main() {
             words.clear();
             passingWords.clear();
             passingWords = std::vector<std::vector<DynArray>>(DIM1, std::vector<DynArray>(DIM2, DynArray(words.get_size())));
+            words_bonus.clear();
 
             --giornoX.tm_mday;  //torno indietro per ripetere il giorno
 
@@ -177,8 +178,7 @@ int main() {
         for (int i = 0; i < DIM1; ++i) {
             json row = json::array();
             for (int j = 0; j < DIM2; ++j) {
-                grid[i][j] += 'A' - 'a'; //trasforma in CAP letter
-                row.push_back(std::string(1, grid[i][j]));  // converto il char in stringa per il JSON
+                row.push_back(std::string(1, grid[i][j] + 'A' - 'a'));  // converto il char in stringa per il JSON (trasformando in CAP letter)
             }
             grid_json.push_back(row);
         }
@@ -254,6 +254,7 @@ int main() {
                     break;
                 }
             }
+            std::cout << "in_grid: " << in_grid << std::endl;
             if (in_grid) {
                 std::cout << "#" << i << ":" << word_bonus_i << std::endl;
                 std::transform(word_bonus_i.begin(), word_bonus_i.end(), word_bonus_i.begin(), ::toupper); // Converte ogni carattere in maiuscolo

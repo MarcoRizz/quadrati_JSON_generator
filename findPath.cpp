@@ -63,7 +63,7 @@ void findPaths(int x, int y, int step, int path_size) {
     if (step + 1 == path_size) {
         returnFinalWord(step + 1);
     } else {
-        for (int i = 0; i < 8; ++i) {
+        for (int i = 0; i < DIRECTIONS_n; ++i) {
             int newX = x + directions[i].first;
             int newY = y + directions[i].second;
             if (isValid(newX, newY)) {
