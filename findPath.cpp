@@ -162,10 +162,10 @@ bool is_still_in_grid(int x, int y, int step, const std::string& word) {
 
 ParolaStatus consulta_dizionario(const std::string& parola) {
     
-    if (dizionario.cercaParolaConEtichetta(parola, Labels::Approvate)) {
+    if (dizionario.cercaParola(parola, Labels::Approvate)) {
         return ParolaStatus::Accettata;
     }
-    if (dizionario.cercaParolaConEtichetta(parola, Labels::BonusRaro | Labels::BonusNome | Labels::BonusStraniero, true))
+    if (dizionario.cercaParola(parola, Labels::BonusRaro | Labels::BonusNome | Labels::BonusStraniero, true))
     {
         return ParolaStatus::Bonus;
     }
@@ -177,7 +177,7 @@ ParolaStatus ask_the_boss(const std::string& parola) {
     char input;
 
     while (true) {
-        std::cout << "Inserisci il comando per la parola: " << parola << "\nDizionarioComune: " << dizionario.cercaParolaConEtichetta(parola, Labels::DizionarioComune) << "; Coniugazione: " << dizionario.cercaParolaConEtichetta(parola, Labels::Coniugazioni) << std::endl;
+        std::cout << "Inserisci il comando per la parola: " << parola << "\nDizionarioComune: " << dizionario.cercaParola(parola, Labels::DizionarioComune) << "; Coniugazione: " << dizionario.cercaParola(parola, Labels::Coniugazioni) << std::endl;
         std::cout << "(a: accettata, z: BonusRaro, x: BonusNome, c: BonusStraniero, n: rifiutata, s: cerca su Google): ";
         std::cin >> input;
 
@@ -209,7 +209,7 @@ ParolaStatus ask_the_boss(const std::string& parola) {
             case 's': {
                 // Definisce l'URL e apre la pagina web
                 std::string url;
-                if (dizionario.cercaParolaConEtichetta(parola, Labels::DizionarioComune)) {
+                if (dizionario.cercaParola(parola, Labels::DizionarioComune)) {
                     url = "https://www.google.com/search?q=" + parola + "+vocabolario";
                 }
                 else {

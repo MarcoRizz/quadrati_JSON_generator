@@ -42,12 +42,13 @@ int main() {
 
         //LEGGI ETICHETTE
         std::cout << parola << ":" << std::endl;
-        std::cout << "DizionarioComune: " << dizionario.cercaParolaConEtichetta(parola, Labels::DizionarioComune) << std::endl;
-        std::cout << "Coniugazioni: " << dizionario.cercaParolaConEtichetta(parola, Labels::Coniugazioni) << std::endl;
-        std::cout << "Approvate: " << dizionario.cercaParolaConEtichetta(parola, Labels::Approvate) << std::endl;
-        std::cout << "BonusNome: " << dizionario.cercaParolaConEtichetta(parola, Labels::BonusNome) << std::endl;
-        std::cout << "BonusRaro: " << dizionario.cercaParolaConEtichetta(parola, Labels::BonusRaro) << std::endl;
-        std::cout << "BonusStraniero: " << dizionario.cercaParolaConEtichetta(parola, Labels::BonusStraniero) << std::endl;
+        std::cout << "Senza etichette: " << dizionario.cercaParola(parola) << std::endl;
+        std::cout << "DizionarioComune: " << dizionario.cercaParola(parola, Labels::DizionarioComune) << std::endl;
+        std::cout << "Coniugazioni: " << dizionario.cercaParola(parola, Labels::Coniugazioni) << std::endl;
+        std::cout << "Approvate: " << dizionario.cercaParola(parola, Labels::Approvate) << std::endl;
+        std::cout << "BonusNome: " << dizionario.cercaParola(parola, Labels::BonusNome) << std::endl;
+        std::cout << "BonusRaro: " << dizionario.cercaParola(parola, Labels::BonusRaro) << std::endl;
+        std::cout << "BonusStraniero: " << dizionario.cercaParola(parola, Labels::BonusStraniero) << std::endl;
     }
 
     dizionario.salvaInFileCompatto(PERCORSO_TREE_DICTIONARY);

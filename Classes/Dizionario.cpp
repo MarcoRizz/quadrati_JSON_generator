@@ -36,24 +36,9 @@ bool Dizionario::cercaParola(const std::string& parola, Labels etichetta, bool O
     }
 
     // Verifica se la parola esiste e se le etichette corrispondono
-    bool etichettaValida = (etichetta == Labels::Nessuna) || 
-                           (OR_tra_etichette ? (corrente->etichette & etichetta) : (corrente->etichette & etichetta) == etichetta);
+    bool etichettaValida = OR_tra_etichette ? (corrente->etichette & etichetta) : (corrente->etichette & etichetta) == etichetta;
     
     return corrente->fineParola && etichettaValida;
-}
-
-bool Dizionario::cercaParolaConEtichetta(const std::string& parola, Labels etichetta, bool OR_tra_etichette) const {
-    std::string parolaPulita = rimuoviAccenti(parola);
-    Lettera* corrente = radice.get();
-    for (char c : parolaPulita) {
-        corrente = corrente->getFiglio(c);
-        if (!corrente) {
-            return false; // Lettera non trovata
-        }
-    }
-
-    // Verifica se la parola esiste e se le etichette corrispondono
-    return OR_tra_etichette ? (corrente->etichette & etichetta) : (corrente->etichette & etichetta) == etichetta;
 }
 
 int Dizionario::contaParole() const {
