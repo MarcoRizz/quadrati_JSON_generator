@@ -289,12 +289,28 @@ int main() {
         passingWords = std::vector<std::vector<DynArray>>(DIM1, std::vector<DynArray>(DIM2, DynArray(words.get_size())));
     }
 
-    if (!dizionario.salvaInFileCompatto(dictionary_path_json)) {
-        std::cout << "errore nel salvataggio del dizionario al percorso: " << dictionary_path_json << std::endl;
-        return -1;
-    }
+    // chiedo se salvare le modifiche al dizionario
+    char input;
+    while (true) {
+        std::cout << "Salvare le modifiche del dizionario? S/N" << std::endl;
+        std::cin >> input;
 
-    return 0;
+        switch (input) {
+            case 'S':
+                if (!dizionario.salvaInFileCompatto(dictionary_path_json)) {
+                    std::cout << "errore nel salvataggio del dizionario al percorso: " << dictionary_path_json << std::endl;
+                    return -1;
+                }
+                return 0;
+
+            case 'N':
+                return 0;
+
+            default:
+                std::cout << "Comando non valido. Riprova.\n";
+                break;
+        }
+    }
 }
 
 

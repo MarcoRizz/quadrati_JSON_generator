@@ -177,7 +177,7 @@ ParolaStatus ask_the_boss(const std::string& parola) {
     char input;
 
     while (true) {
-        std::cout << "Inserisci il comando per la parola: " << parola << "\nDizionarioComune: " << dizionario.cercaParolaConEtichetta(parola, Labels::DizionarioComune) << "; Coniugazione: " << dizionario.cercaParolaConEtichetta(parola, Labels::Coniugazioni);
+        std::cout << "Inserisci il comando per la parola: " << parola << "\nDizionarioComune: " << dizionario.cercaParolaConEtichetta(parola, Labels::DizionarioComune) << "; Coniugazione: " << dizionario.cercaParolaConEtichetta(parola, Labels::Coniugazioni) << std::endl;
         std::cout << "(a: accettata, z: BonusRaro, x: BonusNome, c: BonusStraniero, n: rifiutata, s: cerca su Google): ";
         std::cin >> input;
 

@@ -73,6 +73,7 @@ bool Dizionario::salvaInFileCompatto(const std::string& percorsoFile) const {
     }
     file << j.dump(); // Dump senza indentazione per risparmiare spazio
     file.close();
+    std::cout << "Dizionario salvato correttamente in: " << percorsoFile << std::endl;
     return true;
 }
 

@@ -16,7 +16,7 @@ bool soloSePresenti = true;
 
 // Inizializzazione di un array di std::string
 std::vector<mod_dizionario> modsDaElaborare = {
-    {"paola", Labels::BonusNome}
+    {"deco", Labels::BonusNome}
     };
 
 Dizionario dizionario;
@@ -32,12 +32,22 @@ int main() {
     for (const auto& mod : modsDaElaborare) {
         std::string parola = mod.parola;
 
-        if (soloSePresenti && !dizionario.cercaParola(parola)) {
+        //AGGIUNGI ETICHETTA
+        /*if (soloSePresenti && !dizionario.cercaParola(parola)) {
             std::cout << parola << " non trovata" << std::endl;
             continue;
         }
         dizionario.inserisciParola(parola, mod.label);
-        std::cout << parola << " elaborata" << std::endl;
+        std::cout << parola << " elaborata" << std::endl;*/
+
+        //LEGGI ETICHETTE
+        std::cout << parola << ":" << std::endl;
+        std::cout << "DizionarioComune: " << dizionario.cercaParolaConEtichetta(parola, Labels::DizionarioComune) << std::endl;
+        std::cout << "Coniugazioni: " << dizionario.cercaParolaConEtichetta(parola, Labels::Coniugazioni) << std::endl;
+        std::cout << "Approvate: " << dizionario.cercaParolaConEtichetta(parola, Labels::Approvate) << std::endl;
+        std::cout << "BonusNome: " << dizionario.cercaParolaConEtichetta(parola, Labels::BonusNome) << std::endl;
+        std::cout << "BonusRaro: " << dizionario.cercaParolaConEtichetta(parola, Labels::BonusRaro) << std::endl;
+        std::cout << "BonusStraniero: " << dizionario.cercaParolaConEtichetta(parola, Labels::BonusStraniero) << std::endl;
     }
 
     dizionario.salvaInFileCompatto(PERCORSO_TREE_DICTIONARY);
