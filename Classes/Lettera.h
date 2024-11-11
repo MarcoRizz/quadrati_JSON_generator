@@ -15,8 +15,8 @@ enum Labels : uint32_t {
     Nessuna          = 0,       // 000000
     DizionarioComune = 1u << 0, // 000001
     Coniugazioni     = 1u << 1, // 000010
-    BonusAntico      = 1u << 2, // 000100
-    BonusPoetico     = 1u << 3, // 001000
+    Approvate        = 1u << 2, // 000100
+    BonusRaro        = 1u << 3, // 001000
     BonusStraniero   = 1u << 4, // 010000
     BonusNome        = 1u << 5  // 100000
 };

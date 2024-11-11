@@ -42,6 +42,20 @@ bool Dizionario::cercaParola(const std::string& parola, Labels etichetta, bool O
     return corrente->fineParola && etichettaValida;
 }
 
+bool Dizionario::cercaParolaConEtichetta(const std::string& parola, Labels etichetta, bool OR_tra_etichette) const {
+    std::string parolaPulita = rimuoviAccenti(parola);
+    Lettera* corrente = radice.get();
+    for (char c : parolaPulita) {
+        corrente = corrente->getFiglio(c);
+        if (!corrente) {
+            return false; // Lettera non trovata
+        }
+    }
+
+    // Verifica se la parola esiste e se le etichette corrispondono
+    return OR_tra_etichette ? (corrente->etichette & etichetta) : (corrente->etichette & etichetta) == etichetta;
+}
+
 int Dizionario::contaParole() const {
     return contaParoleRicorsivo(radice.get());
 }

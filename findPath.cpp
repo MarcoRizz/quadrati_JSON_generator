@@ -1,11 +1,18 @@
 #include <iostream>
 #include "findPath.h"
 #include "generate_JSON.h"
-#include "Classes/gestisci_dizionari.h"
 
 #define DIRECTIONS_n 8
 
-ParolaStatus consulta_dizionari(const std::string& parola);
+enum class ParolaStatus {
+    Accettata,
+    Bonus,
+    Rifiutata,
+    Sconosciuta
+};
+
+ParolaStatus consulta_dizionario(const std::string& parola);
+ParolaStatus ask_the_boss(const std::string& parola);
 
 bool visited[DIM1][DIM2] = {false}; // Array di visitati
 std::pair<int, int> path[DIM1 * DIM2]; // Array per memorizzare il percorso
@@ -29,7 +36,7 @@ void returnFinalWord(int pathLength) {
     }
     if (dizionario.cercaParola(parola)) { //se trovo la parola nel json
         //consulto i dizionari
-        ParolaStatus status = consulta_dizionari(parola);
+        ParolaStatus status = consulta_dizionario(parola);
         switch (status) {
             case ParolaStatus::Accettata:
                 words.add_word(parola);
@@ -153,37 +160,68 @@ bool is_still_in_grid(int x, int y, int step, const std::string& word) {
 }
 
 
-ParolaStatus consulta_dizionari(const std::string& parola) {
+ParolaStatus consulta_dizionario(const std::string& parola) {
     
-    if (contieneParola(dizionario_txt_accettate, parola)) {
+    if (dizionario.cercaParolaConEtichetta(parola, Labels::Approvate)) {
         return ParolaStatus::Accettata;
     }
-    if (contieneParola(dizionario_txt_bonus, parola))
+    if (dizionario.cercaParolaConEtichetta(parola, Labels::BonusRaro | Labels::BonusNome | Labels::BonusStraniero, true))
     {
         return ParolaStatus::Bonus;
     }
-    if (contieneParola(dizionario_txt_rifiutate, parola))
-    {
-        return ParolaStatus::Rifiutata;
-    }
     
-    ParolaStatus status = ask_the_boss(parola);
-    switch (status) {
-        case ParolaStatus::Accettata:
-            aggiungiParola(dizionario_txt_accettate, DIZIONARIO_TXT_ACCETTATE_PATH, parola);
-            std::cout << "Parola accettata!\n";
-            break;
-        case ParolaStatus::Bonus:
-            aggiungiParola(dizionario_txt_bonus, DIZIONARIO_TXT_BONUS_PATH, parola);
-            std::cout << "Parola bonus!\n";
-            break;
-        case ParolaStatus::Rifiutata:
-            aggiungiParola(dizionario_txt_rifiutate, DIZIONARIO_TXT_RIFIUTATE_PATH, parola);
-            std::cout << "Parola rifiutata!\n";
-            break;
-        default:
-            std::cout << "Parola sconosciuta.\n";
-            break;
+    return ask_the_boss(parola);
+}
+
+ParolaStatus ask_the_boss(const std::string& parola) {
+    char input;
+
+    while (true) {
+        std::cout << "Inserisci il comando per la parola: " << parola << "\nDizionarioComune: " << dizionario.cercaParolaConEtichetta(parola, Labels::DizionarioComune) << "; Coniugazione: " << dizionario.cercaParolaConEtichetta(parola, Labels::Coniugazioni);
+        std::cout << "(a: accettata, z: BonusRaro, x: BonusNome, c: BonusStraniero, n: rifiutata, s: cerca su Google): ";
+        std::cin >> input;
+
+        switch (input) {
+            case 'a':
+                dizionario.inserisciParola(parola, Labels::Approvate);
+                std::cout << parola << " -> accettata!\n";
+                return ParolaStatus::Accettata;
+
+            case 'z':
+                dizionario.inserisciParola(parola, Labels::BonusRaro);
+                std::cout << parola << " -> BonusRaro!\n";
+                return ParolaStatus::Bonus;
+            
+            case 'x':
+                dizionario.inserisciParola(parola, Labels::BonusNome);
+                std::cout << parola << " -> BonusNome!\n";
+                return ParolaStatus::Bonus;
+            
+            case 'c':
+                dizionario.inserisciParola(parola, Labels::BonusStraniero);
+                std::cout << parola << " -> BonusStraniero!\n";
+                return ParolaStatus::Bonus;
+
+            case 'n':
+                std::cout << parola << " -> rifiutata!\n";
+                return ParolaStatus::Rifiutata;
+
+            case 's': {
+                // Definisce l'URL e apre la pagina web
+                std::string url;
+                if (dizionario.cercaParolaConEtichetta(parola, Labels::DizionarioComune)) {
+                    url = "https://www.google.com/search?q=" + parola + "+vocabolario";
+                }
+                else {
+                    url = "https://www.google.com/search?q=" + parola + "+coniugazione";
+                }
+                std::system(("start " + url).c_str());
+                break;
+            }
+
+            default:
+                std::cout << "Comando non valido. Riprova.\n";
+                break;
+        }
     }
-    return status;
 }

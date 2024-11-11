@@ -24,6 +24,9 @@ public:
     // Metodo per cercare una parola nel dizionario (opzionalmente con etichetta)
     bool cercaParola(const std::string& parola, Labels etichetta = Labels::Nessuna, bool OR_tra_etichette = false) const;  //cercaParola("parola", Labels::BonusAntico | Labels::BonusPoetico) per filtrare in base alle etichette
 
+    // Metodo per leggere le etichette di una parola
+    bool cercaParolaConEtichetta(const std::string& parola, Labels etichetta, bool OR_tra_etichette = false) const;
+
     // Metodo per contare il numero di parole nel dizionario
     int contaParole() const;
 

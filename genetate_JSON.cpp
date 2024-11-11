@@ -20,9 +20,6 @@ WordList words;
 WordList words_bonus;
 Dizionario dizionario;
 const std::string dictionary_path_json = (std::string)"tools\\Dizionari\\dizionario.json";
-std::ifstream dizionario_txt_accettate(DIZIONARIO_TXT_ACCETTATE_PATH);
-std::ifstream dizionario_txt_bonus(DIZIONARIO_TXT_BONUS_PATH);
-std::ifstream dizionario_txt_rifiutate(DIZIONARIO_TXT_RIFIUTATE_PATH);
 std::vector<std::vector<DynArray>> passingWords(DIM1, std::vector<DynArray>(DIM2, DynArray(words.get_size())));
 
 int n_words_old = 0;
@@ -290,6 +287,11 @@ int main() {
         words.clear();
         passingWords.clear();
         passingWords = std::vector<std::vector<DynArray>>(DIM1, std::vector<DynArray>(DIM2, DynArray(words.get_size())));
+    }
+
+    if (!dizionario.salvaInFileCompatto(dictionary_path_json)) {
+        std::cout << "errore nel salvataggio del dizionario al percorso: " << dictionary_path_json << std::endl;
+        return -1;
     }
 
     return 0;

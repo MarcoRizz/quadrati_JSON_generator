@@ -3,7 +3,6 @@
 #include <string>
 #include <fstream>
 
-#include "../../Classes/gestisci_dizionari.h"
 #include "../../Classes/Dizionario.h"
 
 #define PERCORSO_TREE_DICTIONARY "..\\Dizionari\\dizionario.json"
@@ -29,7 +28,7 @@ int main() {
         return -1;
     }
     
-    // Sposto le parole di parole_da_accettare in dizionario_parole_accettate
+    // azione
     for (const auto& mod : modsDaElaborare) {
         std::string parola = mod.parola;
 

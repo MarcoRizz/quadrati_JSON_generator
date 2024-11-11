@@ -15,9 +15,6 @@ extern char grid[DIM1][DIM2];
 extern WordList words;
 extern WordList words_bonus;
 extern Dizionario dizionario;
-extern std::ifstream dizionario_txt_accettate;
-extern std::ifstream dizionario_txt_bonus;
-extern std::ifstream dizionario_txt_rifiutate;
 
 extern std::vector<std::vector<DynArray>> passingWords;
 
