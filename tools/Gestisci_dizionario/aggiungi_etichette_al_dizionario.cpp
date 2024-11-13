@@ -16,7 +16,12 @@ bool soloSePresenti = true;
 
 // Inizializzazione di un array di std::string
 std::vector<mod_dizionario> modsDaElaborare = {
-    {"deco", Labels::BonusNome}
+    {"disdico", Labels::Approvate | Labels::Coniugazioni}
+    };
+
+// Inizializzazione di un array di std::string
+std::vector<mod_dizionario> modsSoloSePresenti = {
+    {"unicef", Labels::BonusNome}
     };
 
 Dizionario dizionario;
@@ -32,25 +37,23 @@ int main() {
     for (const auto& mod : modsDaElaborare) {
         std::string parola = mod.parola;
 
+        dizionario.inserisciParola(parola, mod.label);
+        std::cout << parola << " elaborata" << std::endl;
+    }
+
+    for (const auto& mod : modsSoloSePresenti) {
+        std::string parola = mod.parola;
+
         //AGGIUNGI ETICHETTA
-        /*if (soloSePresenti && !dizionario.cercaParola(parola)) {
+        if (!dizionario.cercaParola(parola)) {
             std::cout << parola << " non trovata" << std::endl;
             continue;
         }
         dizionario.inserisciParola(parola, mod.label);
-        std::cout << parola << " elaborata" << std::endl;*/
-
-        //LEGGI ETICHETTE
-        std::cout << parola << ":" << std::endl;
-        std::cout << "Senza etichette: " << dizionario.cercaParola(parola) << std::endl;
-        std::cout << "DizionarioComune: " << dizionario.cercaParola(parola, Labels::DizionarioComune) << std::endl;
-        std::cout << "Coniugazioni: " << dizionario.cercaParola(parola, Labels::Coniugazioni) << std::endl;
-        std::cout << "Approvate: " << dizionario.cercaParola(parola, Labels::Approvate) << std::endl;
-        std::cout << "BonusNome: " << dizionario.cercaParola(parola, Labels::BonusNome) << std::endl;
-        std::cout << "BonusRaro: " << dizionario.cercaParola(parola, Labels::BonusRaro) << std::endl;
-        std::cout << "BonusStraniero: " << dizionario.cercaParola(parola, Labels::BonusStraniero) << std::endl;
+        std::cout << parola << " elaborata" << std::endl;
     }
 
+    std::cout << "Parole presenti: " << dizionario.contaParole() << std::endl;
     dizionario.salvaInFileCompatto(PERCORSO_TREE_DICTIONARY);
 
     std::cout << "Parole modificate correttamente" << std::endl;
