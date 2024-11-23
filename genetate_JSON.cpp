@@ -238,6 +238,7 @@ int main() {
         }
 
         // Converto words_bonus in JSON
+        std::cout << "bonus:" << std::endl;
         json words_bonus_json = json::array();
         for (int i = 0; i < words_bonus.get_size(); ++i) {
             std::string word_bonus_i = words_bonus.get_word_by_alphabetical(i);
@@ -245,16 +246,17 @@ int main() {
             bool in_grid = false;
             for (int i = 0; i < DIM1; ++i) {
                 for (int j = 0; j < DIM2; ++j) {
-                    in_grid = is_still_in_grid(i, j, 0, word_bonus_i);
-                    if (in_grid) {
-                        break;
+                    if (grid[i][j] == word_bonus_i.front()) {  //.front() estrae il primo carattere
+                        in_grid = is_still_in_grid(i, j, 0, word_bonus_i);
+                        if (in_grid) {
+                            break;
+                        }
                     }
                 }
                 if (in_grid) {
                     break;
                 }
             }
-            std::cout << "in_grid: " << in_grid << std::endl;
             if (in_grid) {
                 std::cout << "#" << i << ":" << word_bonus_i << std::endl;
                 std::transform(word_bonus_i.begin(), word_bonus_i.end(), word_bonus_i.begin(), ::toupper); // Converte ogni carattere in maiuscolo
