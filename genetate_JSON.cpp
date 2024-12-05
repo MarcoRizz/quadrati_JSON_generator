@@ -15,7 +15,12 @@
 
 using json = nlohmann::json;
 
-char grid[DIM1][DIM2];
+char grid[DIM1][DIM2];/* = {
+        {'a', 'u', 'g', 'u'},
+        {'l', 'o', 'z', 'r'},
+        {'e', 'z', 'z', 'i'},
+        {'c', 'r', 'a', 'm'}
+    };*/
 WordList words;
 WordList words_bonus;
 Dizionario dizionario;
@@ -29,6 +34,22 @@ int n_paths = 0;
 int calcolaDifferenzaGiorni(const std::tm& giorno1, const std::tm& giorno2);
 
 int main() {
+    /*words.add_word("auguri");
+    words.add_word( "marcelo");
+    passingWords[0][0].add_value(0);
+    passingWords[0][1].add_value(0);
+    passingWords[0][2].add_value(0);
+    passingWords[0][3].add_value(0);
+    passingWords[1][3].add_value(0);
+    passingWords[2][3].add_value(0);
+
+    passingWords[3][3].add_value(1);
+    passingWords[3][2].add_value(1);
+    passingWords[3][1].add_value(1);
+    passingWords[3][0].add_value(1);
+    passingWords[2][0].add_value(1);
+    passingWords[1][0].add_value(1);
+    passingWords[1][1].add_value(1);*/
     // Giorno di lancio: 26 settembre 2024
     std::tm giornoDiLancioTm = {};
     giornoDiLancioTm.tm_year = 2024 - 1900; // Anno (2024: 2024 - 1900)
@@ -121,7 +142,7 @@ int main() {
 
             for (int word_i = 0; word_i < words.get_size(); ++word_i) {
                 std::string running_word = words.get_word_by_insertion(word_i);
-                std::pair<int, int> running_start = words.get_startingTile_by_insertion(word_i);
+                std::pair<int, int> running_start = words.get_startingTile_by_insertion(word_i); //TODO: running_start viene passato a findWordPaths inutilmente, non serve assolutamenet a nulla. Rivedere
                 for (int i = 0; i < DIM1; ++i) {
                     for (int j = 0; j < DIM2; ++j) {
                         if(grid[i][j] == running_word[0]) {
