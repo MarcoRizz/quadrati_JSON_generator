@@ -29,7 +29,7 @@ int n_paths = 0;
 int calcolaDifferenzaGiorni(const std::tm& giorno1, const std::tm& giorno2);
 
 int main() {
-    // Giorno di lancio: 1 gennaio 2024
+    // Giorno di lancio: 26 settembre 2024
     std::tm giornoDiLancioTm = {};
     giornoDiLancioTm.tm_year = 2024 - 1900; // Anno (2024: 2024 - 1900)
     giornoDiLancioTm.tm_mon = 8;            // Mese (gennaio: 0 in 0-based)
@@ -38,7 +38,7 @@ int main() {
     // Giorno X: 20 maggio 2024
     std::tm giornoX = {};
     giornoX.tm_year = 2024 - 1900; // Anno (2024: 2024 - 1900)
-    giornoX.tm_mon = 10;            // Mese (maggio: 4 in 0-based)
+    giornoX.tm_mon = 11;            // Mese (maggio: 4 in 0-based)
     //giornoX.tm_mday = 3;          // Giorno del mese
 
     // Inizializza il seme del generatore di numeri casuali
@@ -55,7 +55,7 @@ int main() {
     std::chrono::duration<double, std::milli> duration = timer_end - timer_overall_start;
     std::cout << "Dizionario caricato - elapsed time: " << duration.count() << " ms" << std::endl;
     
-    for (giornoX.tm_mday = 20; giornoX.tm_mday < 21; ++giornoX.tm_mday) {
+    for (giornoX.tm_mday = 16; giornoX.tm_mday < 18; ++giornoX.tm_mday) {
         n_words_old = 0;
         n_paths_old = 0;
         n_paths = 0;
