@@ -1,6 +1,6 @@
 
 /.vscode
 *.exe
-source/libs
+old_sources/libs
 *.json
-source/tools/Dizionari
+old_sources/tools/Dizionari
