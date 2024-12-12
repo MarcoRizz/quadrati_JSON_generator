@@ -2,5 +2,7 @@
 /.vscode
 *.exe
 /libs
+source/libs
 *.json
 /tools/Dizionari
+source/tools/Dizionari
