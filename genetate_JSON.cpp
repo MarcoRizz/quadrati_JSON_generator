@@ -76,7 +76,7 @@ int main() {
     std::chrono::duration<double, std::milli> duration = timer_end - timer_overall_start;
     std::cout << "Dizionario caricato - elapsed time: " << duration.count() << " ms" << std::endl;
     
-    for (giornoX.tm_mday = 16; giornoX.tm_mday < 18; ++giornoX.tm_mday) {
+    for (giornoX.tm_mday = 27; giornoX.tm_mday < 32; ++giornoX.tm_mday) {
         n_words_old = 0;
         n_paths_old = 0;
         n_paths = 0;
