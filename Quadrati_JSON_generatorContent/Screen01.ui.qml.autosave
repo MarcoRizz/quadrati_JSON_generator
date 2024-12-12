@@ -1,0 +1,306 @@
+/*
+This is a UI file (.ui.qml) that is intended to be edited in Qt Design Studio only.
+It is supposed to be strictly declarative and only uses a subset of QML. If you edit
+this file manually, you might introduce QML code that is not supported by Qt Design Studio.
+Check out https://doc.qt.io/qtcreator/creator-quick-ui-forms.html for details on .ui.qml files.
+*/
+
+import QtQuick
+import QtQuick.Controls
+import Quadrati_JSON_generator
+
+Rectangle {
+    width: Constants.width
+    height: Constants.height
+    
+    color: Constants.backgroundColor
+    
+    Text {
+        text: qsTr("Hello Quadrati_JSON_generator")
+        anchors.centerIn: parent
+        font.family: Constants.font.family
+    }
+    
+    GridView {
+        id: gridView
+        width: 140
+        height: 140
+        model: ListModel {
+            ListElement {
+                name: "Grey"
+                colorCode: "grey"
+            }
+            
+            ListElement {
+                name: "Red"
+                colorCode: "red"
+            }
+            
+            ListElement {
+                name: "Blue"
+                colorCode: "blue"
+            }
+            
+            ListElement {
+                name: "Green"
+                colorCode: "green"
+            }
+        }
+        delegate: Item {
+            x: 5
+            height: 50
+            Column {
+                spacing: 5
+                Rectangle {
+                    width: 40
+                    height: 40
+                    color: colorCode
+                    anchors.horizontalCenter: parent.horizontalCenter
+                }
+                
+                Text {
+                    x: 5
+                    text: name
+                    font.bold: true
+                    anchors.horizontalCenter: parent.horizontalCenter
+                }
+            }
+        }
+        cellWidth: 70
+        cellHeight: 70
+    }
+    
+    Grid {
+        id: grid
+        x: 767
+        y: 361
+        width: 400
+        height: 400
+        
+        Rectangle {
+            id: grid_00
+            width: 200
+            height: 200
+            color: "#ffffff"
+            
+            Text {
+                id: _text
+                x: -63
+                y: 0
+                text: qsTr("Text")
+                font.pixelSize: 12
+            }
+        }
+        
+        Rectangle {
+            id: rectangle1
+            width: 200
+            height: 200
+            color: "#ffffff"
+            Text {
+                id: _text3
+                x: -63
+                y: 0
+                text: qsTr("Text")
+                font.pixelSize: 12
+            }
+        }
+        
+        Rectangle {
+            id: rectangle2
+            width: 200
+            height: 200
+            color: "#ffffff"
+            Text {
+                id: _text4
+                x: -63
+                y: 0
+                text: qsTr("Text")
+                font.pixelSize: 12
+            }
+        }
+        
+        Rectangle {
+            id: rectangle3
+            width: 200
+            height: 200
+            color: "#ffffff"
+            Text {
+                id: _text5
+                x: -63
+                y: 0
+                text: qsTr("Text")
+                font.pixelSize: 12
+            }
+        }
+        
+        Rectangle {
+            id: rectangle4
+            width: 200
+            height: 200
+            color: "#ffffff"
+            Text {
+                id: _text6
+                x: -63
+                y: 0
+                text: qsTr("Text")
+                font.pixelSize: 12
+            }
+        }
+        
+        Rectangle {
+            id: rectangle5
+            width: 200
+            height: 200
+            color: "#ffffff"
+            Text {
+                id: _text1
+                x: -63
+                y: 0
+                text: qsTr("Text")
+                font.pixelSize: 12
+            }
+        }
+        
+        Rectangle {
+            id: rectangle6
+            width: 200
+            height: 200
+            color: "#ffffff"
+            Text {
+                id: _text2
+                x: -63
+                y: 0
+                text: qsTr("Text")
+                font.pixelSize: 12
+            }
+        }
+        
+        Rectangle {
+            id: rectangle7
+            width: 200
+            height: 200
+            color: "#ffffff"
+            Text {
+                id: _text7
+                x: -63
+                y: 0
+                text: qsTr("Text")
+                font.pixelSize: 12
+            }
+        }
+        
+        Rectangle {
+            id: rectangle8
+            width: 200
+            height: 200
+            color: "#ffffff"
+            Text {
+                id: _text8
+                x: -63
+                y: 0
+                text: qsTr("Text")
+                font.pixelSize: 12
+            }
+        }
+        
+        Rectangle {
+            id: rectangle9
+            width: 200
+            height: 200
+            color: "#ffffff"
+            Text {
+                id: _text9
+                x: -63
+                y: 0
+                text: qsTr("Text")
+                font.pixelSize: 12
+            }
+        }
+        
+        Rectangle {
+            id: rectangle10
+            width: 200
+            height: 200
+            color: "#ffffff"
+            Text {
+                id: _text10
+                x: -63
+                y: 0
+                text: qsTr("Text")
+                font.pixelSize: 12
+            }
+        }
+        
+        Rectangle {
+            id: rectangle11
+            width: 200
+            height: 200
+            color: "#ffffff"
+            Text {
+                id: _text11
+                x: -63
+                y: 0
+                text: qsTr("Text")
+                font.pixelSize: 12
+            }
+        }
+        
+        Rectangle {
+            id: rectangle12
+            width: 200
+            height: 200
+            color: "#ffffff"
+            Text {
+                id: _text12
+                x: -63
+                y: 0
+                text: qsTr("Text")
+                font.pixelSize: 12
+            }
+        }
+        
+        Rectangle {
+            id: rectangle13
+            width: 200
+            height: 200
+            color: "#ffffff"
+            Text {
+                id: _text13
+                x: -63
+                y: 0
+                text: qsTr("Text")
+                font.pixelSize: 12
+            }
+        }
+        
+        Rectangle {
+            id: rectangle14
+            width: 200
+            height: 200
+            color: "#ffffff"
+            Text {
+                id: _text14
+                x: -63
+                y: 0
+                text: qsTr("Text")
+                font.pixelSize: 12
+            }
+        }
+        
+        Rectangle {
+            id: rectangle15
+            width: 200
+            height: 200
+            color: "#ffffff"
+            Text {
+                id: _text15
+                x: -63
+                y: 0
+                text: qsTr("Text")
+                font.pixelSize: 12
+            }
+        }
+    }
+    
+}
