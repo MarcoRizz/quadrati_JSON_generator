@@ -32,7 +32,7 @@ public:
     WordList words_bonus;
     Dizionario dizionario;
 
-    const std::string dictionary_path_json = "C:\\Users\\mav13\\Documents\\Qt\\Quadrati_JSON_old\\old_sources\\tools\\Dizionari\\dizionario.json";
+    const std::string dictionary_path_json = "C:\\Users\\mav13\\Documents\\Qt\\Dizionari\\dizionario.json";
     std::vector<std::vector<DynArray>> passingWords;
 
     int n_words_old = 0;
