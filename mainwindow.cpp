@@ -61,7 +61,7 @@ void MainWindow::calculateFileNumbers(std::queue<int>* list)
         // Ottieni l'elenco dei file
         QStringList fileList = dir.entryList(QDir::Files);
 
-        int maxNumber = -1;
+        int maxNumber = 0;
 
         // Analizza i file
         for (const QString& fileName : fileList) {
@@ -95,7 +95,7 @@ void MainWindow::calculateFileNumbers(std::queue<int>* list)
 
     bool ok;
     N_end = N_start + ui->TextEdit_JSON_quantity->toPlainText().toInt(&ok);
-    if (!ok | (N_end <= 0)) {
+    if (!ok || !(N_end > 0)) {
         qWarning() << "La quantità inserita non è valida";
         return;
     }

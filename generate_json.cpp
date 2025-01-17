@@ -324,9 +324,9 @@ int Generate_JSON::run() {
         if (file.is_open()) {
             file << std::setw(2) << data << std::endl;  // Usa std::setw(2) per una formattazione leggibile
             file.close();
-            mainWindow->logMessage(QString("File JSON #%1").arg(todaysNum));
+            mainWindow->logMessage(QString("Generato JSON #%1").arg(QString::fromStdString(json_name)));
         } else {
-            std::cerr << "Errore durante l'apertura del file!" << std::endl;
+            throw std::runtime_error("Errore durante l'apertura del file: " + json_name);
         }
 
         //riazzero le variabili ad ogni iterazione
