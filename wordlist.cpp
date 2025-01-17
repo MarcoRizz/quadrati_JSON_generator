@@ -51,7 +51,7 @@ bool WordList::add_word(const std::string& word) {
     array[insert_pos] = WordEntry(word, size);
 
     // Aggiorna la dimensione dell'array
-    std::cout << "Parola #" << size++ << ": " << word << std::endl;
+    size++;
     return true;
 }
 

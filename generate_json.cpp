@@ -122,6 +122,9 @@ int Generate_JSON::run() {
             duration = timer_end - timer_overall_start;
             mainWindow->logMessage(QString("Array GRID creato - elapsed time: %1 ms").arg(duration.count()));
 
+            //aggiorno la schermata
+            QApplication::processEvents();
+
             /***********************************************************************************
             // CREAZIONE ARRAY-1D WORDS
             ***********************************************************************************/
@@ -192,6 +195,9 @@ int Generate_JSON::run() {
             }
             loop++;
         }
+
+        //aggiorno la schermata
+        QApplication::processEvents();
 
         if (loop == MAX_LOOPS) {
             std::cerr << "Numero massimo di iterazioni raggiunto, griglia non trovata" << std::endl;
@@ -386,9 +392,11 @@ void Generate_JSON::FindPath::returnFinalWord(int pathLength) {
         switch (status) {
         case ParolaStatus::Accettata:
             parent.words.add_word(parola);
+            parent.mainWindow->logMessage(QString("#%1: %2").arg(parent.words.get_size()).arg(QString::fromStdString(parola)));
             break;
         case ParolaStatus::Bonus:
             parent.words_bonus.add_word(parola);
+            parent.mainWindow->logMessage(QString("#%1: %2 - (bonus)").arg(parent.words_bonus.get_size()).arg(QString::fromStdString(parola)));
             break;
         case ParolaStatus::Rifiutata:
             parent.dizionario.rimuoviParola(parola);
