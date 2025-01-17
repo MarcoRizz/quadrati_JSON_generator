@@ -41,8 +41,6 @@ public:
 
     Generate_JSON(MainWindow* mainWindow); // Dichiarazione del costruttore
 
-    int calcolaDifferenzaGiorni(const std::tm& giorno1, const std::tm& giorno2);
-
     int run();
 
 private:

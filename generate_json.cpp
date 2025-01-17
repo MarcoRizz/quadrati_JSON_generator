@@ -52,17 +52,6 @@ int Generate_JSON::run() {
     passingWords[2][0].add_value(1);
     passingWords[1][0].add_value(1);
     passingWords[1][1].add_value(1);*/
-    // Giorno di lancio: 26 settembre 2024
-    std::tm giornoDiLancioTm = {};
-    giornoDiLancioTm.tm_year = 2024 - 1900; // Anno (2024: 2024 - 1900)
-    giornoDiLancioTm.tm_mon = 8;            // Mese (gennaio: 0 in 0-based)
-    giornoDiLancioTm.tm_mday = 26;           // Giorno del mese
-
-    // Giorno X: 20 maggio 2024
-    std::tm giornoX = {};
-    giornoX.tm_year = 2025 - 1900; // Anno (2024: 2024 - 1900)
-    giornoX.tm_mon = 0;            // Mese (maggio: 4 in 0-based)
-    //giornoX.tm_mday = 3;          // Giorno del mese
 
     // Inizializza il seme del generatore di numeri casuali
     auto timer_overall_start = std::chrono::high_resolution_clock::now();
@@ -78,10 +67,12 @@ int Generate_JSON::run() {
     std::chrono::duration<double, std::milli> duration = timer_end - timer_overall_start;
     mainWindow->logMessage(QString("Dizionario caricato - elapsed time: %1 ms").arg(duration.count()));
 
-
     //calcolo jsons_to_elaborate
-    for (giornoX.tm_mday = 19; giornoX.tm_mday < 27; ++giornoX.tm_mday) {
-        jsons_to_elaborate.push(calcolaDifferenzaGiorni(giornoDiLancioTm, giornoX) + 1);
+    mainWindow->calculateFileNumbers(&jsons_to_elaborate);
+
+    if (jsons_to_elaborate.empty()){
+        mainWindow->logMessage(QString("Nessun file da generare."));
+        return -1;
     }
 
     //calcolo i singoli json
@@ -208,9 +199,7 @@ int Generate_JSON::run() {
             passingWords = std::vector<std::vector<DynArray>>(DIM1, std::vector<DynArray>(DIM2, DynArray(words.get_size())));
             words_bonus.clear();
 
-            --giornoX.tm_mday;  //torno indietro per ripetere il giorno
-
-            continue;
+            continue;  //senza jsons_to_elaborate.pop() ripete l'iterazione
         } else {
             mainWindow->logMessage(QString("Loops: %1").arg(loop));
         }
@@ -325,7 +314,11 @@ int Generate_JSON::run() {
         data["bonus"] = words_bonus_json;
 
         // Salvare il JSON in un file
-        std::string json_name = "quadrati#" + std::to_string(todaysNum) + ".json";
+
+        std::string dir = mainWindow->m_selectedDirectory.toStdString();
+        std::string json_name = dir + "/quadrati#" + std::to_string(todaysNum) + ".json";
+
+        std::cout << "json_name: "<< json_name << std::endl;
 
         std::ofstream file(json_name);
         if (file.is_open()) {
@@ -361,18 +354,6 @@ int Generate_JSON::run() {
     }
 
     return 0;
-}
-
-int Generate_JSON::calcolaDifferenzaGiorni(const std::tm& giorno1, const std::tm& giorno2) {
-    // Converti le strutture tm in time_t (secondi dal 1 gennaio 1970)
-    std::time_t time1 = std::mktime(const_cast<std::tm*>(&giorno1));
-    std::time_t time2 = std::mktime(const_cast<std::tm*>(&giorno2));
-
-    // Calcola la differenza in secondi e dividila per i secondi in un giorno
-    double diffInSeconds = std::difftime(time2, time1);
-    int diffInDays = std::abs(diffInSeconds / (60 * 60 * 24));  // Converti i secondi in giorni
-
-    return diffInDays;
 }
 
 // Costruttore della classe FindPath
@@ -530,9 +511,11 @@ ParolaStatus Generate_JSON::FindPath::consulta_dizionario(const std::string& par
 
 Labels Generate_JSON::FindPath::ask_the_boss(const std::string& parola)
 {
-    MainWindow* mainWindow = qobject_cast<MainWindow*>(QApplication::activeWindow());
+    //MainWindow* mainWindow = qobject_cast<MainWindow*>(QApplication::activeWindow());
+    MainWindow* mainWindow = parent.mainWindow;
+
     if (!mainWindow) {
-        throw std::runtime_error("MainWindow non disponibile");
+        throw std::runtime_error("MainWindow non disponibile, while elaborating word: " + parola);
     }
 
     mainWindow->setAskWord(QString::fromStdString(parola));

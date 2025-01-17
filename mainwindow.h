@@ -15,10 +15,13 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
+    QString m_selectedDirectory;
     Generate_JSON generate_json;
 
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+
+    void calculateFileNumbers(std::queue<int>* list);
 
     void setGridTile(int x, int y, QChar letter);
 
@@ -43,6 +46,10 @@ private slots:
 
     void on_btnEnd_N_clicked();
     void on_btnEnd_Y_clicked();
+
+    void on_selectDirectoryButton_clicked();
+
+    void on_checkBox_checkStateChanged(const Qt::CheckState &arg1);
 
 private:
     Ui::MainWindow *ui;
