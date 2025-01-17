@@ -318,8 +318,6 @@ int Generate_JSON::run() {
         std::string dir = mainWindow->m_selectedDirectory.toStdString();
         std::string json_name = dir + "/quadrati#" + std::to_string(todaysNum) + ".json";
 
-        std::cout << "json_name: "<< json_name << std::endl;
-
         std::ofstream file(json_name);
         if (file.is_open()) {
             file << std::setw(2) << data << std::endl;  // Usa std::setw(2) per una formattazione leggibile
