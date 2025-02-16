@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QLabel>
 #include "generate_json.h"
 
 QT_BEGIN_NAMESPACE
@@ -32,6 +33,9 @@ public:
 
     // Funzione dedicata per l'output
     void logMessage(const QString &message);
+
+    void updateGridColors(const std::vector<std::vector<DynArray>>& passingWords); // Funzione per aggiornare i colori della griglia
+    void highlightTiles(const std::pair<int, int>* positions, int size); // Evidenzia alcune celle
 
 private slots:
     // Slots per gestire i pulsanti di "Ask the Boss"

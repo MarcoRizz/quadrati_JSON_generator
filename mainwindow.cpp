@@ -107,104 +107,12 @@ void MainWindow::calculateFileNumbers(std::queue<int>* list)
 
 void MainWindow::setGridTile(int x, int y, QChar letter)
 {
-    //TODO: da integrare col widget
-    switch (x) {
-    case 0:
-        switch (y) {
-        case 0:
-            ui->label_00->setText(letter);
-            break;
-
-        case 1:
-            ui->label_01->setText(letter);
-            break;
-
-        case 2:
-            ui->label_02->setText(letter);
-            break;
-
-        case 3:
-            ui->label_03->setText(letter);
-            break;
-
-        default:
-            break;
-        }
-        break;
-
-    case 1:
-        switch (y) {
-        case 0:
-            ui->label_10->setText(letter);
-            break;
-
-        case 1:
-            ui->label_11->setText(letter);
-            break;
-
-        case 2:
-            ui->label_12->setText(letter);
-            break;
-
-        case 3:
-            ui->label_13->setText(letter);
-            break;
-
-        default:
-            break;
-        }
-        break;
-
-    case 2:
-        switch (y) {
-        case 0:
-            ui->label_20->setText(letter);
-            break;
-
-        case 1:
-            ui->label_21->setText(letter);
-            break;
-
-        case 2:
-            ui->label_22->setText(letter);
-            break;
-
-        case 3:
-            ui->label_23->setText(letter);
-            break;
-
-        default:
-            break;
-        }
-        break;
-
-    case 3:
-        switch (y) {
-        case 0:
-            ui->label_30->setText(letter);
-            break;
-
-        case 1:
-            ui->label_31->setText(letter);
-            break;
-
-        case 2:
-            ui->label_32->setText(letter);
-            break;
-
-        case 3:
-            ui->label_33->setText(letter);
-            break;
-
-        default:
-            break;
-        }
-        break;
-
-    default:
-        break;
+    QLabel* label = findChild<QLabel*>(QString("label_%1%2").arg(x).arg(y));
+    if (label) {
+        label->setText(letter);
     }
 }
+
 
 void MainWindow::setAskWord(const QString& word)
 {
@@ -309,3 +217,30 @@ void MainWindow::on_checkBox_checkStateChanged(const Qt::CheckState &arg1)
     ui->TextEdit_JSON_start_number->setEnabled(!arg1);
 }
 
+
+void MainWindow::updateGridColors(const std::vector<std::vector<DynArray>>& passingWords) {
+    for (int x = 0; x < 4; ++x) {
+        for (int y = 0; y < 4; ++y) {
+            int val = passingWords[x][y].get_size();
+            QLabel* label = findChild<QLabel*>(QString("label_%1%2").arg(x).arg(y));
+
+            if (val == 0)
+                label->setStyleSheet("background-color: lightgrey; color: black;");
+            else
+                label->setStyleSheet("background-color: green; color: white;");
+        }
+    }
+}
+
+
+void MainWindow::highlightTiles(const std::pair<int, int>* positions, int size) {
+    for (int i = 0; i < size; ++i) {
+        int x = positions[i].first;
+        int y = positions[i].second;
+        QLabel* label = findChild<QLabel*>(QString("label_%1%2").arg(x).arg(y));
+
+        if (label) {
+            label->setStyleSheet("background-color: yellow; color: black;");
+        }
+    }
+}

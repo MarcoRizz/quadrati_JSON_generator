@@ -31,6 +31,9 @@
          <pointsize>25</pointsize>
         </font>
        </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: lightgrey; color: black</string>
+       </property>
        <property name="text">
         <string notr="true">M</string>
        </property>
@@ -48,6 +51,9 @@
         <font>
          <pointsize>25</pointsize>
         </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: lightgrey; color: black</string>
        </property>
        <property name="text">
         <string notr="true">M</string>
@@ -67,6 +73,9 @@
          <pointsize>25</pointsize>
         </font>
        </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: lightgrey; color: black</string>
+       </property>
        <property name="text">
         <string notr="true">M</string>
        </property>
@@ -84,6 +93,9 @@
         <font>
          <pointsize>25</pointsize>
         </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: lightgrey; color: black</string>
        </property>
        <property name="text">
         <string notr="true">M</string>
@@ -103,6 +115,9 @@
          <pointsize>25</pointsize>
         </font>
        </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: lightgrey; color: black</string>
+       </property>
        <property name="text">
         <string notr="true">M</string>
        </property>
@@ -120,6 +135,9 @@
         <font>
          <pointsize>25</pointsize>
         </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: lightgrey; color: black</string>
        </property>
        <property name="text">
         <string notr="true">M</string>
@@ -139,6 +157,9 @@
          <pointsize>25</pointsize>
         </font>
        </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: lightgrey; color: black</string>
+       </property>
        <property name="text">
         <string notr="true">M</string>
        </property>
@@ -156,6 +177,9 @@
         <font>
          <pointsize>25</pointsize>
         </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: lightgrey; color: black</string>
        </property>
        <property name="text">
         <string notr="true">M</string>
@@ -175,6 +199,9 @@
          <pointsize>25</pointsize>
         </font>
        </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: lightgrey; color: black</string>
+       </property>
        <property name="text">
         <string notr="true">M</string>
        </property>
@@ -192,6 +219,9 @@
         <font>
          <pointsize>25</pointsize>
         </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: lightgrey; color: black</string>
        </property>
        <property name="text">
         <string notr="true">M</string>
@@ -211,6 +241,9 @@
          <pointsize>25</pointsize>
         </font>
        </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: lightgrey; color: black</string>
+       </property>
        <property name="text">
         <string notr="true">M</string>
        </property>
@@ -228,6 +261,9 @@
         <font>
          <pointsize>25</pointsize>
         </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: lightgrey; color: black</string>
        </property>
        <property name="text">
         <string notr="true">M</string>
@@ -247,6 +283,9 @@
          <pointsize>25</pointsize>
         </font>
        </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: lightgrey; color: black</string>
+       </property>
        <property name="text">
         <string notr="true">M</string>
        </property>
@@ -264,6 +303,9 @@
         <font>
          <pointsize>25</pointsize>
         </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: lightgrey; color: black</string>
        </property>
        <property name="text">
         <string notr="true">M</string>
@@ -283,6 +325,9 @@
          <pointsize>25</pointsize>
         </font>
        </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: lightgrey; color: black</string>
+       </property>
        <property name="text">
         <string notr="true">M</string>
        </property>
@@ -300,6 +345,9 @@
         <font>
          <pointsize>25</pointsize>
         </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: lightgrey; color: black</string>
        </property>
        <property name="text">
         <string notr="true">M</string>

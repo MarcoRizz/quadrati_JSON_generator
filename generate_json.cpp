@@ -162,6 +162,8 @@ int Generate_JSON::run() {
                 }
                 words.add_startingTile_by_insertion(running_start, word_i); // e con questo completo words.startingTile
             }
+            mainWindow->updateGridColors(passingWords);
+            QApplication::processEvents();
 
             timer_end = std::chrono::high_resolution_clock::now();
             duration = timer_end - timer_overall_start;
@@ -516,6 +518,7 @@ Labels Generate_JSON::FindPath::ask_the_boss(const std::string& parola)
         throw std::runtime_error("MainWindow non disponibile, while elaborating word: " + parola);
     }
 
+    mainWindow->highlightTiles(path, parola.length());
     mainWindow->setAskWord(QString::fromStdString(parola));
     // Attendiamo l'input dell'utente
     while (mainWindow->getAskResult() == Labels::Nessuna) {
@@ -523,6 +526,7 @@ Labels Generate_JSON::FindPath::ask_the_boss(const std::string& parola)
     }
 
     parent.dizionario.inserisciParola(parola, mainWindow->getAskResult());
+    mainWindow->updateGridColors(parent.passingWords);
 
     return mainWindow->getAskResult();
 }
