@@ -1,4 +1,6 @@
-#include "Lettera.h"
+#include "lettera.h"
+
+#include <iostream>
 
 // Costruttore
 Lettera::Lettera() : fineParola(false), etichette(0) {}
@@ -53,13 +55,13 @@ json Lettera::to_json_compatto() const {
     for (const auto& pair : figli) {
         char c = pair.first;
         const std::unique_ptr<Lettera>& figlio = pair.second;
-        
+
         // Verifica che 'c' sia un carattere stampabile
         if (c < 32 || c > 126) {
             std::cerr << "Carattere non valido per JSON: " << static_cast<int>(c) << std::endl;
             continue; // Salta il carattere se non è valido
         }
-        
+
         // Aggiungi il figlio direttamente come chiave, ricorsivamente
         j[std::string(1, c)] = figlio->to_json_compatto();
     }

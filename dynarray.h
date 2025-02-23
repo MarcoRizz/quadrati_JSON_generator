@@ -1,12 +1,12 @@
-#ifndef DYNARRAY_S
-#define DYNARRAY_S
+#ifndef DYNARRAY_H
+#define DYNARRAY_H
 
 #include <vector>
 
 class DynArray {
 private:
     std::vector<int> array;  // Array dinamico di interi
-    
+
 public:
     // Costruttore
     DynArray(int initial_capacity = 0);
@@ -24,4 +24,4 @@ public:
     int get_value(int index) const;
 };
 
-#endif
+#endif // DYNARRAY_H
