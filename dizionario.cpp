@@ -1,4 +1,7 @@
-#include "Dizionario.h"
+#include "dizionario.h"
+
+#include <iostream>
+#include <fstream>
 
 Dizionario::Dizionario() : radice(std::make_unique<Lettera>()) {}
 
@@ -37,7 +40,7 @@ bool Dizionario::cercaParola(const std::string& parola, Labels etichetta, bool O
 
     // Verifica se la parola esiste e se le etichette corrispondono
     bool etichettaValida = OR_tra_etichette ? (corrente->etichette & etichetta) : (corrente->etichette & etichetta) == etichetta;
-    
+
     return corrente->fineParola && etichettaValida;
 }
 
@@ -58,7 +61,6 @@ bool Dizionario::salvaInFileCompatto(const std::string& percorsoFile) const {
     }
     file << j.dump(); // Dump senza indentazione per risparmiare spazio
     file.close();
-    std::cout << "Dizionario salvato correttamente in: " << percorsoFile << std::endl;
     return true;
 }
 

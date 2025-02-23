@@ -1,15 +1,17 @@
 #include "WordList.h"
 
+#include <iostream>
+#include <ostream>
 
 void WordList::resize(int new_capacity) {
     WordEntry* new_array = new WordEntry[new_capacity];
-    
+
     // Usa std::copy per copiare gli oggetti in modo sicuro
     std::copy(array, array + size, new_array);
-    
+
     // Dealloca la vecchia memoria
     delete[] array;
-    
+
     // Aggiorna array e capacity
     array = new_array;
     capacity = new_capacity;
@@ -49,7 +51,7 @@ bool WordList::add_word(const std::string& word) {
     array[insert_pos] = WordEntry(word, size);
 
     // Aggiorna la dimensione dell'array
-    std::cout << "Parola #" << size++ << ": " << word << std::endl;
+    size++;
     return true;
 }
 

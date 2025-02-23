@@ -1,11 +1,10 @@
 #ifndef LETTERA_H
 #define LETTERA_H
 
-#include <iostream>
 #include <unordered_map>
 #include <memory>
 #include <cstdint>
-#include "../libs/json.hpp"
+#include "nlohmann_json.cpp"
 
 // Definizione dello spazio dei nomi per la libreria json
 using json = nlohmann::json;
@@ -61,3 +60,4 @@ public:
 };
 
 #endif
+ // LETTERA_H

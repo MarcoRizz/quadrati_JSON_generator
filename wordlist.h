@@ -1,8 +1,8 @@
 #ifndef WORDLIST_H
 #define WORDLIST_H
 
-#include <iostream>
 #include <cstring> // Per memcpy
+#include <string>
 
 class WordList {
 private:
@@ -56,7 +56,7 @@ public:
 
     // Restituisce l'indice alfabetico dato l'indice di inserimento
     int get_alphabetical_index(int insertion_index) const;
-    
+
     // Stampa tutte le parole nell'array
     void print() const;
 
@@ -65,3 +65,4 @@ public:
 };
 
 #endif
+ // WORDLIST_H

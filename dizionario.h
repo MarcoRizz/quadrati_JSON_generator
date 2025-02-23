@@ -1,8 +1,7 @@
 #ifndef DIZIONARIO_H
 #define DIZIONARIO_H
 
-#include <fstream>
-#include "Lettera.h"
+#include "lettera.h"
 
 class Dizionario {
 private:
@@ -50,4 +49,4 @@ private:
     std::string rimuoviAccenti(const std::string& input) const;
 };
 
-#endif
+#endif // DIZIONARIO_H
