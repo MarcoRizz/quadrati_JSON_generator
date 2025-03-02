@@ -158,6 +158,7 @@ void MainWindow::on_btn_google_clicked()
 
 void MainWindow::on_generate_JSON_clicked()
 {
+    saveDictionary = 0;
     generate_json.run();
 }
 

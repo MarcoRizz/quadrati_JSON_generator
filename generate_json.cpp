@@ -85,6 +85,11 @@ int Generate_JSON::run() {
         int loop = 0;
 
         while (!completed_grid  && loop < MAX_LOOPS) {
+
+            //aggiorno la schermata
+            mainWindow->updateGridColors(passingWords);
+            QApplication::processEvents();
+
             /***********************************************************************************
             // CREAZIONE ARRAY-2D GRID
             ***********************************************************************************/
