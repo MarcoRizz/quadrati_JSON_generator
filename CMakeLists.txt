@@ -32,6 +32,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         dynarray.h dynarray.cpp
         lettera.h lettera.cpp
         wordlist.h wordlist.cpp
+        etichette.h
 
 
 
