@@ -88,6 +88,7 @@ int Generate_JSON::run() {
 
             //aggiorno la schermata
             mainWindow->updateGridColors(passingWords);
+            mainWindow->clearWords();
             QApplication::processEvents();
 
             /***********************************************************************************
@@ -374,23 +375,23 @@ void Generate_JSON::FindPath::returnFinalWord(int pathLength) {
     }
     if (parent.dizionario.cercaParola(parola)) { //se trovo la parola nel json
         //consulto i dizionari
-        ParolaStatus status = consulta_dizionario(parola);
-        switch (status) {
-        case ParolaStatus::Accettata:
+        Etichette etichette = consulta_dizionario(parola);
+
+         //TODO: qui indicare le Etichette bonus e le accettate
+        if(etichette.haTutteEtichette(Etichette(Etichette::Approvate))) {
+
             parent.words.add_word(parola);
+            parent.mainWindow->addWord(QString::fromStdString(parola), etichette, false);
             parent.mainWindow->logMessage(QString("#%1: %2").arg(parent.words.get_size()).arg(QString::fromStdString(parola)));
-            break;
-        case ParolaStatus::Bonus:
+        } else if(etichette.haUnaEtichetta(Etichette(Etichette::BonusNome | Etichette::BonusRaro | Etichette::BonusStraniero))) {
             parent.words_bonus.add_word(parola);
+            parent.mainWindow->addWord(QString::fromStdString(parola), etichette, true);
             parent.mainWindow->logMessage(QString("#%1: %2 - (bonus)").arg(parent.words_bonus.get_size()).arg(QString::fromStdString(parola)));
-            break;
-        case ParolaStatus::Rifiutata:
+        } else {
             parent.dizionario.rimuoviParola(parola);
-            break;
-        default:
-            parent.mainWindow->logMessage(QString("ERRORE CODICE\n"));
-            break;
         }
+
+        QApplication::processEvents();
     }
 }
 
@@ -500,21 +501,17 @@ bool Generate_JSON::FindPath::is_still_in_grid(int x, int y, int step, const std
 }
 
 
-ParolaStatus Generate_JSON::FindPath::consulta_dizionario(const std::string& parola) {
+Etichette Generate_JSON::FindPath::consulta_dizionario(const std::string& parola) {
 
-    if (parent.dizionario.cercaParola(parola, Labels::Approvate)) {
-        return ParolaStatus::Accettata;
-    }
-    if (parent.dizionario.cercaParola(parola, Labels::BonusRaro | Labels::BonusNome | Labels::BonusStraniero, true))
-    {
-        return ParolaStatus::Bonus;
+    auto rispostaDizionario = parent.dizionario.cercaParola(parola, Etichette(Etichette::Approvate | Etichette::BonusRaro | Etichette::BonusNome | Etichette::BonusStraniero), true);
+    if (rispostaDizionario) {
+        return *rispostaDizionario;
     }
 
-    ask_the_boss(parola);
-    return consulta_dizionario(parola);
+    return ask_the_boss(parola);
 }
 
-Labels Generate_JSON::FindPath::ask_the_boss(const std::string& parola)
+Etichette Generate_JSON::FindPath::ask_the_boss(const std::string& parola)
 {
     //MainWindow* mainWindow = qobject_cast<MainWindow*>(QApplication::activeWindow());
     MainWindow* mainWindow = parent.mainWindow;
@@ -526,7 +523,7 @@ Labels Generate_JSON::FindPath::ask_the_boss(const std::string& parola)
     mainWindow->highlightTiles(path, parola.length());
     mainWindow->setAskWord(QString::fromStdString(parola));
     // Attendiamo l'input dell'utente
-    while (mainWindow->getAskResult() == Labels::Nessuna) {
+    while (mainWindow->getAskResult() == Etichette(Etichette::Nessuna)) {
         QApplication::processEvents();
     }
 

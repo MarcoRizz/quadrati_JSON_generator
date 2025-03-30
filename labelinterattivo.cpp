@@ -1,11 +1,10 @@
 #include "labelinterattivo.h"
 
-LabelInterattivo::LabelInterattivo(const QString &text, Etichette et, QWidget *parent)
+LabelInterattivo::LabelInterattivo(const QString &text, const Etichette &et, QWidget *parent)
     : QLabel(text, parent), etichette(et) {
     setContextMenuPolicy(Qt::CustomContextMenu);
     connect(this, &QLabel::customContextMenuRequested, this, &LabelInterattivo::showMenu);
-};
-
+}
 
 void LabelInterattivo::showMenu(const QPoint &pos) {
     menu.clear();
@@ -21,15 +20,19 @@ void LabelInterattivo::showMenu(const QPoint &pos) {
     for (auto it = etichetteDisponibili.begin(); it != etichetteDisponibili.end(); ++it) {
         QAction *action = new QAction(it.value(), &menu);
         action->setCheckable(true);
-        action->setChecked(etichette.haEtichetta(it.key()));
+        action->setChecked(etichette.haUnaEtichetta(Etichette(it.key()))); // Verifica presenza etichetta
+
         connect(action, &QAction::triggered, [this, action, it] {
-            if (action->isChecked())
-                etichette.aggiungiEtichetta(it.key());
-            else
-                etichette.rimuoviEtichetta(it.key());
+            if (action->isChecked()) {
+                etichette.aggiungiEtichetta(Etichette(it.key()));
+            } else {
+                etichette.rimuoviEtichetta(Etichette(it.key()));
+            }
         });
+
         menu.addAction(action);
     }
 
     menu.exec(mapToGlobal(pos));
 }
+

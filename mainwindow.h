@@ -27,7 +27,7 @@ public:
     void setGridTile(int x, int y, QChar letter);
 
     void setAskWord(const QString& word);
-    Labels getAskResult() const;
+    Etichette getAskResult() const;
 
     int getSaveDict() const;
 
@@ -36,6 +36,10 @@ public:
 
     void updateGridColors(const std::vector<std::vector<DynArray>>& passingWords); // Funzione per aggiornare i colori della griglia
     void highlightTiles(const std::pair<int, int>* positions, int size); // Evidenzia alcune celle
+
+    //riguarda l'elenco di parole trovate
+    void addWord(const QString &word, const Etichette &etichette, const bool isBonus);
+    void clearWords();
 
 private slots:
     // Slots per gestire i pulsanti di "Ask the Boss"
@@ -57,7 +61,7 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    Labels askResult = Nessuna; // Risultato dell'azione
+    Etichette askResult = Etichette(Etichette::Nessuna); // Risultato dell'azione
     QString currentWord;    // Parola attualmente in valutazione
     int saveDictionary = 0;     // A fine generazione, salva modifiche al dizionario
 };

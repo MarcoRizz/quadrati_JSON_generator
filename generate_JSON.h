@@ -59,8 +59,8 @@ private:
 
         void returnFinalWord(int pathLength);
         void returnFinalPath(int pathLength, int wordIndex, std::pair<int, int>& startingtile);
-        ParolaStatus consulta_dizionario(const std::string& parola);
-        Labels ask_the_boss(const std::string& parola);
+        Etichette consulta_dizionario(const std::string& parola);
+        Etichette ask_the_boss(const std::string& parola);
     };
 
     FindPath pathFinder; // Istanza della classe nidificata

@@ -5,6 +5,7 @@
 #include <qfiledialog.h>
 #include <QMessageBox>
 #include <QSettings>
+#include "labelinterattivo.h"
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -116,39 +117,39 @@ void MainWindow::setGridTile(int x, int y, QChar letter)
 
 void MainWindow::setAskWord(const QString& word)
 {
-    askResult = Labels::Nessuna;
+    askResult = Etichette(Etichette::Nessuna);
     currentWord = word;
     ui->label_word->setText("Word: " + currentWord);
 }
 
-Labels MainWindow::getAskResult() const
+Etichette MainWindow::getAskResult() const
 {
     return askResult;
 }
 
 void MainWindow::on_btn_accept_clicked()
 {
-    askResult = Labels::Approvate;
+    askResult = Etichette(Etichette::Approvate);
 }
 
 void MainWindow::on_btn_bonus_rare_clicked()
 {
-    askResult = Labels::BonusRaro;
+    askResult = Etichette(Etichette::BonusRaro);
 }
 
 void MainWindow::on_btn_bonus_name_clicked()
 {
-    askResult = Labels::BonusNome;
+    askResult = Etichette(Etichette::BonusNome);
 }
 
 void MainWindow::on_btn_bonus_foreign_clicked()
 {
-    askResult = Labels::BonusStraniero;
+    askResult = Etichette(Etichette::BonusStraniero);
 }
 
 void MainWindow::on_btn_reject_clicked()
 {
-    askResult = Labels::Nessuna;  //TODO
+    askResult = Etichette(Etichette::Nessuna);  //TODO
 }
 
 void MainWindow::on_btn_google_clicked()
@@ -244,4 +245,29 @@ void MainWindow::highlightTiles(const std::pair<int, int>* positions, int size) 
             label->setStyleSheet("background-color: yellow; color: black;");
         }
     }
+}
+
+void MainWindow::addWord(const QString &word, const Etichette &etichette, const bool isBonus) {
+    LabelInterattivo *label = new LabelInterattivo(word, etichette, ui->centralwidget);
+    QVBoxLayout* targetBox = isBonus
+                                 ? ui->boxBonus
+                                 : ui->boxAccepted;
+
+    targetBox->addWidget(label);
+}
+
+void MainWindow::clearWords() {
+    // Funzione lambda per svuotare un QVBoxLayout
+    auto clearLayout = [](QVBoxLayout* layout) {
+        while (QLayoutItem* item = layout->takeAt(0)) { // Prende il primo elemento
+            if (QWidget* widget = item->widget()) {
+                delete widget;  // Elimina il widget e libera la memoria
+            }
+            delete item; // Elimina l'item del layout
+        }
+    };
+
+    // Svuota entrambi i layout
+    clearLayout(ui->boxAccepted);
+    clearLayout(ui->boxBonus);
 }

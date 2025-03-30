@@ -5,14 +5,14 @@
 
 Dizionario::Dizionario() : radice(std::make_unique<Lettera>()) {}
 
-void Dizionario::inserisciParola(const std::string& parola, Labels etichette) {
+void Dizionario::inserisciParola(const std::string& parola, Etichette etichette) {
     std::string parolaPulita = rimuoviAccenti(parola);
     Lettera* corrente = radice.get();
     for (char c : parolaPulita) {
         corrente = corrente->aggiungiFiglio(c);
     }
     corrente->fineParola = true;
-    corrente->etichette |= etichette; // Aggiunge le etichette specificate
+    corrente->etichette.aggiungiEtichetta(etichette); // Aggiunge le etichette specificate
 }
 
 bool Dizionario::rimuoviParola(const std::string& parola) {
@@ -20,7 +20,7 @@ bool Dizionario::rimuoviParola(const std::string& parola) {
     return rimuoviParolaRicorsivo(radice.get(), parolaPulita, 0);
 }
 
-bool Dizionario::riscriviEtichettaParola(const std::string& parola, Labels etichette) {
+bool Dizionario::riscriviEtichettaParola(const std::string& parola, Etichette etichette) {
     if (rimuoviParola(parola)) {
         inserisciParola(parola, etichette);
         return true;
@@ -28,27 +28,28 @@ bool Dizionario::riscriviEtichettaParola(const std::string& parola, Labels etich
     return false;
 }
 
-bool Dizionario::cercaParola(const std::string& parola, Labels etichetta, bool OR_tra_etichette) const {
+std::optional<Etichette> Dizionario::cercaParola(const std::string& parola, Etichette etichette, bool OR_tra_etichette) const {
     std::string parolaPulita = rimuoviAccenti(parola);
     Lettera* corrente = radice.get();
     for (char c : parolaPulita) {
         corrente = corrente->getFiglio(c);
         if (!corrente) {
-            return false; // Lettera non trovata
+            return std::nullopt; // Lettera non trovata
         }
     }
 
-    // Verifica se la parola esiste e se le etichette corrispondono
-    bool etichettaValida = OR_tra_etichette ? (corrente->etichette & etichetta) : (corrente->etichette & etichetta) == etichetta;
+    bool etichettaValida = OR_tra_etichette
+                               ? corrente->etichette.haUnaEtichetta(etichette)  // Controlla se almeno un bit è attivo
+                               : corrente->etichette.haTutteEtichette(etichette);  // Controlla se tutte le etichette coincidono esattamente
 
-    return corrente->fineParola && etichettaValida;
+    return (corrente->fineParola && etichettaValida) ? std::optional<Etichette>(corrente->etichette) : std::nullopt;
 }
 
 int Dizionario::contaParole() const {
     return contaParoleRicorsivo(radice.get());
 }
 
-int Dizionario::contaParoleConEtichetta(Labels etichetta, bool OR_tra_etichette) const {
+int Dizionario::contaParoleConEtichetta(Etichette etichetta, bool OR_tra_etichette) const {
     return contaParoleConEtichettaRicorsivo(radice.get(), etichetta, OR_tra_etichette);
 }
 
@@ -111,12 +112,14 @@ int Dizionario::contaParoleRicorsivo(const Lettera* nodo) const {
     return count;
 }
 
-int Dizionario::contaParoleConEtichettaRicorsivo(const Lettera* nodo, Labels etichetta, bool OR_tra_etichette) const {
-    bool etichettaValida = OR_tra_etichette ? (nodo->etichette & etichetta) : (nodo->etichette & etichetta) == etichetta;
+int Dizionario::contaParoleConEtichettaRicorsivo(const Lettera* nodo, Etichette etichette, bool OR_tra_etichette) const {
+    bool etichettaValida = OR_tra_etichette
+                               ? nodo->etichette.haUnaEtichetta(etichette)
+                               : nodo->etichette.haTutteEtichette(etichette);
     int count = (nodo->fineParola && etichettaValida) ? 1 : 0;
     for (const auto& pair : nodo->figli) {
         const std::unique_ptr<Lettera>& figlio = pair.second;
-        count += contaParoleConEtichettaRicorsivo(figlio.get(), etichetta, OR_tra_etichette);
+        count += contaParoleConEtichettaRicorsivo(figlio.get(), etichette, OR_tra_etichette);
     }
     return count;
 }

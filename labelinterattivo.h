@@ -15,7 +15,7 @@ class LabelInterattivo : public QLabel {
     Q_OBJECT
 
 public:
-    LabelInterattivo(const QString &text, Etichette et, QWidget *parent = nullptr);
+    LabelInterattivo(const QString &text, const Etichette &et, QWidget *parent = nullptr);
 
 private:
     Etichette etichette;
@@ -23,6 +23,7 @@ private:
 
     void showMenu(const QPoint &pos);
 };
+
 
 /*// Funzione per creare e assegnare label
 void distribuisciLabel(QVBoxLayout* layout1, QVBoxLayout* layout2, const QMap<QString, Etichette>& dati) {
