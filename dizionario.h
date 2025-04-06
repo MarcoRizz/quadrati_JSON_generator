@@ -22,7 +22,7 @@ public:
     bool riscriviEtichettaParola(const std::string& parola, Etichette etichette);
 
     // Metodo per cercare una parola nel dizionario (opzionalmente con etichetta)
-    std::optional<Etichette> cercaParola(const std::string& parola, Etichette etichette = Etichette(Etichette::Nessuna), bool OR_tra_etichette = false) const;  //cercaParola("parola", Etichette::BonusAntico | Etichette::BonusPoetico) per filtrare in base alle etichette
+    std::optional<Etichette> cercaParola(const std::string& parola, Etichette etichette = Etichette(Etichette::Tutte), bool OR_tra_etichette = false) const;  //cercaParola("parola", Etichette::BonusAntico | Etichette::BonusPoetico) per filtrare in base alle etichette
 
     // Metodo per contare il numero di parole nel dizionario
     int contaParole() const;

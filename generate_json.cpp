@@ -374,6 +374,7 @@ void Generate_JSON::FindPath::returnFinalWord(int pathLength) {
         parola += parent.grid[path[i].first][path[i].second];
     }
     if (parent.dizionario.cercaParola(parola)) { //se trovo la parola nel json
+        //TODO: cercaParola e consulta_dizionario fanno le stesse operazioni --> ottimizzare!
         //consulto i dizionari
         Etichette etichette = consulta_dizionario(parola);
 
@@ -505,6 +506,7 @@ Etichette Generate_JSON::FindPath::consulta_dizionario(const std::string& parola
 
     auto rispostaDizionario = parent.dizionario.cercaParola(parola, Etichette(Etichette::Approvate | Etichette::BonusRaro | Etichette::BonusNome | Etichette::BonusStraniero), true);
     if (rispostaDizionario) {
+        std::cout<< "Parola: " << parola << " --> etichette: " << rispostaDizionario->printBitmask() << std::endl;
         return *rispostaDizionario;
     }
 

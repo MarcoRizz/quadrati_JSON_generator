@@ -2,6 +2,9 @@
 #define ETICHETTE_H
 
 #include <cstdint>
+#include <string>
+#include <vector>
+#include <sstream>
 
 // Classe per la gestione delle etichette
 class Etichette {
@@ -14,7 +17,8 @@ public:
         Approvate        = 1u << 2, // 000100
         BonusRaro        = 1u << 3, // 001000
         BonusStraniero   = 1u << 4, // 010000
-        BonusNome        = 1u << 5  // 100000
+        BonusNome        = 1u << 5,  // 100000
+        Tutte            = DizionarioComune | Coniugazioni | Approvate | BonusRaro | BonusStraniero | BonusNome
     };
 
 private:
@@ -43,6 +47,26 @@ public:
     // Operatore di uguaglianza per confronto esatto tra due Etichette
     bool operator==(const Etichette& other) const {
         return etichette == other.etichette;
+    }
+
+    std::string printBitmask() const {
+        std::vector<std::string> attive;
+
+        if (etichette & DizionarioComune) attive.emplace_back("DizionarioComune");
+        if (etichette & Coniugazioni)     attive.emplace_back("Coniugazioni");
+        if (etichette & Approvate)        attive.emplace_back("Approvate");
+        if (etichette & BonusRaro)        attive.emplace_back("BonusRaro");
+        if (etichette & BonusStraniero)   attive.emplace_back("BonusStraniero");
+        if (etichette & BonusNome)        attive.emplace_back("BonusNome");
+
+        if (attive.empty()) return "Nessuna";
+
+        std::ostringstream oss;
+        for (size_t i = 0; i < attive.size(); ++i) {
+            if (i > 0) oss << ", ";
+            oss << attive[i];
+        }
+        return oss.str();
     }
 };
 

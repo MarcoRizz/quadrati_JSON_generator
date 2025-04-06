@@ -34,15 +34,20 @@ std::optional<Etichette> Dizionario::cercaParola(const std::string& parola, Etic
     for (char c : parolaPulita) {
         corrente = corrente->getFiglio(c);
         if (!corrente) {
+
             return std::nullopt; // Lettera non trovata
         }
     }
+
+    if (!corrente->fineParola)
+        return std::nullopt;
+
 
     bool etichettaValida = OR_tra_etichette
                                ? corrente->etichette.haUnaEtichetta(etichette)  // Controlla se almeno un bit è attivo
                                : corrente->etichette.haTutteEtichette(etichette);  // Controlla se tutte le etichette coincidono esattamente
 
-    return (corrente->fineParola && etichettaValida) ? std::optional<Etichette>(corrente->etichette) : std::nullopt;
+    return etichettaValida ? std::optional<Etichette>(corrente->etichette) : std::nullopt;
 }
 
 int Dizionario::contaParole() const {
