@@ -38,7 +38,7 @@ public:
     void highlightTiles(const std::pair<int, int>* positions, int size); // Evidenzia alcune celle
 
     //riguarda l'elenco di parole trovate
-    void addWord(const QString &word, const Etichette &etichette, const bool isBonus);
+    void addWord(const QString &word, const Etichette &etichette, const bool isBonus = false);
     void clearWords();
 
 private slots:

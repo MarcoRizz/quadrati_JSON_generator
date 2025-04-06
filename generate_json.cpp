@@ -379,7 +379,6 @@ void Generate_JSON::FindPath::returnFinalWord(int pathLength) {
         Etichette etichette = consulta_dizionario(parola);
 
          //TODO: qui indicare le Etichette bonus e le accettate
-        if(etichette.haTutteEtichette(Etichette(Etichette::Approvate))) {
 
             parent.words.add_word(parola);
             parent.mainWindow->addWord(QString::fromStdString(parola), etichette, false);
