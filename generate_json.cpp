@@ -379,15 +379,20 @@ void Generate_JSON::FindPath::returnFinalWord(int pathLength) {
         Etichette etichette = consulta_dizionario(parola);
 
          //TODO: qui indicare le Etichette bonus e le accettate
+        if(etichette.haUnaEtichetta(Etichette(Etichette::Approvate))) {
 
+            std::cout << "accettata" << std::endl;
             parent.words.add_word(parola);
-            parent.mainWindow->addWord(QString::fromStdString(parola), etichette, false);
+            parent.mainWindow->addWord(QString::fromStdString(parola), etichette);
             parent.mainWindow->logMessage(QString("#%1: %2").arg(parent.words.get_size()).arg(QString::fromStdString(parola)));
         } else if(etichette.haUnaEtichetta(Etichette(Etichette::BonusNome | Etichette::BonusRaro | Etichette::BonusStraniero))) {
+
+            std::cout << "bonus" << std::endl;
             parent.words_bonus.add_word(parola);
             parent.mainWindow->addWord(QString::fromStdString(parola), etichette, true);
             parent.mainWindow->logMessage(QString("#%1: %2 - (bonus)").arg(parent.words_bonus.get_size()).arg(QString::fromStdString(parola)));
         } else {
+            std::cout << "rimossa" << std::endl;
             parent.dizionario.rimuoviParola(parola);
         }
 
@@ -505,7 +510,7 @@ Etichette Generate_JSON::FindPath::consulta_dizionario(const std::string& parola
 
     auto rispostaDizionario = parent.dizionario.cercaParola(parola, Etichette(Etichette::Approvate | Etichette::BonusRaro | Etichette::BonusNome | Etichette::BonusStraniero), true);
     if (rispostaDizionario) {
-        std::cout<< "Parola: " << parola << " --> etichette: " << rispostaDizionario->printBitmask() << std::endl;
+        std::cout << "Parola: " << parola << " --> etichette: " << rispostaDizionario->printBitmask() << std::endl;
         return *rispostaDizionario;
     }
 
@@ -528,7 +533,8 @@ Etichette Generate_JSON::FindPath::ask_the_boss(const std::string& parola)
         QApplication::processEvents();
     }
 
-    parent.dizionario.inserisciParola(parola, mainWindow->getAskResult());
+    std::cout << "risposta ottenuta: " << mainWindow->getAskResult().printBitmask() << std::endl;
+    parent.dizionario.inserisciParola(parola, mainWindow->getAskResult()); //TODO: ancora non contempla la rimozione
     mainWindow->updateGridColors(parent.passingWords);
 
     return mainWindow->getAskResult();

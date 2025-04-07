@@ -248,26 +248,35 @@ void MainWindow::highlightTiles(const std::pair<int, int>* positions, int size) 
 }
 
 void MainWindow::addWord(const QString &word, const Etichette &etichette, const bool isBonus) {
-    LabelInterattivo *label = new LabelInterattivo(word, etichette, ui->centralwidget);
-    QVBoxLayout* targetBox = isBonus
-                                 ? ui->boxBonus
-                                 : ui->boxAccepted;
+    LabelInterattivo *label = new LabelInterattivo(word, etichette);
 
-    targetBox->addWidget(label);
+    // Scegli il layout giusto
+    //QScrollArea* layout = isBonus ? ui->boxBonusA : ui->boxAcceptedA;
+    QWidget* list = isBonus ? ui->boxBonus : ui->boxAccepted;
+    QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(list->layout());
+    if (!layout) {
+        qWarning() << "Layout non trovato in boxBonus!";
+        return;
+    }
+
+    layout->addWidget(label);
 }
 
+
 void MainWindow::clearWords() {
-    // Funzione lambda per svuotare un QVBoxLayout
-    auto clearLayout = [](QVBoxLayout* layout) {
-        while (QLayoutItem* item = layout->takeAt(0)) { // Prende il primo elemento
+    auto clearLayout = [](QWidget* list) {
+        QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(list->layout());
+        if (!layout) return;
+        QLayoutItem* item;
+        while ((item = layout->takeAt(0)) != nullptr) {
             if (QWidget* widget = item->widget()) {
-                delete widget;  // Elimina il widget e libera la memoria
+                delete widget;
             }
-            delete item; // Elimina l'item del layout
+            delete item;
         }
     };
 
-    // Svuota entrambi i layout
     clearLayout(ui->boxAccepted);
     clearLayout(ui->boxBonus);
 }
+
