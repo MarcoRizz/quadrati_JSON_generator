@@ -63,6 +63,7 @@ CustomMenuButton::CustomMenuButton(const QString& text, const Etichette &et, QWi
                 etichette.rimuoviEtichetta(Etichette(key));
             }
 
+            //TODO: sovrascrittura del dizionario + rivedere il posizionamento nelle WordList (tramite signal?)
             qDebug() << "Proprietà rimaste: " << etichette.printBitmask();
         });
 

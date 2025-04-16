@@ -382,15 +382,17 @@ void Generate_JSON::FindPath::returnFinalWord(int pathLength) {
         if(etichette.haUnaEtichetta(Etichette(Etichette::Approvate))) {
 
             std::cout << "accettata" << std::endl;
-            parent.words.add_word(parola);
-            parent.mainWindow->addWord(QString::fromStdString(parola), etichette);
-            parent.mainWindow->logMessage(QString("#%1: %2").arg(parent.words.get_size()).arg(QString::fromStdString(parola)));
+            if (parent.words.add_word(parola)) {
+                parent.mainWindow->addWord(QString::fromStdString(parola), etichette);
+                parent.mainWindow->logMessage(QString("#%1: %2").arg(parent.words.get_size()).arg(QString::fromStdString(parola)));
+            }
         } else if(etichette.haUnaEtichetta(Etichette(Etichette::BonusNome | Etichette::BonusRaro | Etichette::BonusStraniero))) {
 
             std::cout << "bonus" << std::endl;
-            parent.words_bonus.add_word(parola);
-            parent.mainWindow->addWord(QString::fromStdString(parola), etichette, true);
-            parent.mainWindow->logMessage(QString("#%1: %2 - (bonus)").arg(parent.words_bonus.get_size()).arg(QString::fromStdString(parola)));
+            if (parent.words_bonus.add_word(parola)) {
+                parent.mainWindow->addWord(QString::fromStdString(parola), etichette, true);
+                parent.mainWindow->logMessage(QString("#%1: %2 - (bonus)").arg(parent.words_bonus.get_size()).arg(QString::fromStdString(parola)));
+            }
         } else {
             std::cout << "rimossa" << std::endl;
             parent.dizionario.rimuoviParola(parola);
