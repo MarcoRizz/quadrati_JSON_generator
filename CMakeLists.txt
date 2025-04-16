@@ -33,7 +33,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         lettera.h lettera.cpp
         wordlist.h wordlist.cpp
         etichette.h
-        labelinterattivo.h labelinterattivo.cpp
+
+        custommenubutton.h custommenubutton.cpp
 
 
 

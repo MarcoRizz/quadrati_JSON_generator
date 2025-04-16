@@ -5,7 +5,7 @@
 #include <qfiledialog.h>
 #include <QMessageBox>
 #include <QSettings>
-#include "labelinterattivo.h"
+#include "custommenubutton.h"
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -248,7 +248,7 @@ void MainWindow::highlightTiles(const std::pair<int, int>* positions, int size) 
 }
 
 void MainWindow::addWord(const QString &word, const Etichette &etichette, const bool isBonus) {
-    LabelInterattivo *label = new LabelInterattivo(word, etichette);
+    CustomMenuButton *label = new CustomMenuButton(word, etichette);
 
     // Scegli il layout giusto
     //QScrollArea* layout = isBonus ? ui->boxBonusA : ui->boxAcceptedA;
