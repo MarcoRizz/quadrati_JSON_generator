@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>833</width>
+    <width>881</width>
     <height>512</height>
    </rect>
   </property>
@@ -631,8 +631,8 @@ li.checked::marker { content: &quot;\2612&quot;; }
      <rect>
       <x>430</x>
       <y>110</y>
-      <width>191</width>
-      <height>261</height>
+      <width>140</width>
+      <height>260</height>
      </rect>
     </property>
     <property name="frameShape">
@@ -649,8 +649,8 @@ li.checked::marker { content: &quot;\2612&quot;; }
       <rect>
        <x>0</x>
        <y>0</y>
-       <width>189</width>
-       <height>259</height>
+       <width>138</width>
+       <height>258</height>
       </rect>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout"/>
@@ -659,10 +659,10 @@ li.checked::marker { content: &quot;\2612&quot;; }
    <widget class="QScrollArea" name="boxBonusA">
     <property name="geometry">
      <rect>
-      <x>630</x>
+      <x>580</x>
       <y>110</y>
-      <width>190</width>
-      <height>261</height>
+      <width>140</width>
+      <height>260</height>
      </rect>
     </property>
     <property name="frameShape">
@@ -679,8 +679,8 @@ li.checked::marker { content: &quot;\2612&quot;; }
       <rect>
        <x>0</x>
        <y>0</y>
-       <width>188</width>
-       <height>259</height>
+       <width>138</width>
+       <height>258</height>
       </rect>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_2"/>
@@ -691,8 +691,8 @@ li.checked::marker { content: &quot;\2612&quot;; }
      <rect>
       <x>430</x>
       <y>80</y>
-      <width>191</width>
-      <height>31</height>
+      <width>140</width>
+      <height>30</height>
      </rect>
     </property>
     <property name="font">
@@ -702,7 +702,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
      </font>
     </property>
     <property name="text">
-     <string>ACCEPTED</string>
+     <string>PAROLE</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -711,10 +711,10 @@ li.checked::marker { content: &quot;\2612&quot;; }
    <widget class="QLabel" name="labelBonus">
     <property name="geometry">
      <rect>
-      <x>630</x>
+      <x>580</x>
       <y>80</y>
-      <width>191</width>
-      <height>31</height>
+      <width>140</width>
+      <height>30</height>
      </rect>
     </property>
     <property name="font">
@@ -730,13 +730,65 @@ li.checked::marker { content: &quot;\2612&quot;; }
      <set>Qt::AlignmentFlag::AlignCenter</set>
     </property>
    </widget>
+   <widget class="QLabel" name="labelBonus_2">
+    <property name="geometry">
+     <rect>
+      <x>730</x>
+      <y>80</y>
+      <width>140</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>IN MANO AL BOSS</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignmentFlag::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QScrollArea" name="boxBossA">
+    <property name="geometry">
+     <rect>
+      <x>730</x>
+      <y>110</y>
+      <width>140</width>
+      <height>260</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::Shape::StyledPanel</enum>
+    </property>
+    <property name="widgetResizable">
+     <bool>true</bool>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
+    </property>
+    <widget class="QWidget" name="boxBoss">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>138</width>
+       <height>258</height>
+      </rect>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_3"/>
+    </widget>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>833</width>
+     <width>881</width>
      <height>21</height>
     </rect>
    </property>
