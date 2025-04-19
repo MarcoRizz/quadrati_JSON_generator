@@ -5,6 +5,10 @@
 
 Dizionario::Dizionario() : radice(std::make_unique<Lettera>()) {}
 
+bool Dizionario::isLoaded() {
+    return !radice->figli.empty();
+}
+
 // Se la parola era già presente, aggiunge le etichette a quelle già esistenti
 void Dizionario::inserisciParola(const std::string& parola, Etichette etichette, bool sovrascriviEtichette) {
     std::string parolaPulita = rimuoviAccenti(parola);

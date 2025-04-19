@@ -12,6 +12,8 @@ public:
     // Costruttore
     Dizionario();
 
+    bool isLoaded();
+
     // Metodo per inserire una parola nel dizionario con etichette
     void inserisciParola(const std::string& parola, Etichette etichette = Etichette(Etichette::Nessuna), bool sovrascriviEtichette = false);  //chiamare inserisciParola("parola", Etichette::DizionarioComune | Etichette::BonusAntico) per assegnare più etichette alla parola.
 
