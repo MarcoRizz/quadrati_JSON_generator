@@ -11,20 +11,11 @@
 #include "dizionario.h"
 #include "dynarray.h"
 
-enum class ParolaStatus {
-    Accettata,
-    Bonus,
-    Rifiutata,
-    Sconosciuta
-};
-
 class MainWindow; // Forward declaration
 class FindPath; // Forward declaration di FindPath
 
 class Generate_JSON {
 public:
-    void setAskDialog(std::unique_ptr<MainWindow> dialog);
-    std::unique_ptr<MainWindow> askDialog; // Puntatore alla finestra Qt
 
     std::queue<int> jsons_to_elaborate;
     char grid[DIM1][DIM2];

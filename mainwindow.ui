@@ -752,7 +752,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
      <set>Qt::AlignmentFlag::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QScrollArea" name="boxBossA">
+   <widget class="QScrollArea" name="boxQueueA">
     <property name="geometry">
      <rect>
       <x>730</x>
@@ -770,7 +770,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
     <property name="alignment">
      <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
     </property>
-    <widget class="QWidget" name="boxBoss">
+    <widget class="QWidget" name="boxQueue">
      <property name="geometry">
       <rect>
        <x>0</x>

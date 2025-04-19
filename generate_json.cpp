@@ -7,9 +7,6 @@
 
 #define DIRECTIONS_n 8
 
-ParolaStatus consulta_dizionario(const std::string& parola);
-ParolaStatus ask_the_boss(const std::string& parola);
-
 bool visited[DIM1][DIM2] = {false}; // Array di visitati
 std::pair<int, int> path[DIM1 * DIM2]; // Array per memorizzare il percorso
 
@@ -20,10 +17,6 @@ const std::pair<int, int> directions[DIRECTIONS_n] = {
 
 bool isValid(int x, int y) {
     return x >= 0 && x < DIM1 && y >= 0 && y < DIM2 && !visited[x][y];
-}
-
-void Generate_JSON::setAskDialog(std::unique_ptr<MainWindow> dialog) {
-    askDialog = std::move(dialog);
 }
 
 // Costruttore di Generate_JSON

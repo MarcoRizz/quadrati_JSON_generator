@@ -24,7 +24,7 @@ bool PersistentMenu::event(QEvent* e)
     return QMenu::event(e);
 }
 
-// Costruttore della CustomMenuButton
+// Costruttore della CustomMenuButton //TODO: impostare mainWindow->highlightTiles(path, parola.length()) al clic sul bottone
 CustomMenuButton::CustomMenuButton(const QString& text, const Etichette &et, QWidget* parent)
     : QPushButton(text, parent), etichette(et)
 {
