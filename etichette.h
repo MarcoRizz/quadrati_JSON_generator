@@ -49,6 +49,20 @@ public:
         return etichette == other.etichette;
     }
 
+    // Operatore di assegnazione
+    Etichette& operator=(const Etichette& other) {
+        if (this != &other) {
+            etichette = other.etichette;
+        }
+        return *this;
+    }
+
+    // Assegna direttamente un valore TipoEtichetta
+    Etichette& operator=(TipoEtichetta valore) {
+        etichette = valore;
+        return *this;
+    }
+
     std::string printBitmask() const {
         std::vector<std::string> attive;
 
