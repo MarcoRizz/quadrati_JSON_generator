@@ -36,6 +36,9 @@ public:
     // Aggiunge una nuova parola in ordine alfabetico
     bool add_word(const std::string& word);
 
+    // Rimuove una parola
+    bool remove_word(const std::string& word);
+
     // Aggiunge una tessera di partenza alla parola con indice di inserimento insertIndex
     bool add_startingTile_by_insertion(const std::pair<int, int> startingTile, int insertIndex);
 
