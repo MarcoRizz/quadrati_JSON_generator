@@ -16,6 +16,15 @@ class FindPath; // Forward declaration di FindPath
 
 class Generate_JSON {
 public:
+    Generate_JSON(MainWindow* mainWindow); // Dichiarazione del costruttore
+
+    int run();
+
+    bool dizionario_sovrascriviParola(const std::string& parola, Etichette etichette);
+    bool dizionario_rimuoviParola(const std::string& parola);
+
+private:
+    MainWindow* mainWindow;
 
     std::queue<int> jsons_to_elaborate;
     char grid[DIM1][DIM2];
@@ -30,12 +39,13 @@ public:
     int n_paths_old = 0;
     int n_paths = 0;
 
-    Generate_JSON(MainWindow* mainWindow); // Dichiarazione del costruttore
+    bool completed_grid = false;
+    int loop = 0;
 
-    int run();
-
-private:
-    MainWindow* mainWindow;
+    void creazione_grid();
+    void creazione_words();
+    void creazione_gridLinks();
+    void converti_e_scrivi_JSON();
 
     class FindPath {
     public:
@@ -50,7 +60,6 @@ private:
 
         void returnFinalWord(int pathLength);
         void returnFinalPath(int pathLength, int wordIndex, std::pair<int, int>& startingtile);
-        Etichette consulta_dizionario(const std::string& parola);
         Etichette ask_the_boss(const std::string& parola);
     };
 

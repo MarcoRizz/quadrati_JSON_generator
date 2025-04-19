@@ -74,102 +74,27 @@ int Generate_JSON::run() {
         n_paths_old = 0;
         n_paths = 0;
 
-        bool completed_grid = false;
-        int loop = 0;
+        words.clear();
+        passingWords.clear();
+        passingWords = std::vector<std::vector<DynArray>>(DIM1, std::vector<DynArray>(DIM2, DynArray(words.get_size())));
+
+        mainWindow->clearWords();
+
+        completed_grid = false;
+        loop = 0;
 
         while (!completed_grid  && loop < MAX_LOOPS) {
 
             //aggiorno la schermata
             mainWindow->updateGridColors(passingWords);
-            mainWindow->clearWords();
             QApplication::processEvents();
 
-            /***********************************************************************************
-            // CREAZIONE ARRAY-2D GRID
-            ***********************************************************************************/
-            // Popoliamo grid con lettere casuali
-            for (int i = 0; i < DIM1; ++i) {
-                for (int j = 0; j < DIM2; ++j) {
-                    if (passingWords[i][j].get_size() == 0) {
-                        grid[i][j] = 'a' + std::rand() % 26;  // Lettera casuale tra 'a' e 'z' (lavoro con lettere minuscole perché il dizionario usa solo minuscole. Converto in CAPS quando scrivo il JSON)
+            creazione_grid();
 
-                        mainWindow->setGridTile(i, j, QChar(grid[i][j]));
-                    }
-                }
-            }
+            creazione_words();
 
-            //stampo grid[][]
-            QString gridContent;
-            for (int j = 0; j < DIM2; ++j) {
-                for (int i = 0; i < DIM1; ++i) {
-                    gridContent += QString("%1 ").arg(QChar(grid[i][j] + 'A' - 'a'));
-                }
-                gridContent += "\n"; // Aggiunge una nuova riga dopo ogni riga della griglia
-            }
-            mainWindow->logMessage("Contenuto di GRID:\n" + gridContent);
+            creazione_gridLinks();
 
-            timer_end = std::chrono::high_resolution_clock::now();
-            duration = timer_end - timer_overall_start;
-            mainWindow->logMessage(QString("Array GRID creato - elapsed time: %1 ms").arg(duration.count()));
-
-            //aggiorno la schermata
-            QApplication::processEvents();
-
-            /***********************************************************************************
-            // CREAZIONE ARRAY-1D WORDS
-            ***********************************************************************************/
-            //qui devo calcolare l'elenco di parole trovate all'interno della griglia
-
-#ifdef PATH_MAX_STEPS
-            mainWindow->logMessage(QString("Numero massimo di passi impostato: %1").arg(PATH_MAX_STEPS);
-#endif
-            for (
-#ifdef PATH_MAX_STEPS
-                int path_size = 4; path_size <= PATH_MAX_STEPS; ++path_size
-#else
-                int path_size = 4; path_size <= DIM1 * DIM2; ++path_size
-#endif
-                ) {
-                for (int i = 0; i < DIM1; ++i) {
-                    for (int j = 0; j < DIM2; ++j) {
-                        pathFinder.findPaths(i, j, 0, path_size);  //qui dentro riempio words
-                    }
-                }
-            }
-
-            timer_end = std::chrono::high_resolution_clock::now();
-            duration = timer_end - timer_overall_start;
-            mainWindow->logMessage(QString("Array WORDS: %1 nuove parole - elapsed time: %2 ms")
-               .arg(words.get_size() - n_words_old)
-               .arg(duration.count()));
-            n_words_old = words.get_size();
-
-            /***********************************************************************************
-            // CREAZIONE ARRAY-3D GRID_LINKS
-            ***********************************************************************************/
-            //qui devo calcolare tutte le possibilità e calcolare quali parole possono passare da ciascuna lettera (e quali possono iniziare)
-
-            for (int word_i = 0; word_i < words.get_size(); ++word_i) {
-                std::string running_word = words.get_word_by_insertion(word_i);
-                std::pair<int, int> running_start = words.get_startingTile_by_insertion(word_i); //TODO: running_start viene passato a findWordPaths inutilmente, non serve assolutamenet a nulla. Rivedere
-                for (int i = 0; i < DIM1; ++i) {
-                    for (int j = 0; j < DIM2; ++j) {
-                        if(grid[i][j] == running_word[0]) {
-                            pathFinder.findWordPaths(i, j, 0, running_word, word_i, running_start);  //qui dentro riempio passingWords
-                        }
-                    }
-                }
-                words.add_startingTile_by_insertion(running_start, word_i); // e con questo completo words.startingTile
-            }
-            mainWindow->updateGridColors(passingWords);
-            QApplication::processEvents();
-
-            timer_end = std::chrono::high_resolution_clock::now();
-            duration = timer_end - timer_overall_start;
-            mainWindow->logMessage(QString("Array PASSINGWORDS: %1 nuovi percorsi - elapsed time: %2 ms")
-               .arg(n_paths - n_paths_old)
-               .arg(duration.count()));
-            n_paths_old = n_paths;
             //se una lettera rimane priva di link, dovrò sostituirla e ripetere il calcolo
             completed_grid = true;
             for (int i = 0; i < DIM1; ++i) {
@@ -180,8 +105,7 @@ int Generate_JSON::run() {
                     }
                 }
                 if (!completed_grid) {
-                    mainWindow->logMessage(QString("Elaboro una nuova griglia sostituendo le lettere inutilizzate (iterazione %1)").arg(loop + 1));
-                    mainWindow->logMessage(QString("\n"));
+                    mainWindow->logMessage(QString("Elaboro una nuova griglia sostituendo le lettere inutilizzate (iterazione %1)\n").arg(loop + 1));
                     break;
                 }
             }
@@ -205,134 +129,10 @@ int Generate_JSON::run() {
             mainWindow->logMessage(QString("Loops: %1").arg(loop));
         }
 
-        /***********************************************************************************
-        // Converto tutto in JSON e scrivo il file
-        ***********************************************************************************/
-        mainWindow->logMessage(QString("------------"));
-        mainWindow->logMessage(QString("JSON FINALE:"));
-        mainWindow->logMessage(QString("grid:"));
-        // converto la griglia in JSON
-        json grid_json = json::array();
-        for (int i = 0; i < DIM1; ++i) {
-            json row = json::array();
-            for (int j = 0; j < DIM2; ++j) {
-                row.push_back(std::string(1, grid[i][j] + 'A' - 'a'));  // converto il char in stringa per il JSON (trasformando in CAP letter)
-            }
-            grid_json.push_back(row);
-        }
-        //stampo grid[][]
-        QString gridContent;
-        for (int j = 0; j < DIM2; ++j) {
-            for (int i = 0; i < DIM1; ++i) {
-                gridContent += QString("%1 ").arg(grid[i][j]);
-            }
-            gridContent += "\n"; // Aggiunge una nuova riga dopo ogni riga della griglia
-        }
-        mainWindow->logMessage(gridContent);
-
-        mainWindow->logMessage(QString("words:"));
-        // Converto le parole in JSON
-        json words_json = json::array();
-        for (int i = 0; i < words.get_size(); ++i) {
-            std::string word_i = words.get_word_by_alphabetical(i);
-            mainWindow->logMessage(QString("#%1: %2\n").arg(i).arg(QString::fromStdString(word_i)));
-            std::transform(word_i.begin(), word_i.end(), word_i.begin(), ::toupper); // Converte ogni carattere in maiuscolo
-            words_json.push_back(word_i);
-        }
-
-        // Converto passingWords in JSON
-        mainWindow->logMessage("\nwords passingLinks:\n");
-        json passingLinks_json = json::array();
-        for (int i = 0; i < DIM1; ++i) {
-            json json_row = json::array();
-            for (int j = 0; j < DIM2; ++j) {
-                json json_link = json::array();
-                int num_links = passingWords[i][j].get_size(); // Ottieni il numero di collegamenti
-
-                mainWindow->logMessage(QString("{%1, %2}").arg(i).arg(j));
-                DynArray alphabetical_index;
-                for (int k = 0; k < num_links; ++k) {
-                    alphabetical_index.add_value(words.get_alphabetical_index(passingWords[i][j].get_value(k)));
-                }
-                for (int k = 0; k < num_links; ++k) {
-                    int value = alphabetical_index.get_value(k);
-                    mainWindow->logMessage(QString("%1 ").arg(value));
-                    json_link.push_back(value);
-                }
-                json_row.push_back(json_link);
-                mainWindow->logMessage(QString("\n"));
-            }
-            passingLinks_json.push_back(json_row);
-        }
-
-        // Converti startingLinks in JSON
-        mainWindow->logMessage(QString("\nwords startingLinks:\n"));
-        json startingLinks_json = json::array();
-        for (int i = 0; i < words.get_size(); ++i) {
-            json json_pair = json::array();
-            std::pair<int, int> startingTile = words.get_startingTile_by_alphabetical(i);
-            mainWindow->logMessage(QString("#%1 -> {%2, %3}").arg(i).arg(startingTile.first).arg(startingTile.second));
-            json_pair.push_back(startingTile.first);
-            json_pair.push_back(startingTile.second);
-            startingLinks_json.push_back(json_pair);
-        }
-
-        // Converto words_bonus in JSON
-        mainWindow->logMessage(QString("\nbonus:\n"));
-        json words_bonus_json = json::array();
-        for (int i = 0; i < words_bonus.get_size(); ++i) {
-            std::string word_bonus_i = words_bonus.get_word_by_alphabetical(i);
-
-            bool in_grid = false;
-            for (int i = 0; i < DIM1; ++i) {
-                for (int j = 0; j < DIM2; ++j) {
-                    if (grid[i][j] == word_bonus_i.front()) {  //.front() estrae il primo carattere
-                        in_grid = pathFinder.is_still_in_grid(i, j, 0, word_bonus_i);
-                        if (in_grid) {
-                            break;
-                        }
-                    }
-                }
-                if (in_grid) {
-                    break;
-                }
-            }
-            if (in_grid) {
-                mainWindow->logMessage(QString("#%1: %2").arg(i).arg(QString::fromStdString(word_bonus_i)));
-                std::transform(word_bonus_i.begin(), word_bonus_i.end(), word_bonus_i.begin(), ::toupper); // Converte ogni carattere in maiuscolo
-                words_bonus_json.push_back(word_bonus_i);
-            }
-        }
-
-        // creo il contenuto JSON finale
-        int todaysNum = jsons_to_elaborate.front();
-        json data;
-        data["todaysNum"] = todaysNum;
-        data["grid"] = grid_json;
-        data["words"] = words_json;
-        data["passingLinks"] = passingLinks_json;
-        data["startingLinks"] = startingLinks_json;
-        data["bonus"] = words_bonus_json;
-
-        // Salvare il JSON in un file
-
-        std::string dir = mainWindow->m_selectedDirectory.toStdString();
-        std::string json_name = dir + "/quadrati#" + std::to_string(todaysNum) + ".json";
-
-        std::ofstream file(json_name);
-        if (file.is_open()) {
-            file << std::setw(2) << data << std::endl;  // Usa std::setw(2) per una formattazione leggibile
-            file.close();
-            mainWindow->logMessage(QString("Generato JSON #%1").arg(QString::fromStdString(json_name)));
-        } else {
-            throw std::runtime_error("Errore durante l'apertura del file: " + json_name);
-        }
+        converti_e_scrivi_JSON();
 
         //riazzero le variabili ad ogni iterazione
         jsons_to_elaborate.pop(); //elimina il primo elemento
-        words.clear();
-        passingWords.clear();
-        passingWords = std::vector<std::vector<DynArray>>(DIM1, std::vector<DynArray>(DIM2, DynArray(words.get_size())));
     }
 
     // chiedo se salvare le modifiche al dizionario
@@ -355,6 +155,249 @@ int Generate_JSON::run() {
     return 0;
 }
 
+bool Generate_JSON::dizionario_sovrascriviParola(const std::string& parola, Etichette etichette) {
+    if (!dizionario.isLoaded()) {
+        return false;
+    }
+    dizionario.inserisciParola(parola, etichette);
+    return true;
+}
+
+bool Generate_JSON::dizionario_rimuoviParola(const std::string& parola) {
+    if (!dizionario.isLoaded()) {
+        return false;
+    }
+    dizionario.rimuoviParola(parola);
+    return true;
+}
+
+void Generate_JSON::creazione_grid() {
+    /***********************************************************************************
+            // CREAZIONE ARRAY-2D GRID
+            ***********************************************************************************/
+    // Popoliamo grid con lettere casuali
+    for (int i = 0; i < DIM1; ++i) {
+        for (int j = 0; j < DIM2; ++j) {
+            if (passingWords[i][j].get_size() == 0) {
+                grid[i][j] = 'a' + std::rand() % 26;  // Lettera casuale tra 'a' e 'z' (lavoro con lettere minuscole perché il dizionario usa solo minuscole. Converto in CAPS quando scrivo il JSON)
+
+                mainWindow->setGridTile(i, j, QChar(grid[i][j]));
+            }
+        }
+    }
+
+    //stampo grid[][]
+    QString gridContent;
+    for (int j = 0; j < DIM2; ++j) {
+        for (int i = 0; i < DIM1; ++i) {
+            gridContent += QString("%1 ").arg(QChar(grid[i][j] + 'A' - 'a'));
+        }
+        gridContent += "\n"; // Aggiunge una nuova riga dopo ogni riga della griglia
+    }
+    mainWindow->logMessage("Contenuto di GRID:\n" + gridContent);
+
+    //timer_end = std::chrono::high_resolution_clock::now();
+    //duration = timer_end - timer_overall_start;
+    //mainWindow->logMessage(QString("Array GRID creato - elapsed time: %1 ms").arg(duration.count()));
+
+    //aggiorno la schermata
+    QApplication::processEvents();
+}
+
+void Generate_JSON::creazione_words() {
+    /***********************************************************************************
+    // CREAZIONE ARRAY-1D WORDS
+    ***********************************************************************************/
+    //qui devo calcolare l'elenco di parole trovate all'interno della griglia
+
+#ifdef PATH_MAX_STEPS
+    mainWindow->logMessage(QString("Numero massimo di passi impostato: %1").arg(PATH_MAX_STEPS);
+#endif
+    for (
+#ifdef PATH_MAX_STEPS
+        int path_size = 4; path_size <= PATH_MAX_STEPS; ++path_size
+#else
+        int path_size = 4; path_size <= DIM1 * DIM2; ++path_size
+#endif
+        ) {
+        for (int i = 0; i < DIM1; ++i) {
+            for (int j = 0; j < DIM2; ++j) {
+                pathFinder.findPaths(i, j, 0, path_size);  //qui dentro riempio words
+            }
+        }
+    }
+
+    //TODO: qui controllo se ho delle parole in sospeso
+    if (!mainWindow) {
+        throw std::runtime_error("MainWindow non disponibile");
+    }
+
+    // Attendiamo l'input dell'utente
+    while (!mainWindow->BoxQueueIsEmpty()) {
+        QApplication::processEvents();
+    }
+
+    //timer_end = std::chrono::high_resolution_clock::now();
+    //duration = timer_end - timer_overall_start;
+    mainWindow->logMessage(QString("Array WORDS: %1 nuove parole")// - elapsed time: %2 ms")
+       .arg(words.get_size() - n_words_old));
+    //   .arg(duration.count()));
+    //n_words_old = words.get_size();
+}
+
+void Generate_JSON::creazione_gridLinks() {
+    /***********************************************************************************
+            // CREAZIONE ARRAY-3D GRID_LINKS
+            ***********************************************************************************/
+    //qui devo calcolare tutte le possibilità e calcolare quali parole possono passare da ciascuna lettera (e quali possono iniziare)
+
+    for (int word_i = 0; word_i < words.get_size(); ++word_i) {
+        std::string running_word = words.get_word_by_insertion(word_i);
+        std::pair<int, int> running_start = words.get_startingTile_by_insertion(word_i); //TODO: running_start viene passato a findWordPaths inutilmente, non serve assolutamenet a nulla. Rivedere
+        for (int i = 0; i < DIM1; ++i) {
+            for (int j = 0; j < DIM2; ++j) {
+                if(grid[i][j] == running_word[0]) {
+                    pathFinder.findWordPaths(i, j, 0, running_word, word_i, running_start);  //qui dentro riempio passingWords
+                }
+            }
+        }
+        words.add_startingTile_by_insertion(running_start, word_i); // e con questo completo words.startingTile
+    }
+    mainWindow->updateGridColors(passingWords);
+    QApplication::processEvents();
+
+    //timer_end = std::chrono::high_resolution_clock::now();
+    //duration = timer_end - timer_overall_start;
+    mainWindow->logMessage(QString("Array PASSINGWORDS: %1 nuovi percorsi")// - elapsed time: %2 ms")
+                               .arg(n_paths - n_paths_old));
+    //                           .arg(duration.count()));
+    n_paths_old = n_paths;
+}
+
+void Generate_JSON::converti_e_scrivi_JSON() {
+    /***********************************************************************************
+    // Converto tutto in JSON e scrivo il file
+    ***********************************************************************************/
+    mainWindow->logMessage(QString("------------"));
+    mainWindow->logMessage(QString("JSON FINALE:"));
+    mainWindow->logMessage(QString("grid:"));
+    // converto la griglia in JSON
+    json grid_json = json::array();
+    for (int i = 0; i < DIM1; ++i) {
+        json row = json::array();
+        for (int j = 0; j < DIM2; ++j) {
+            row.push_back(std::string(1, grid[i][j] + 'A' - 'a'));  // converto il char in stringa per il JSON (trasformando in CAP letter)
+        }
+        grid_json.push_back(row);
+    }
+    //stampo grid[][]
+    QString gridContent;
+    for (int j = 0; j < DIM2; ++j) {
+        for (int i = 0; i < DIM1; ++i) {
+            gridContent += QString("%1 ").arg(grid[i][j]);
+        }
+        gridContent += "\n"; // Aggiunge una nuova riga dopo ogni riga della griglia
+    }
+    mainWindow->logMessage(gridContent);
+
+    mainWindow->logMessage(QString("words:"));
+    // Converto le parole in JSON
+    json words_json = json::array();
+    for (int i = 0; i < words.get_size(); ++i) {
+        std::string word_i = words.get_word_by_alphabetical(i);
+        mainWindow->logMessage(QString("#%1: %2\n").arg(i).arg(QString::fromStdString(word_i)));
+        std::transform(word_i.begin(), word_i.end(), word_i.begin(), ::toupper); // Converte ogni carattere in maiuscolo
+        words_json.push_back(word_i);
+    }
+
+    // Converto passingWords in JSON
+    mainWindow->logMessage("\nwords passingLinks:\n");
+    json passingLinks_json = json::array();
+    for (int i = 0; i < DIM1; ++i) {
+        json json_row = json::array();
+        for (int j = 0; j < DIM2; ++j) {
+            json json_link = json::array();
+            int num_links = passingWords[i][j].get_size(); // Ottieni il numero di collegamenti
+
+            mainWindow->logMessage(QString("{%1, %2}").arg(i).arg(j));
+            DynArray alphabetical_index;
+            for (int k = 0; k < num_links; ++k) {
+                alphabetical_index.add_value(words.get_alphabetical_index(passingWords[i][j].get_value(k)));
+            }
+            for (int k = 0; k < num_links; ++k) {
+                int value = alphabetical_index.get_value(k);
+                mainWindow->logMessage(QString("%1 ").arg(value));
+                json_link.push_back(value);
+            }
+            json_row.push_back(json_link);
+            mainWindow->logMessage(QString("\n"));
+        }
+        passingLinks_json.push_back(json_row);
+    }
+
+    // Converti startingLinks in JSON
+    mainWindow->logMessage(QString("\nwords startingLinks:\n"));
+    json startingLinks_json = json::array();
+    for (int i = 0; i < words.get_size(); ++i) {
+        json json_pair = json::array();
+        std::pair<int, int> startingTile = words.get_startingTile_by_alphabetical(i);
+        mainWindow->logMessage(QString("#%1 -> {%2, %3}").arg(i).arg(startingTile.first).arg(startingTile.second));
+        json_pair.push_back(startingTile.first);
+        json_pair.push_back(startingTile.second);
+        startingLinks_json.push_back(json_pair);
+    }
+
+    // Converto words_bonus in JSON
+    mainWindow->logMessage(QString("\nbonus:\n"));
+    json words_bonus_json = json::array();
+    for (int i = 0; i < words_bonus.get_size(); ++i) {
+        std::string word_bonus_i = words_bonus.get_word_by_alphabetical(i);
+
+        bool in_grid = false;
+        for (int i = 0; i < DIM1; ++i) {
+            for (int j = 0; j < DIM2; ++j) {
+                if (grid[i][j] == word_bonus_i.front()) {  //.front() estrae il primo carattere
+                    in_grid = pathFinder.is_still_in_grid(i, j, 0, word_bonus_i);
+                    if (in_grid) {
+                        break;
+                    }
+                }
+            }
+            if (in_grid) {
+                break;
+            }
+        }
+        if (in_grid) {
+            mainWindow->logMessage(QString("#%1: %2").arg(i).arg(QString::fromStdString(word_bonus_i)));
+            std::transform(word_bonus_i.begin(), word_bonus_i.end(), word_bonus_i.begin(), ::toupper); // Converte ogni carattere in maiuscolo
+            words_bonus_json.push_back(word_bonus_i);
+        }
+    }
+
+    // creo il contenuto JSON finale
+    int todaysNum = jsons_to_elaborate.front();
+    json data;
+    data["todaysNum"] = todaysNum;
+    data["grid"] = grid_json;
+    data["words"] = words_json;
+    data["passingLinks"] = passingLinks_json;
+    data["startingLinks"] = startingLinks_json;
+    data["bonus"] = words_bonus_json;
+
+    // Salvare il JSON in un file
+    std::string dir = mainWindow->m_selectedDirectory.toStdString();
+    std::string json_name = dir + "/quadrati#" + std::to_string(todaysNum) + ".json";
+
+    std::ofstream file(json_name);
+    if (file.is_open()) {
+        file << std::setw(2) << data << std::endl;  // Usa std::setw(2) per una formattazione leggibile
+        file.close();
+        mainWindow->logMessage(QString("Generato JSON #%1").arg(QString::fromStdString(json_name)));
+    } else {
+        throw std::runtime_error("Errore durante l'apertura del file: " + json_name);
+    }
+}
+
 // Costruttore della classe FindPath
 Generate_JSON::FindPath::FindPath(Generate_JSON& gen_json) : parent(gen_json) {}
 
@@ -366,29 +409,26 @@ void Generate_JSON::FindPath::returnFinalWord(int pathLength) {
     for (int i = 0; i < pathLength; ++i) {
         parola += parent.grid[path[i].first][path[i].second];
     }
-    if (parent.dizionario.cercaParola(parola)) { //se trovo la parola nel json
-        //TODO: cercaParola e consulta_dizionario fanno le stesse operazioni --> ottimizzare!
-        //consulto i dizionari
-        Etichette etichette = consulta_dizionario(parola);
 
-         //TODO: qui indicare le Etichette bonus e le accettate
-        if(etichette.haUnaEtichetta(Etichette(Etichette::Approvate))) {
+    auto rispostaDizionario = parent.dizionario.cercaParola(parola);
+    if (rispostaDizionario) {
+        std::cout << "Parola: " << parola << " --> etichette: " << rispostaDizionario->printBitmask() << std::endl;
 
-            std::cout << "accettata" << std::endl;
+         // Qui sono indicate le Etichette bonus e le accettate
+        if(rispostaDizionario->haUnaEtichetta(Etichette(Etichette::Approvate))) {
             if (parent.words.add_word(parola)) {
-                parent.mainWindow->addWord(QString::fromStdString(parola), etichette);
+                parent.mainWindow->addWord(QString::fromStdString(parola), *rispostaDizionario);
                 parent.mainWindow->logMessage(QString("#%1: %2").arg(parent.words.get_size()).arg(QString::fromStdString(parola)));
             }
-        } else if(etichette.haUnaEtichetta(Etichette(Etichette::BonusNome | Etichette::BonusRaro | Etichette::BonusStraniero))) {
-
-            std::cout << "bonus" << std::endl;
+        } else if(rispostaDizionario->haUnaEtichetta(Etichette(Etichette::BonusNome | Etichette::BonusRaro | Etichette::BonusStraniero))) {
             if (parent.words_bonus.add_word(parola)) {
-                parent.mainWindow->addWord(QString::fromStdString(parola), etichette, true);
+                parent.mainWindow->addWordBonus(QString::fromStdString(parola), *rispostaDizionario);
                 parent.mainWindow->logMessage(QString("#%1: %2 - (bonus)").arg(parent.words_bonus.get_size()).arg(QString::fromStdString(parola)));
             }
         } else {
-            std::cout << "rimossa" << std::endl;
-            parent.dizionario.rimuoviParola(parola);
+            if (parent.words_queue.add_word(parola)) {
+                parent.mainWindow->addWordInQueue(QString::fromStdString(parola), *rispostaDizionario);
+            }
         }
 
         QApplication::processEvents();
@@ -501,20 +541,8 @@ bool Generate_JSON::FindPath::is_still_in_grid(int x, int y, int step, const std
 }
 
 
-Etichette Generate_JSON::FindPath::consulta_dizionario(const std::string& parola) {
-
-    auto rispostaDizionario = parent.dizionario.cercaParola(parola, Etichette(Etichette::Approvate | Etichette::BonusRaro | Etichette::BonusNome | Etichette::BonusStraniero), true);
-    if (rispostaDizionario) {
-        std::cout << "Parola: " << parola << " --> etichette: " << rispostaDizionario->printBitmask() << std::endl;
-        return *rispostaDizionario;
-    }
-
-    return ask_the_boss(parola);
-}
-
-Etichette Generate_JSON::FindPath::ask_the_boss(const std::string& parola)
+Etichette Generate_JSON::FindPath::ask_the_boss(const std::string& parola)  //TODO: funzione da eliminare dopo aver ripristinato highlightTiles e cancellato setAskWord e getAskResult
 {
-    //MainWindow* mainWindow = qobject_cast<MainWindow*>(QApplication::activeWindow());
     MainWindow* mainWindow = parent.mainWindow;
 
     if (!mainWindow) {
@@ -534,6 +562,5 @@ Etichette Generate_JSON::FindPath::ask_the_boss(const std::string& parola)
 
     return mainWindow->getAskResult();
 }
-
 
 
