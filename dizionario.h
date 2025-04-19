@@ -13,13 +13,10 @@ public:
     Dizionario();
 
     // Metodo per inserire una parola nel dizionario con etichette
-    void inserisciParola(const std::string& parola, Etichette etichette = Etichette(Etichette::Nessuna));  //chiamare inserisciParola("parola", Etichette::DizionarioComune | Etichette::BonusAntico) per assegnare più etichette alla parola.
+    void inserisciParola(const std::string& parola, Etichette etichette = Etichette(Etichette::Nessuna), bool sovrascriviEtichette = false);  //chiamare inserisciParola("parola", Etichette::DizionarioComune | Etichette::BonusAntico) per assegnare più etichette alla parola.
 
     // Metodo per rimuovere una parola dal dizionario
     bool rimuoviParola(const std::string& parola);
-
-    // Metodo per modificare l'etichetta di una parola
-    bool riscriviEtichettaParola(const std::string& parola, Etichette etichette);
 
     // Metodo per cercare una parola nel dizionario (opzionalmente con etichetta)
     std::optional<Etichette> cercaParola(const std::string& parola, Etichette etichette = Etichette(Etichette::Tutte), bool OR_tra_etichette = false) const;  //cercaParola("parola", Etichette::BonusAntico | Etichette::BonusPoetico) per filtrare in base alle etichette

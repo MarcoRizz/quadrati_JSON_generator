@@ -5,27 +5,23 @@
 
 Dizionario::Dizionario() : radice(std::make_unique<Lettera>()) {}
 
-void Dizionario::inserisciParola(const std::string& parola, Etichette etichette) {
+// Se la parola era già presente, aggiunge le etichette a quelle già esistenti
+void Dizionario::inserisciParola(const std::string& parola, Etichette etichette, bool sovrascriviEtichette) {
     std::string parolaPulita = rimuoviAccenti(parola);
     Lettera* corrente = radice.get();
     for (char c : parolaPulita) {
         corrente = corrente->aggiungiFiglio(c);
     }
     corrente->fineParola = true;
+    if (sovrascriviEtichette) {
+        corrente->etichette = Etichette::Nessuna;
+    }
     corrente->etichette.aggiungiEtichetta(etichette); // Aggiunge le etichette specificate
 }
 
 bool Dizionario::rimuoviParola(const std::string& parola) {
     std::string parolaPulita = rimuoviAccenti(parola);
     return rimuoviParolaRicorsivo(radice.get(), parolaPulita, 0);
-}
-
-bool Dizionario::riscriviEtichettaParola(const std::string& parola, Etichette etichette) {
-    if (rimuoviParola(parola)) {
-        inserisciParola(parola, etichette);
-        return true;
-    }
-    return false;
 }
 
 std::optional<Etichette> Dizionario::cercaParola(const std::string& parola, Etichette etichette, bool OR_tra_etichette) const {
@@ -90,6 +86,7 @@ bool Dizionario::rimuoviParolaRicorsivo(Lettera* nodo, const std::string& parola
             return false;
         }
         nodo->fineParola = false;
+        nodo->etichette = Etichette::Nessuna;
         return nodo->figli.empty();
     }
 
