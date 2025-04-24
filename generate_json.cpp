@@ -28,6 +28,19 @@ Generate_JSON::Generate_JSON(MainWindow* mainWindow)
     // Altre inizializzazioni se necessarie
 }
 
+customButton_destination findDestination(const Etichette et) {
+    // Qui sono indicate le Etichette accettate e quelle bonus
+    if (et.haUnaEtichetta(Etichette(Etichette::Approvate))) {
+        return Accepted;
+
+    } else if (et.haUnaEtichetta(Etichette(Etichette::BonusNome | Etichette::BonusRaro | Etichette::BonusStraniero))) {
+        return Bonus;
+
+    } else {
+        return Queue;
+    }
+}
+
 int Generate_JSON::run() {
     /*words.add_word("auguri");
     words.add_word( "marcelo");
@@ -155,22 +168,6 @@ int Generate_JSON::run() {
     return 0;
 }
 
-bool Generate_JSON::dizionario_sovrascriviParola(const std::string& parola, Etichette etichette) {
-    if (!dizionario.isLoaded()) {
-        return false;
-    }
-    dizionario.inserisciParola(parola, etichette);
-    return true;
-}
-
-bool Generate_JSON::dizionario_rimuoviParola(const std::string& parola) {
-    if (!dizionario.isLoaded()) {
-        return false;
-    }
-    dizionario.rimuoviParola(parola);
-    return true;
-}
-
 void Generate_JSON::creazione_grid() {
     /***********************************************************************************
             // CREAZIONE ARRAY-2D GRID
@@ -236,6 +233,7 @@ void Generate_JSON::creazione_words() {
     while (!mainWindow->BoxQueueIsEmpty()) {
         QApplication::processEvents();
     }
+    words_queue.clear();
 
     //timer_end = std::chrono::high_resolution_clock::now();
     //duration = timer_end - timer_overall_start;
@@ -398,6 +396,48 @@ void Generate_JSON::converti_e_scrivi_JSON() {
     }
 }
 
+void Generate_JSON::onModifiedWord(std::string parola, Etichette et) {
+    customButton_destination dest = findDestination(et);
+
+    switch (dest) {
+    case Accepted:
+        if (words.add_word(parola)) {
+            words_bonus.remove_word(parola);
+            words_queue.remove_word(parola);
+            mainWindow->addWord(QString::fromStdString(parola), et, Accepted);
+            mainWindow->logMessage(QString("#%1->ACETTATE").arg(QString::fromStdString(parola)));
+        }
+
+        break;
+    case Bonus:
+        if (words_bonus.add_word(parola)) {
+            words.remove_word(parola);
+            words_queue.remove_word(parola);
+            mainWindow->addWord(QString::fromStdString(parola), et, Bonus);
+            mainWindow->logMessage(QString("#%1->BONUS").arg(QString::fromStdString(parola)));
+        }
+
+        break;
+    case Queue:
+        if (words_queue.add_word(parola)) {
+            words.remove_word(parola);
+            words_bonus.remove_word(parola);
+            mainWindow->addWord(QString::fromStdString(parola), et, Queue);
+            mainWindow->logMessage(QString("#%1->QUEUE").arg(QString::fromStdString(parola)));
+        }
+
+        break;
+    default:
+        qWarning() << "Destinazione non trovata!";
+        break;
+    }
+
+    // Salvo le modifiche alle etichette nel dizionario
+    dizionario.inserisciParola(parola, et, true);
+
+    QApplication::processEvents();
+}
+
 // Costruttore della classe FindPath
 Generate_JSON::FindPath::FindPath(Generate_JSON& gen_json) : parent(gen_json) {}
 
@@ -414,21 +454,31 @@ void Generate_JSON::FindPath::returnFinalWord(int pathLength) {
     if (rispostaDizionario) {
         std::cout << "Parola: " << parola << " --> etichette: " << rispostaDizionario->printBitmask() << std::endl;
 
-         // Qui sono indicate le Etichette bonus e le accettate
-        if(rispostaDizionario->haUnaEtichetta(Etichette(Etichette::Approvate))) {
+        customButton_destination dest = findDestination(*rispostaDizionario);
+        switch (dest) {
+        case Accepted:
             if (parent.words.add_word(parola)) {
-                parent.mainWindow->addWord(QString::fromStdString(parola), *rispostaDizionario);
+                parent.mainWindow->addWord(QString::fromStdString(parola), *rispostaDizionario, Accepted);
                 parent.mainWindow->logMessage(QString("#%1: %2").arg(parent.words.get_size()).arg(QString::fromStdString(parola)));
             }
-        } else if(rispostaDizionario->haUnaEtichetta(Etichette(Etichette::BonusNome | Etichette::BonusRaro | Etichette::BonusStraniero))) {
+
+            break;
+        case Bonus:
             if (parent.words_bonus.add_word(parola)) {
-                parent.mainWindow->addWordBonus(QString::fromStdString(parola), *rispostaDizionario);
+                parent.mainWindow->addWord(QString::fromStdString(parola), *rispostaDizionario, Bonus);
                 parent.mainWindow->logMessage(QString("#%1: %2 - (bonus)").arg(parent.words_bonus.get_size()).arg(QString::fromStdString(parola)));
             }
-        } else {
+
+            break;
+        case Queue:
             if (parent.words_queue.add_word(parola)) {
-                parent.mainWindow->addWordInQueue(QString::fromStdString(parola), *rispostaDizionario);
+                parent.mainWindow->addWord(QString::fromStdString(parola), *rispostaDizionario, Queue);
             }
+
+            break;
+        default:
+            qWarning() << "Destinazione non trovata!";
+            break;
         }
 
         QApplication::processEvents();

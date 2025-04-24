@@ -3,7 +3,9 @@
 
 #include <QMainWindow>
 #include <QLabel>
-#include "generate_json.h"
+#include "common_enums.h"
+#include "generate_JSON.h"
+#include "custommenubutton.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -38,7 +40,8 @@ public:
     void highlightTiles(const std::pair<int, int>* positions, int size); // Evidenzia alcune celle
 
     //riguarda l'elenco di parole trovate
-    void addWord(const QString &word, const Etichette &etichette, const bool isBonus = false);
+    void addWord(const QString &word, const Etichette &etichette, customButton_destination dest = Accepted);
+    CustomMenuButton* removeWordFromDestination(const QString &word, customButton_destination exclude);
     void clearWords();
 
 private slots:

@@ -5,7 +5,6 @@
 #include <qfiledialog.h>
 #include <QMessageBox>
 #include <QSettings>
-#include "custommenubutton.h"
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -247,19 +246,59 @@ void MainWindow::highlightTiles(const std::pair<int, int>* positions, int size) 
     }
 }
 
-void MainWindow::addWord(const QString &word, const Etichette &etichette, const bool isBonus) {
-    CustomMenuButton *label = new CustomMenuButton(word, etichette);
+void MainWindow::addWord(const QString &word, const Etichette &etichette, customButton_destination dest) {
+    CustomMenuButton* label = removeWordFromDestination(word, dest);
 
-    // Scegli il layout giusto
-    //QScrollArea* layout = isBonus ? ui->boxBonusA : ui->boxAcceptedA;
-    QWidget* list = isBonus ? ui->boxBonus : ui->boxAccepted;
-    QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(list->layout());
-    if (!layout) {
-        qWarning() << "Layout non trovato in boxBonus!";
+    if (!label) {
+        label = new CustomMenuButton(word, etichette, &generate_json);
+    }
+
+    QWidget* list;
+    switch (dest) {
+    case Accepted:
+        list = ui->boxAccepted;
+        break;
+    case Bonus:
+        list = ui->boxBonus;
+        break;
+    case Queue:
+        list = ui->boxQueue;
+        break;
+    default:
+        qWarning() << "Layout non trovato!";
         return;
     }
 
+    QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(list->layout());
     layout->addWidget(label);
+}
+
+
+CustomMenuButton* MainWindow::removeWordFromDestination(const QString &word, customButton_destination exclude) {
+    QList<QWidget*> lists = { ui->boxAccepted, ui->boxBonus, ui->boxQueue };
+
+    for (int i = 0; i < lists.size(); ++i) {
+        if (static_cast<customButton_destination>(i) == exclude)
+            continue;
+
+        QWidget* list = lists[i];
+        QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(list->layout());
+        if (!layout)
+            continue;
+
+        for (int j = 0; j < layout->count(); ++j) {
+            QWidget* widget = layout->itemAt(j)->widget();
+            if (CustomMenuButton* btn = qobject_cast<CustomMenuButton*>(widget)) {
+                if (btn->text() == word) {
+                    layout->removeWidget(btn);
+                    //btn->deleteLater(); // se vuoi eliminarlo invece che restituirlo
+                    return btn; // restituisci il pulsante rimosso
+                }
+            }
+        }
+    }
+
+    return nullptr;
 }
 
 

@@ -35,6 +35,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         etichette.h
 
         custommenubutton.h custommenubutton.cpp
+        common_enums.h
 
 
 

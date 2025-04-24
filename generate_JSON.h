@@ -10,6 +10,9 @@
 #include "wordlist.h"
 #include "dizionario.h"
 #include "dynarray.h"
+#include "common_enums.h"
+
+customButton_destination findDestination(const Etichette et);
 
 class MainWindow; // Forward declaration
 class FindPath; // Forward declaration di FindPath
@@ -19,9 +22,7 @@ public:
     Generate_JSON(MainWindow* mainWindow); // Dichiarazione del costruttore
 
     int run();
-
-    bool dizionario_sovrascriviParola(const std::string& parola, Etichette etichette);
-    bool dizionario_rimuoviParola(const std::string& parola);
+    void onModifiedWord(std::string parola, Etichette et);
 
 private:
     MainWindow* mainWindow;
@@ -30,6 +31,7 @@ private:
     char grid[DIM1][DIM2];
     WordList words;
     WordList words_bonus;
+    WordList words_queue;
     Dizionario dizionario;
 
     const std::string dictionary_path_json = "C:\\Users\\mav13\\Documents\\Qt\\Dizionari\\dizionario.json";

@@ -25,8 +25,8 @@ bool PersistentMenu::event(QEvent* e)
 }
 
 // Costruttore della CustomMenuButton //TODO: impostare mainWindow->highlightTiles(path, parola.length()) al clic sul bottone
-CustomMenuButton::CustomMenuButton(const QString& text, const Etichette &et, QWidget* parent)
-    : QPushButton(text, parent), etichette(et)
+CustomMenuButton::CustomMenuButton(const QString& text, const Etichette &et, Generate_JSON* generate_json, QWidget* parent)
+    : QPushButton(text, parent), etichette(et), gen_JSON_address(generate_json)
 {
     // Crea il menu personalizzato
     menu = new PersistentMenu(this);
@@ -67,6 +67,9 @@ CustomMenuButton::CustomMenuButton(const QString& text, const Etichette &et, QWi
             qDebug() << "Proprietà rimaste: " << etichette.printBitmask();
         });
 
+        //collego il segnale di chiusura del menu con la funzione da eseguire
+        connect(menu, &QMenu::aboutToHide, this, &CustomMenuButton::onMenuClosed);
+
         action->setDefaultWidget(check);
 
         menu->addAction(action);
@@ -75,6 +78,13 @@ CustomMenuButton::CustomMenuButton(const QString& text, const Etichette &et, QWi
 
     // Mostra il menu al clic del pulsante
     connect(this, &QPushButton::clicked, this, [this]() {
+        etichette_originale = etichette; // salva lo stato attuale
         menu->exec(this->mapToGlobal(QPoint(0, this->height())));
     });
+}
+
+void CustomMenuButton::onMenuClosed() {
+    if (!(etichette == etichette_originale)) {
+        gen_JSON_address->onModifiedWord(text().toStdString(), etichette);
+    }
 }
