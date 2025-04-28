@@ -589,28 +589,3 @@ bool Generate_JSON::FindPath::is_still_in_grid(int x, int y, int step, const std
     // Non troviamo alcun percorso
     return false;
 }
-
-
-Etichette Generate_JSON::FindPath::ask_the_boss(const std::string& parola)  //TODO: funzione da eliminare dopo aver ripristinato highlightTiles e cancellato setAskWord e getAskResult
-{
-    MainWindow* mainWindow = parent.mainWindow;
-
-    if (!mainWindow) {
-        throw std::runtime_error("MainWindow non disponibile, while elaborating word: " + parola);
-    }
-
-    mainWindow->highlightTiles(path, parola.length());
-    mainWindow->setAskWord(QString::fromStdString(parola));
-    // Attendiamo l'input dell'utente
-    while (mainWindow->getAskResult() == Etichette(Etichette::Nessuna)) {
-        QApplication::processEvents();
-    }
-
-    std::cout << "risposta ottenuta: " << mainWindow->getAskResult().printBitmask() << std::endl;
-    parent.dizionario.inserisciParola(parola, mainWindow->getAskResult()); //TODO: ancora non contempla la rimozione
-    mainWindow->updateGridColors(parent.passingWords);
-
-    return mainWindow->getAskResult();
-}
-
-

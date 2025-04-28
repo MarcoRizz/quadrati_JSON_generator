@@ -47,14 +47,6 @@ public:
     bool boxQueueIsEmpty();
 
 private slots:
-    // Slots per gestire i pulsanti di "Ask the Boss"
-    void on_btn_accept_clicked();
-    void on_btn_bonus_rare_clicked();
-    void on_btn_bonus_name_clicked();
-    void on_btn_bonus_foreign_clicked();
-    void on_btn_reject_clicked();
-    void on_btn_google_clicked();
-
     void on_generate_JSON_clicked();
 
     void on_btnEnd_N_clicked();
@@ -66,8 +58,6 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    Etichette askResult = Etichette(Etichette::Nessuna); // Risultato dell'azione
-    QString currentWord;    // Parola attualmente in valutazione
     int saveDictionary = 0;     // A fine generazione, salva modifiche al dizionario
 };
 #endif // MAINWINDOW_H

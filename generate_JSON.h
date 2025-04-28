@@ -62,7 +62,6 @@ private:
 
         void returnFinalWord(int pathLength);
         void returnFinalPath(int pathLength, int wordIndex, std::pair<int, int>& startingtile);
-        Etichette ask_the_boss(const std::string& parola);
     };
 
     FindPath pathFinder; // Istanza della classe nidificata

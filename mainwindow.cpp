@@ -16,14 +16,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->checkBox_JSON_auto_start, &QCheckBox::checkStateChanged, this, &MainWindow::on_checkBox_checkStateChanged);
 
-    // Collegare i pulsanti di "Ask the Boss" ai rispettivi slot
-    connect(ui->btn_accept, &QPushButton::clicked, this, &MainWindow::on_btn_accept_clicked);
-    connect(ui->btn_bonus_rare, &QPushButton::clicked, this, &MainWindow::on_btn_bonus_rare_clicked);
-    connect(ui->btn_bonus_name, &QPushButton::clicked, this, &MainWindow::on_btn_bonus_name_clicked);
-    connect(ui->btn_bonus_foreign, &QPushButton::clicked, this, &MainWindow::on_btn_bonus_foreign_clicked);
-    connect(ui->btn_reject, &QPushButton::clicked, this, &MainWindow::on_btn_reject_clicked);
-    connect(ui->btn_google, &QPushButton::clicked, this, &MainWindow::on_btn_google_clicked);
-
     // Carica la directory salvata
     QSettings settings("Quadrati", "Quadrati_JSON_generator");
     m_selectedDirectory = settings.value("selectedDirectory", "").toString();
@@ -111,49 +103,6 @@ void MainWindow::setGridTile(int x, int y, QChar letter)
     if (label) {
         label->setText(letter);
     }
-}
-
-
-void MainWindow::setAskWord(const QString& word)
-{
-    askResult = Etichette(Etichette::Nessuna);
-    currentWord = word;
-    ui->label_word->setText("Word: " + currentWord);
-}
-
-Etichette MainWindow::getAskResult() const
-{
-    return askResult;
-}
-
-void MainWindow::on_btn_accept_clicked()
-{
-    askResult = Etichette(Etichette::Approvate);
-}
-
-void MainWindow::on_btn_bonus_rare_clicked()
-{
-    askResult = Etichette(Etichette::BonusRaro);
-}
-
-void MainWindow::on_btn_bonus_name_clicked()
-{
-    askResult = Etichette(Etichette::BonusNome);
-}
-
-void MainWindow::on_btn_bonus_foreign_clicked()
-{
-    askResult = Etichette(Etichette::BonusStraniero);
-}
-
-void MainWindow::on_btn_reject_clicked()
-{
-    askResult = Etichette(Etichette::Nessuna);  //TODO
-}
-
-void MainWindow::on_btn_google_clicked()
-{
-    QDesktopServices::openUrl(QUrl("https://www.google.com/search?q=" + currentWord));
 }
 
 void MainWindow::on_generate_JSON_clicked()
