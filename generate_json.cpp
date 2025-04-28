@@ -230,7 +230,7 @@ void Generate_JSON::creazione_words() {
     }
 
     // Attendiamo l'input dell'utente
-    while (!mainWindow->BoxQueueIsEmpty()) {
+    while (!mainWindow->boxQueueIsEmpty()) {
         QApplication::processEvents();
     }
     words_queue.clear();

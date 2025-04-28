@@ -44,6 +44,8 @@ public:
     CustomMenuButton* removeWordFromDestination(const QString &word, customButton_destination exclude);
     void clearWords();
 
+    bool boxQueueIsEmpty();
+
 private slots:
     // Slots per gestire i pulsanti di "Ask the Boss"
     void on_btn_accept_clicked();

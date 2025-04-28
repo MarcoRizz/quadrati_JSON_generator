@@ -63,8 +63,7 @@ CustomMenuButton::CustomMenuButton(const QString& text, const Etichette &et, Gen
                 etichette.rimuoviEtichetta(Etichette(key));
             }
 
-            //TODO: sovrascrittura del dizionario + rivedere il posizionamento nelle WordList (tramite signal?)
-            qDebug() << "Proprietà rimaste: " << etichette.printBitmask();
+            qDebug() << "Proprietà modificate in: " << etichette.printBitmask();
         });
 
         //collego il segnale di chiusura del menu con la funzione da eseguire

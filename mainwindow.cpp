@@ -265,13 +265,34 @@ void MainWindow::addWord(const QString &word, const Etichette &etichette, custom
         list = ui->boxQueue;
         break;
     default:
-        qWarning() << "Layout non trovato!";
+        qWarning() << "Layout non trovato in boxBonus!";
         return;
     }
 
     QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(list->layout());
-    layout->addWidget(label);
+    if (!layout) {
+        qWarning() << "Layout non trovato!";
+        return;
+    }
+
+    // Inserisci il pulsante in ordine alfabetico
+    bool inserted = false;
+    for (int i = 0; i < layout->count(); ++i) {
+        QWidget* widget = layout->itemAt(i)->widget();
+        if (CustomMenuButton* btn = qobject_cast<CustomMenuButton*>(widget)) {
+            if (QString::compare(word, btn->text(), Qt::CaseInsensitive) < 0) {
+                layout->insertWidget(i, label);
+                inserted = true;
+                break;
+            }
+        }
+    }
+
+    if (!inserted) {
+        layout->addWidget(label); // Se più grande di tutti, aggiungi in fondo
+    }
 }
+
 
 
 CustomMenuButton* MainWindow::removeWordFromDestination(const QString &word, customButton_destination exclude) {
@@ -318,4 +339,25 @@ void MainWindow::clearWords() {
     clearLayout(ui->boxAccepted);
     clearLayout(ui->boxBonus);
 }
+
+bool MainWindow::boxQueueIsEmpty() {
+    if (!ui->boxQueue)
+        return true;
+
+    QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(ui->boxQueue->layout());
+    if (!layout)
+        return true;
+
+    for (int i = 0; i < layout->count(); ++i) {
+        QWidget* widget = layout->itemAt(i)->widget();
+        if (qobject_cast<CustomMenuButton*>(widget)) {
+            // Trovato almeno un CustomMenuButton
+            return false;
+        }
+    }
+
+    // Nessun CustomMenuButton trovato
+    return true;
+}
+
 
