@@ -6,6 +6,7 @@
 
 #define MAX_LOOPS 10
 
+#include <qobject.h>
 #include <queue>
 #include "wordlist.h"
 #include "dizionario.h"
@@ -17,12 +18,20 @@ customButton_destination findDestination(const Etichette et);
 class MainWindow; // Forward declaration
 class FindPath; // Forward declaration di FindPath
 
-class Generate_JSON {
+class Generate_JSON : public QObject {
+public:
+    Q_OBJECT
+
 public:
     Generate_JSON(MainWindow* mainWindow); // Dichiarazione del costruttore
 
     int run();
     void onModifiedWord(std::string parola, Etichette et);
+
+signals:
+    void wordFound(const QString& parola, Etichette et, customButton_destination dest = Accepted);
+    void logMessageRequested(const QString& testo);
+    void wordsComputationFinished();
 
 private:
     MainWindow* mainWindow;

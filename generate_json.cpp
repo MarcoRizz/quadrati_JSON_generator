@@ -1,9 +1,11 @@
 #include "generate_json.h"
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
+#include <QtConcurrent>
 #include "mainwindow.h"
 #include <qapplication.h>
+
 
 #define DIRECTIONS_n 8
 
@@ -207,29 +209,47 @@ void Generate_JSON::creazione_words() {
     ***********************************************************************************/
     //qui devo calcolare l'elenco di parole trovate all'interno della griglia
 
-#ifdef PATH_MAX_STEPS
-    mainWindow->logMessage(QString("Numero massimo di passi impostato: %1").arg(PATH_MAX_STEPS);
-#endif
-    for (
-#ifdef PATH_MAX_STEPS
-        int path_size = 4; path_size <= PATH_MAX_STEPS; ++path_size
-#else
-        int path_size = 4; path_size <= DIM1 * DIM2; ++path_size
-#endif
-        ) {
-        for (int i = 0; i < DIM1; ++i) {
-            for (int j = 0; j < DIM2; ++j) {
-                pathFinder.findPaths(i, j, 0, path_size);  //qui dentro riempio words
+    // 1) Segnalo l’inizio
+    emit logMessageRequested(tr("Avvio ricerca parole…"));
+    /* ------------- parte pesante spostata in un thread --------------- */
+    // 2) Lancio il job pesante in background
+    QtConcurrent::run([this]{
+
+        #ifdef PATH_MAX_STEPS
+        const int maxSteps = PATH_MAX_STEPS;
+        #else
+        const int maxSteps = DIM1 * DIM2;
+        #endif
+
+        for (int path_size = 4; path_size <= maxSteps; ++path_size) {
+            for (int i = 0; i < DIM1; ++i) {
+                for (int j = 0; j < DIM2; ++j) {
+                    pathFinder.findPaths(i, j, 0, path_size);
+                }
             }
         }
-    }
+
+        /* ------------- fine del lavoro pesante ----------------------- */
+
+        emit logMessageRequested(tr("Fine ricerca parole…"));
+        // Avvisa la GUI che abbiamo terminato
+        emit wordsComputationFinished();
+    });
 
     //TODO: qui controllo se ho delle parole in sospeso
     if (!mainWindow) {
         throw std::runtime_error("MainWindow non disponibile");
     }
 
-    // Attendiamo l'input dell'utente
+    // 3) Attendo in modo “bloccante” ma reattivo fino al signal
+    QEventLoop loop;
+    connect(this, &Generate_JSON::wordsComputationFinished,
+            &loop, &QEventLoop::quit,
+            Qt::QueuedConnection);
+    loop.exec();   // rimane qui finché non arriva quit()
+
+    // 4) Ora posso tornare alla tua vecchia logica:
+    //    aspetto che l’utente svuoti la boxQueue
     while (!mainWindow->boxQueueIsEmpty()) {
         QApplication::processEvents();
     }
@@ -458,21 +478,26 @@ void Generate_JSON::FindPath::returnFinalWord(int pathLength) {
         switch (dest) {
         case Accepted:
             if (parent.words.add_word(parola)) {
-                parent.mainWindow->addWord(QString::fromStdString(parola), *rispostaDizionario, Accepted);
-                parent.mainWindow->logMessage(QString("#%1: %2").arg(parent.words.get_size()).arg(QString::fromStdString(parola)));
+                //parent.mainWindow->addWord(QString::fromStdString(parola), *rispostaDizionario, Accepted);
+                //parent.mainWindow->logMessage(QString("#%1: %2").arg(parent.words.get_size()).arg(QString::fromStdString(parola)));
+                emit parent.wordFound(QString::fromStdString(parola), *rispostaDizionario);
+                emit parent.logMessageRequested(QString("#%1: %2").arg(parent.words.get_size()).arg(QString::fromStdString(parola)));
             }
 
             break;
         case Bonus:
             if (parent.words_bonus.add_word(parola)) {
-                parent.mainWindow->addWord(QString::fromStdString(parola), *rispostaDizionario, Bonus);
-                parent.mainWindow->logMessage(QString("#%1: %2 - (bonus)").arg(parent.words_bonus.get_size()).arg(QString::fromStdString(parola)));
+                //parent.mainWindow->addWord(QString::fromStdString(parola), *rispostaDizionario, Bonus);
+                //parent.mainWindow->logMessage(QString("#%1: %2 - (bonus)").arg(parent.words_bonus.get_size()).arg(QString::fromStdString(parola)));
+                emit parent.wordFound(QString::fromStdString(parola), *rispostaDizionario, Bonus);
+                emit parent.logMessageRequested(QString("#%1: %2 - (bonus)").arg(parent.words.get_size()).arg(QString::fromStdString(parola)));
             }
 
             break;
         case Queue:
             if (parent.words_queue.add_word(parola)) {
-                parent.mainWindow->addWord(QString::fromStdString(parola), *rispostaDizionario, Queue);
+                //parent.mainWindow->addWord(QString::fromStdString(parola), *rispostaDizionario, Queue);
+                emit parent.wordFound(QString::fromStdString(parola), *rispostaDizionario, Queue);
             }
 
             break;

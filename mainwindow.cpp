@@ -16,6 +16,12 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->checkBox_JSON_auto_start, &QCheckBox::checkStateChanged, this, &MainWindow::on_checkBox_checkStateChanged);
 
+    connect(&generate_json, &Generate_JSON::logMessageRequested,
+            this, &MainWindow::logMessage);
+
+    connect(&generate_json, &Generate_JSON::wordFound,
+            this, &MainWindow::addWord);
+
     // Carica la directory salvata
     QSettings settings("Quadrati", "Quadrati_JSON_generator");
     m_selectedDirectory = settings.value("selectedDirectory", "").toString();
