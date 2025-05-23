@@ -55,6 +55,44 @@ bool WordList::add_word(const std::string& word) {
     return true;
 }
 
+bool WordList::remove_word(const std::string& word) {
+    int indexToRemove = -1;
+
+    // Trova la parola nell'array
+    for (int i = 0; i < size; ++i) {
+        if (array[i].word == word) {
+            indexToRemove = i;
+            break;
+        }
+    }
+
+    // Se non trovata, ritorna false
+    if (indexToRemove == -1) return false;
+
+    int removedInsertionIndex = array[indexToRemove].index;
+
+    // Sposta a sinistra tutti gli elementi dopo quello rimosso
+    for (int i = indexToRemove; i < size - 1; ++i) {
+        array[i] = array[i + 1];
+    }
+
+    size--; // Diminuisci la dimensione
+
+    // Dopo la rimozione, l'ordine alfabetico è mantenuto.
+    // Tuttavia, gli indici di inserimento potrebbero non essere consecutivi.
+    // Se vuoi mantenerli consistenti, puoi riassegnare gli indici da 0 a size-1.
+
+    // Opzionale: riassegna gli indici di inserimento per mantenere consistenza
+    for (int i = 0; i < size; ++i) {
+        if (array[i].index > removedInsertionIndex) {
+            array[i].index--; // Scala gli indici successivi
+        }
+    }
+
+    return true;
+}
+
+
 // Aggiunge una tessera di partenza alla parola con indice di inserimento insertIndex
 bool WordList::add_startingTile_by_insertion(const std::pair<int, int> startingTile, int insertIndex) {
     if (insertIndex >= 0 && insertIndex < size) {

@@ -2,8 +2,6 @@
 
 #include <iostream>
 
-// Costruttore
-Lettera::Lettera() : fineParola(false), etichette(0) {}
 
 // Metodi standard
 Lettera* Lettera::aggiungiFiglio(char c) {
@@ -31,16 +29,12 @@ Lettera* Lettera::getFiglio(char c) const {
 }
 
 // Metodi per gestire le etichette
-void Lettera::aggiungiEtichetta(Labels label) {
-    etichette |= label; // Aggiunge l'etichetta
+void Lettera::aggiungiEtichetta(Etichette label) {
+    etichette.aggiungiEtichetta(label); // Aggiunge l'etichetta
 }
 
-void Lettera::rimuoviEtichetta(Labels label) {
-    etichette &= ~label; // Rimuove l'etichetta
-}
-
-bool Lettera::haEtichetta(Labels label) const {
-    return etichette & label; // Controlla se l'etichetta è presente
+void Lettera::rimuoviEtichetta(Etichette label) {
+    etichette.rimuoviEtichetta(label); // Rimuove l'etichetta
 }
 
 // Serializzazione in JSON
@@ -48,7 +42,7 @@ json Lettera::to_json_compatto() const {
     json j;
     j["FP"] = (uint32_t)fineParola; // Flag di fine parola
     if (fineParola) {
-        j["LB"] = etichette; // Salva le etichette come intero
+        j["LB"] = etichette.printInt(); // Salva le etichette come intero
     }
 
     // Aggiungi i figli come chiavi al nodo JSON principale, senza il livello "c"
@@ -78,7 +72,7 @@ std::unique_ptr<Lettera> Lettera::from_json_compatto(const json& j) {
     if (j.contains("FP")) {
         nodo->fineParola = (bool)j["FP"].get<uint32_t>();
         if (j.contains("LB")) {
-            nodo->etichette = j["LB"].get<uint32_t>(); // Carica le etichette come intero
+            nodo->setEtichette(j["LB"].get<uint32_t>()); // Carica le etichette come intero
         }
     }
 

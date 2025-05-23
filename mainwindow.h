@@ -3,7 +3,9 @@
 
 #include <QMainWindow>
 #include <QLabel>
-#include "generate_json.h"
+#include "common_enums.h"
+#include "generate_JSON.h"
+#include "custommenubutton.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -27,7 +29,7 @@ public:
     void setGridTile(int x, int y, QChar letter);
 
     void setAskWord(const QString& word);
-    Labels getAskResult() const;
+    Etichette getAskResult() const;
 
     int getSaveDict() const;
 
@@ -37,15 +39,14 @@ public:
     void updateGridColors(const std::vector<std::vector<DynArray>>& passingWords); // Funzione per aggiornare i colori della griglia
     void highlightTiles(const std::pair<int, int>* positions, int size); // Evidenzia alcune celle
 
-private slots:
-    // Slots per gestire i pulsanti di "Ask the Boss"
-    void on_btn_accept_clicked();
-    void on_btn_bonus_rare_clicked();
-    void on_btn_bonus_name_clicked();
-    void on_btn_bonus_foreign_clicked();
-    void on_btn_reject_clicked();
-    void on_btn_google_clicked();
+    //riguarda l'elenco di parole trovate
+    void addWord(const QString &word, const Etichette &etichette, customButton_destination dest = Accepted);
+    CustomMenuButton* removeWordFromDestination(const QString &word, customButton_destination exclude);
+    void clearWords();
 
+    bool boxQueueIsEmpty();
+
+private slots:
     void on_generate_JSON_clicked();
 
     void on_btnEnd_N_clicked();
@@ -57,8 +58,6 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    Labels askResult = Nessuna; // Risultato dell'azione
-    QString currentWord;    // Parola attualmente in valutazione
     int saveDictionary = 0;     // A fine generazione, salva modifiche al dizionario
 };
 #endif // MAINWINDOW_H

@@ -16,13 +16,11 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->checkBox_JSON_auto_start, &QCheckBox::checkStateChanged, this, &MainWindow::on_checkBox_checkStateChanged);
 
-    // Collegare i pulsanti di "Ask the Boss" ai rispettivi slot
-    connect(ui->btn_accept, &QPushButton::clicked, this, &MainWindow::on_btn_accept_clicked);
-    connect(ui->btn_bonus_rare, &QPushButton::clicked, this, &MainWindow::on_btn_bonus_rare_clicked);
-    connect(ui->btn_bonus_name, &QPushButton::clicked, this, &MainWindow::on_btn_bonus_name_clicked);
-    connect(ui->btn_bonus_foreign, &QPushButton::clicked, this, &MainWindow::on_btn_bonus_foreign_clicked);
-    connect(ui->btn_reject, &QPushButton::clicked, this, &MainWindow::on_btn_reject_clicked);
-    connect(ui->btn_google, &QPushButton::clicked, this, &MainWindow::on_btn_google_clicked);
+    connect(&generate_json, &Generate_JSON::logMessageRequested,
+            this, &MainWindow::logMessage);
+
+    connect(&generate_json, &Generate_JSON::wordFound,
+            this, &MainWindow::addWord);
 
     // Carica la directory salvata
     QSettings settings("Quadrati", "Quadrati_JSON_generator");
@@ -111,49 +109,6 @@ void MainWindow::setGridTile(int x, int y, QChar letter)
     if (label) {
         label->setText(letter);
     }
-}
-
-
-void MainWindow::setAskWord(const QString& word)
-{
-    askResult = Labels::Nessuna;
-    currentWord = word;
-    ui->label_word->setText("Word: " + currentWord);
-}
-
-Labels MainWindow::getAskResult() const
-{
-    return askResult;
-}
-
-void MainWindow::on_btn_accept_clicked()
-{
-    askResult = Labels::Approvate;
-}
-
-void MainWindow::on_btn_bonus_rare_clicked()
-{
-    askResult = Labels::BonusRaro;
-}
-
-void MainWindow::on_btn_bonus_name_clicked()
-{
-    askResult = Labels::BonusNome;
-}
-
-void MainWindow::on_btn_bonus_foreign_clicked()
-{
-    askResult = Labels::BonusStraniero;
-}
-
-void MainWindow::on_btn_reject_clicked()
-{
-    askResult = Labels::Nessuna;  //TODO
-}
-
-void MainWindow::on_btn_google_clicked()
-{
-    QDesktopServices::openUrl(QUrl("https://www.google.com/search?q=" + currentWord));
 }
 
 void MainWindow::on_generate_JSON_clicked()
@@ -245,3 +200,119 @@ void MainWindow::highlightTiles(const std::pair<int, int>* positions, int size) 
         }
     }
 }
+
+void MainWindow::addWord(const QString &word, const Etichette &etichette, customButton_destination dest) {
+    CustomMenuButton* label = removeWordFromDestination(word, dest);
+
+    if (!label) {
+        label = new CustomMenuButton(word, etichette, &generate_json);
+    }
+
+    QWidget* list;
+    switch (dest) {
+    case Accepted:
+        list = ui->boxAccepted;
+        break;
+    case Bonus:
+        list = ui->boxBonus;
+        break;
+    case Queue:
+        list = ui->boxQueue;
+        break;
+    default:
+        qWarning() << "Layout non trovato in boxBonus!";
+        return;
+    }
+
+    QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(list->layout());
+    if (!layout) {
+        qWarning() << "Layout non trovato!";
+        return;
+    }
+
+    // Inserisci il pulsante in ordine alfabetico
+    bool inserted = false;
+    for (int i = 0; i < layout->count(); ++i) {
+        QWidget* widget = layout->itemAt(i)->widget();
+        if (CustomMenuButton* btn = qobject_cast<CustomMenuButton*>(widget)) {
+            if (QString::compare(word, btn->text(), Qt::CaseInsensitive) < 0) {
+                layout->insertWidget(i, label);
+                inserted = true;
+                break;
+            }
+        }
+    }
+
+    if (!inserted) {
+        layout->addWidget(label); // Se più grande di tutti, aggiungi in fondo
+    }
+}
+
+
+
+CustomMenuButton* MainWindow::removeWordFromDestination(const QString &word, customButton_destination exclude) {
+    QList<QWidget*> lists = { ui->boxAccepted, ui->boxBonus, ui->boxQueue };
+
+    for (int i = 0; i < lists.size(); ++i) {
+        if (static_cast<customButton_destination>(i) == exclude)
+            continue;
+
+        QWidget* list = lists[i];
+        QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(list->layout());
+        if (!layout)
+            continue;
+
+        for (int j = 0; j < layout->count(); ++j) {
+            QWidget* widget = layout->itemAt(j)->widget();
+            if (CustomMenuButton* btn = qobject_cast<CustomMenuButton*>(widget)) {
+                if (btn->text() == word) {
+                    layout->removeWidget(btn);
+                    //btn->deleteLater(); // se vuoi eliminarlo invece che restituirlo
+                    return btn; // restituisci il pulsante rimosso
+                }
+            }
+        }
+    }
+
+    return nullptr;
+}
+
+
+void MainWindow::clearWords() {
+    auto clearLayout = [](QWidget* list) {
+        QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(list->layout());
+        if (!layout) return;
+        QLayoutItem* item;
+        while ((item = layout->takeAt(0)) != nullptr) {
+            if (QWidget* widget = item->widget()) {
+                delete widget;
+            }
+            delete item;
+        }
+    };
+
+    clearLayout(ui->boxAccepted);
+    clearLayout(ui->boxBonus);
+}
+
+bool MainWindow::boxQueueIsEmpty() {
+    if (!ui->boxQueue)
+        return true;
+
+    QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(ui->boxQueue->layout());
+    if (!layout)
+        return true;
+
+    for (int i = 0; i < layout->count(); ++i) {
+        QWidget* widget = layout->itemAt(i)->widget();
+        if (qobject_cast<CustomMenuButton*>(widget)) {
+            // Trovato almeno un CustomMenuButton
+            return false;
+        }
+    }
+
+    // Nessun CustomMenuButton trovato
+    return true;
+}
+
+

@@ -6,30 +6,41 @@
 
 #define MAX_LOOPS 10
 
+#include <qobject.h>
 #include <queue>
 #include "wordlist.h"
 #include "dizionario.h"
 #include "dynarray.h"
+#include "common_enums.h"
 
-enum class ParolaStatus {
-    Accettata,
-    Bonus,
-    Rifiutata,
-    Sconosciuta
-};
+customButton_destination findDestination(const Etichette et);
 
 class MainWindow; // Forward declaration
 class FindPath; // Forward declaration di FindPath
 
-class Generate_JSON {
+class Generate_JSON : public QObject {
 public:
-    void setAskDialog(std::unique_ptr<MainWindow> dialog);
-    std::unique_ptr<MainWindow> askDialog; // Puntatore alla finestra Qt
+    Q_OBJECT
+
+public:
+    Generate_JSON(MainWindow* mainWindow); // Dichiarazione del costruttore
+
+    int run();
+    void onModifiedWord(std::string parola, Etichette et);
+
+signals:
+    void wordFound(const QString& parola, Etichette et, customButton_destination dest = Accepted);
+    void logMessageRequested(const QString& testo);
+    void wordsComputationFinished();
+
+private:
+    MainWindow* mainWindow;
 
     std::queue<int> jsons_to_elaborate;
     char grid[DIM1][DIM2];
     WordList words;
     WordList words_bonus;
+    WordList words_queue;
     Dizionario dizionario;
 
     const std::string dictionary_path_json = "C:\\Users\\mav13\\Documents\\Qt\\Dizionari\\dizionario.json";
@@ -39,12 +50,13 @@ public:
     int n_paths_old = 0;
     int n_paths = 0;
 
-    Generate_JSON(MainWindow* mainWindow); // Dichiarazione del costruttore
+    bool completed_grid = false;
+    int loop = 0;
 
-    int run();
-
-private:
-    MainWindow* mainWindow;
+    void creazione_grid();
+    void creazione_words();
+    void creazione_gridLinks();
+    void converti_e_scrivi_JSON();
 
     class FindPath {
     public:
@@ -59,8 +71,6 @@ private:
 
         void returnFinalWord(int pathLength);
         void returnFinalPath(int pathLength, int wordIndex, std::pair<int, int>& startingtile);
-        ParolaStatus consulta_dizionario(const std::string& parola);
-        Labels ask_the_boss(const std::string& parola);
     };
 
     FindPath pathFinder; // Istanza della classe nidificata
