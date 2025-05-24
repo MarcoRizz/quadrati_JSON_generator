@@ -159,3 +159,56 @@ std::string Dizionario::rimuoviAccenti(const std::string& input) const {
     std::string output = converter.to_bytes(wide_output);
     return output;
 }
+
+std::string Dizionario::cercaParolaSuccessiva(const std::string& parola) {
+    std::string parolaPulita = rimuoviAccenti(parola);
+    Lettera* corrente = radice.get();
+    std::vector<std::pair<Lettera*, char>> percorso;
+
+    for (char c : parolaPulita) {
+        percorso.emplace_back(corrente, c);
+        corrente = corrente->getFiglio(c);
+        if (!corrente) {
+            throw std::runtime_error("Parola non trovata nel dizionario.");
+        }
+    }
+
+    // Prima controlla se ci sono figli successivi dell'ultimo nodo corrente
+    std::string parolaCandidata = parolaPulita;
+    if (completaParolaDaNodo(corrente, parolaCandidata, 'a')) {
+        if (parolaCandidata != parolaPulita) {
+            return parolaCandidata;
+        }
+    }
+
+    // Se non ci sono figli, torna indietro nel percorso e prova le successive diramazioni
+    for (int i = static_cast<int>(percorso.size()) - 1; i > 0; --i) {
+
+        if (completaParolaDaNodo(percorso[i-1].first, parolaCandidata, percorso[i].second + 1)) {
+            return parolaCandidata;
+        }
+    }
+
+    return "";
+}
+
+bool Dizionario::completaParolaDaNodo(Lettera* nodo, std::string& base, const char initialChar) const {
+    if (nodo->fineParola) {
+        return true;
+    }
+
+    for (char c = initialChar; c <= 'z'; c++) {
+        Lettera* discendente = nodo->getFiglio(c);
+
+        if (!discendente)
+            continue;
+
+        base.push_back(c);
+        if (completaParolaDaNodo(discendente, base, 'a')) {
+            return true;
+        }
+        base.pop_back();
+    }
+
+    return false;
+}

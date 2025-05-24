@@ -35,6 +35,9 @@ public:
     // Metodo per caricare il dizionario da un file JSON compatto
     bool caricaDaFileCompatto(const std::string& percorsoFile);
 
+    // Cerca la parola successiva a quella indicata
+    std::string cercaParolaSuccessiva(const std::string& parola);
+
 private:
     // Metodo ricorsivo per eliminare una parola
     bool rimuoviParolaRicorsivo(Lettera* nodo, const std::string& parola, int indice);
@@ -47,6 +50,9 @@ private:
 
     // Metodo per sostituire lettere accentate con lettere UTC-8
     std::string rimuoviAccenti(const std::string& input) const;
+
+    // Restituisce la prima parola in ordine alfabetico trovata da "base"
+    bool completaParolaDaNodo(Lettera* nodo, std::string& base, const char initialChar) const;
 };
 
 #endif // DIZIONARIO_H
