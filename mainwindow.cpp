@@ -2,9 +2,11 @@
 #include "./ui_mainwindow.h"
 #include <QDesktopServices>
 #include <QUrl>
+#include <iostream>
 #include <qfiledialog.h>
 #include <QMessageBox>
 #include <QSettings>
+#include <chrono>
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -28,6 +30,62 @@ MainWindow::MainWindow(QWidget *parent)
     // Aggiorna la label o altri widget per mostrare la directory salvata
     if (!m_selectedDirectory.isEmpty() && ui->selectedDirectoryLabel) {
         ui->selectedDirectoryLabel->setText(m_selectedDirectory);
+    }
+
+    try {
+        Dizionario dizionario;
+        const std::string dictionary_path_json = "C:\\Users\\mav13\\Documents\\Qt\\Dizionari\\dizionario.json";
+
+        if (!dizionario.caricaDaFileCompatto(dictionary_path_json)) {
+            logMessage("errore nell'apertura del dizionario");
+        }
+
+        auto start = std::chrono::high_resolution_clock::now();
+        std::string parola = dizionario.cercaParolaSuccessiva("pecora");
+        logMessage(QString::fromStdString(parola));
+
+        parola = dizionario.cercaParolaSuccessiva("cazzata");
+        logMessage(QString::fromStdString(parola));
+
+        parola = dizionario.cercaParolaSuccessiva("zabaione");
+        logMessage(QString::fromStdString(parola));
+
+        parola = dizionario.cercaParolaSuccessiva("xuzhou");
+        logMessage(QString::fromStdString(parola));
+
+
+        parola = dizionario.cercaParolaPrecedente("pecora");
+        logMessage(QString::fromStdString(parola));
+
+        parola = dizionario.cercaParolaPrecedente("cazzata");
+        logMessage(QString::fromStdString(parola));
+
+        parola = dizionario.cercaParolaPrecedente("zabaione");
+        logMessage(QString::fromStdString(parola));
+
+        parola = dizionario.cercaParolaPrecedente("xuzhou");
+        logMessage(QString::fromStdString(parola));
+
+        auto parole = dizionario.cercaParoleInRange("soprintendendo", 10, 10);
+        std::cout << parole.size() << "\n";
+        for (const auto& p : parole)
+            std::cout << p << "\n";
+
+
+        // Prendi il tempo finale
+        auto end = std::chrono::high_resolution_clock::now();
+
+        // Calcola la differenza in microsecondi
+        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+        // Stampa il tempo
+        std::cout << "Tempo trascorso: " << duration.count() << " microsecondi" << std::endl;
+
+    } catch (const std::exception& e) {
+        fprintf(stderr, "Eccezione catturata: %s\n", e.what());
+        logMessage(e.what());
+    } catch (...) {
+        fprintf(stderr, "Errore sconosciuto!\n");
+        logMessage("errore sconosciuto");
     }
 }
 

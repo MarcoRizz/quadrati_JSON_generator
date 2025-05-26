@@ -161,6 +161,7 @@ std::string Dizionario::rimuoviAccenti(const std::string& input) const {
 }
 
 std::string Dizionario::cercaParolaSuccessiva(const std::string& parola) {
+
     std::string parolaPulita = rimuoviAccenti(parola);
     Lettera* corrente = radice.get();
     std::vector<std::pair<Lettera*, char>> percorso;
@@ -175,24 +176,31 @@ std::string Dizionario::cercaParolaSuccessiva(const std::string& parola) {
 
     // Prima controlla se ci sono figli successivi dell'ultimo nodo corrente
     std::string parolaCandidata = parolaPulita;
-    if (completaParolaDaNodo(corrente, parolaCandidata, 'a')) {
-        if (parolaCandidata != parolaPulita) {
-            return parolaCandidata;
+    Lettera* figlio;
+    for (char c = 'a'; c <= 'z'; c++) {
+        figlio = corrente->getFiglio(c);
+        if (figlio) {
+            parolaCandidata.push_back(c);
+            if (completaParolaDaNodo(figlio, parolaCandidata, 'a'))
+                return parolaCandidata;
+            else
+                parolaCandidata.pop_back();
         }
+
     }
 
-    // Se non ci sono figli, torna indietro nel percorso e prova le successive diramazioni
-    for (int i = static_cast<int>(percorso.size()) - 1; i > 0; --i) {
+    for (int i = static_cast<int>(percorso.size()) - 1; i >= 0; --i) {
 
-        if (completaParolaDaNodo(percorso[i-1].first, parolaCandidata, percorso[i].second + 1)) {
+        parolaCandidata.pop_back();
+
+        if (completaParolaDaNodo(percorso[i].first, parolaCandidata, percorso[i].second + 1))
             return parolaCandidata;
-        }
     }
 
     return "";
 }
 
-bool Dizionario::completaParolaDaNodo(Lettera* nodo, std::string& base, const char initialChar) const {
+bool Dizionario::completaParolaDaNodo(const Lettera* nodo, std::string& base, const char initialChar) const {
     if (nodo->fineParola) {
         return true;
     }
@@ -208,7 +216,221 @@ bool Dizionario::completaParolaDaNodo(Lettera* nodo, std::string& base, const ch
             return true;
         }
         base.pop_back();
+
     }
 
     return false;
+}
+
+
+std::string Dizionario::cercaParolaPrecedente(const std::string& parola) {
+
+    std::string parolaPulita = rimuoviAccenti(parola);
+    Lettera* corrente = radice.get();
+    std::vector<std::pair<Lettera*, char>> percorso;
+
+    for (char c : parolaPulita) {
+        percorso.emplace_back(corrente, c);
+        corrente = corrente->getFiglio(c);
+        if (!corrente) {
+            throw std::runtime_error("Parola non trovata nel dizionario.");
+        }
+    }
+
+    std::string parolaCandidata = parolaPulita;
+    Lettera* figlio;
+    for (char c = 'z'; c >= 'a'; --c) {
+        figlio = corrente->getFiglio(c);
+        if (figlio) {
+            parolaCandidata.push_back(c);
+            if (completaParolaDaNodoPrecedente(figlio, parolaCandidata, 'z'))
+                return parolaCandidata;
+            else
+                parolaCandidata.pop_back();
+        }
+    }
+
+    for (int i = static_cast<int>(percorso.size()) - 1; i >= 0; --i) {
+        parolaCandidata.pop_back();
+
+        for (char c = static_cast<char>(percorso[i].second - 1); c >= 'a'; --c) {
+            figlio = percorso[i].first->getFiglio(c);
+            if (figlio) {
+                parolaCandidata.push_back(c);
+                if (completaParolaDaNodoPrecedente(figlio, parolaCandidata, 'z')) {
+                    return parolaCandidata;
+                } else {
+                    parolaCandidata.pop_back();
+                }
+            }
+            if (c == 'a') break;  // evitare overflow quando c diventa '\xFF'
+        }
+    }
+
+    return "";
+}
+
+
+bool Dizionario::completaParolaDaNodoPrecedente(const Lettera* nodo, std::string& base, const char initialChar) const {
+    if (nodo->fineParola) {
+        return true;
+    }
+
+    for (char c = initialChar; c >= 'a'; --c) {
+        Lettera* discendente = nodo->getFiglio(c);
+        if (!discendente)
+            continue;
+
+        base.push_back(c);
+        if (completaParolaDaNodoPrecedente(discendente, base, 'z')) {
+            return true;
+        }
+        base.pop_back();
+
+        if (c == 'a') break;  // evitare overflow
+    }
+
+    return false;
+}
+
+// --------------------------------------------------
+// Ricerca parole in range
+// --------------------------------------------------
+std::vector<std::string> Dizionario::cercaParoleInRange(const std::string& parola, const int up, const int down) {
+    std::cout << "[DEBUG] Inizio cercaParoleInRange: parola=" << parola
+              << ", up=" << up << ", down=" << down << std::endl;
+
+    std::vector<std::string> precedenti;
+    std::vector<std::string> successivi;
+    std::string centrale;
+
+    // 1) Trova il nodo della parola
+    std::string parolaPulita = rimuoviAccenti(parola);
+    Lettera* corrente = radice.get();
+    std::vector<std::pair<Lettera*, char>> percorso;
+    for (char c : parolaPulita) {
+        percorso.emplace_back(corrente, c);
+        corrente = corrente->getFiglio(c);
+        if (!corrente) {
+            throw std::runtime_error("Parola non trovata nel dizionario.");
+        }
+    }
+
+    // 2) Parola centrale
+    if (corrente->fineParola) {
+        centrale = parolaPulita;
+        std::cout << "[DEBUG] Parola centrale trovata: " << centrale << std::endl;
+    }
+
+    // 3) Precedenti
+    {
+        std::cout << "[DEBUG] Raccolta " << down << " parole precedenti..." << std::endl;
+        std::string base = parolaPulita;
+        for (int i = static_cast<int>(percorso.size()) - 1; i >= 0 && (int)precedenti.size() < down; --i) {
+            base.pop_back();
+            char start = static_cast<char>(percorso[i].second - 1);
+            std::cout << "[DEBUG] Livello " << i << ", base='" << base << "', start=" << start << std::endl;
+            for (char c = start; c >= 'a' && (int)precedenti.size() < down; --c) {
+                Lettera* figlio = percorso[i].first->getFiglio(c);
+                if (figlio) {
+                    std::string temp = base;
+                    temp.push_back(c);
+                    std::cout << "[DEBUG]  → tenta ramo '" << c << "' con temp='" << temp << "'" << std::endl;
+                    completaParolaDaNodoPrecedenteMulti(figlio, temp, 'z', precedenti, down);
+                }
+                if (c == 'a') break;  // evita underflow
+            }
+        }
+        std::reverse(precedenti.begin(), precedenti.end());
+        std::cout << "[DEBUG] Precedenti raccolte: " << precedenti.size() << std::endl;
+    }
+
+    // 4) Successivi
+    {
+        std::cout << "[DEBUG] Raccolta " << up << " parole successive..." << std::endl;
+        // primo livello figli diretti
+        for (char c = 'a'; c <= 'z' && (int)successivi.size() < up; ++c) {
+            Lettera* figlio = corrente->getFiglio(c);
+            if (figlio) {
+                std::string temp = parolaPulita;
+                temp.push_back(c);
+                std::cout << "[DEBUG]  → tenta ramo '" << c << "' con temp='" << temp << "'" << std::endl;
+                completaParolaDaNodoMulti(figlio, temp, 'a', successivi, up);
+            }
+        }
+        // livelli superiori risalendo
+        std::string base = parolaPulita;
+        for (int i = static_cast<int>(percorso.size()) - 1; i >= 0 && (int)successivi.size() < up; --i) {
+            base.pop_back();
+            char start = static_cast<char>(percorso[i].second + 1);
+            std::cout << "[DEBUG] Livello " << i << ", base='" << base << "', start=" << start << std::endl;
+            for (char c = start; c <= 'z' && (int)successivi.size() < up; ++c) {
+                Lettera* figlio = percorso[i].first->getFiglio(c);
+                if (figlio) {
+                    std::string temp = base;
+                    temp.push_back(c);
+                    std::cout << "[DEBUG]  → tenta ramo '" << c << "' con temp='" << temp << "'" << std::endl;
+                    completaParolaDaNodoMulti(figlio, temp, 'a', successivi, up);
+                }
+            }
+        }
+        std::cout << "[DEBUG] Successivi raccolti: " << successivi.size() << std::endl;
+    }
+
+    // 5) Unione finale
+    std::vector<std::string> result;
+    result.reserve(precedenti.size() + (!centrale.empty()) + successivi.size());
+    result.insert(result.end(), precedenti.begin(), precedenti.end());
+    if (!centrale.empty()) result.push_back(centrale);
+    result.insert(result.end(), successivi.begin(), successivi.end());
+
+    std::cout << "[DEBUG] Totale parole restituite: " << result.size() << std::endl;
+    return result;
+}
+
+// --------------------------------------------------
+// Completa parole verso destra (alfabetico crescente)
+// --------------------------------------------------
+void Dizionario::completaParolaDaNodoMulti(const Lettera* nodo,
+                                           std::string& base,
+                                           const char initialChar,
+                                           std::vector<std::string>& risultati,
+                                           size_t maxCount) const {
+    if (risultati.size() >= maxCount) return;
+    if (nodo->fineParola) {
+        risultati.push_back(base);
+        std::cout << "[DEBUG]    aggiungo successivo: " << base << std::endl;
+        if (risultati.size() >= maxCount) return;
+    }
+    for (char c = initialChar; c <= 'z' && risultati.size() < maxCount; ++c) {
+        Lettera* figlio = nodo->getFiglio(c);
+        if (!figlio) continue;
+        base.push_back(c);
+        completaParolaDaNodoMulti(figlio, base, 'a', risultati, maxCount);
+        base.pop_back();
+    }
+}
+
+// --------------------------------------------------
+// Completa parole verso sinistra (alfabetico decrescente)
+// --------------------------------------------------
+void Dizionario::completaParolaDaNodoPrecedenteMulti(const Lettera* nodo,
+                                                     std::string& base,
+                                                     const char initialChar,
+                                                     std::vector<std::string>& risultati,
+                                                     size_t maxCount) const {
+    if (risultati.size() >= maxCount) return;
+    if (nodo->fineParola) {
+        risultati.push_back(base);
+        std::cout << "[DEBUG]    aggiungo precedente: " << base << std::endl;
+        if (risultati.size() >= maxCount) return;
+    }
+    for (char c = initialChar; c >= 'a' && risultati.size() < maxCount; --c) {
+        Lettera* figlio = nodo->getFiglio(c);
+        if (!figlio) continue;
+        base.push_back(c);
+        completaParolaDaNodoPrecedenteMulti(figlio, base, 'z', risultati, maxCount);
+        base.pop_back();
+        if (c == 'a') break;  // evita underflow
+    }
 }

@@ -27,6 +27,11 @@ Generate_JSON::Generate_JSON(MainWindow* mainWindow)
     pathFinder(*this), // Inizializzazione dell'istanza della classe FindPath
     mainWindow(mainWindow)
 {
+    //apro il dizionario
+    if (!dizionario.caricaDaFileCompatto(dictionary_path_json)) {
+        mainWindow->logMessage(QString("Errore nell'apertura del file al percorso: %1").arg(QString::fromStdString(dictionary_path_json)));
+    }
+
     // Altre inizializzazioni se necessarie
 }
 
@@ -62,18 +67,12 @@ int Generate_JSON::run() {
     passingWords[1][1].add_value(1);*/
 
     // Inizializza il seme del generatore di numeri casuali
-    auto timer_overall_start = std::chrono::high_resolution_clock::now();
-    std::srand(std::time(0));
+    //auto timer_overall_start = std::chrono::high_resolution_clock::now();
+    //std::srand(std::time(0));
 
-    //apro il dizionario
-    if (!dizionario.caricaDaFileCompatto(dictionary_path_json)) {
-        mainWindow->logMessage(QString("Errore nell'apertura del file al percorso: %1").arg(QString::fromStdString(dictionary_path_json)));
-        return -1;
-    }
-
-    auto timer_end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double, std::milli> duration = timer_end - timer_overall_start;
-    mainWindow->logMessage(QString("Dizionario caricato - elapsed time: %1 ms").arg(duration.count()));
+    //auto timer_end = std::chrono::high_resolution_clock::now();
+    //std::chrono::duration<double, std::milli> duration = timer_end - timer_overall_start;
+    //mainWindow->logMessage(QString("Dizionario caricato - elapsed time: %1 ms").arg(duration.count()));
 
     //calcolo jsons_to_elaborate
     mainWindow->calculateFileNumbers(&jsons_to_elaborate);

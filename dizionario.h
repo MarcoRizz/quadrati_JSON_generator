@@ -38,6 +38,12 @@ public:
     // Cerca la parola successiva a quella indicata
     std::string cercaParolaSuccessiva(const std::string& parola);
 
+    // Cerca la parola precedente a quella indicata
+    std::string cercaParolaPrecedente(const std::string& parola);
+
+    // Cerca un range di parole a partire da "parola"
+    std::vector<std::string> cercaParoleInRange(const std::string& parola, const int up, const int down);
+
 private:
     // Metodo ricorsivo per eliminare una parola
     bool rimuoviParolaRicorsivo(Lettera* nodo, const std::string& parola, int indice);
@@ -51,8 +57,17 @@ private:
     // Metodo per sostituire lettere accentate con lettere UTC-8
     std::string rimuoviAccenti(const std::string& input) const;
 
-    // Restituisce la prima parola in ordine alfabetico trovata da "base"
-    bool completaParolaDaNodo(Lettera* nodo, std::string& base, const char initialChar) const;
+    // Restituisce la prima parola in ordine alfabetico figlia di "base" (quindi che sia un completamento di "base"). Parte da "nodo" a cercare i figli
+    bool completaParolaDaNodo(const Lettera* nodo, std::string& base, const char initialChar) const;
+
+    // Restituisce la prima parola in ordine alfabetico A RITROSO figlia di "base" (quindi che sia un completamento di "base"). Parte da "nodo" a cercare i figli
+    bool completaParolaDaNodoPrecedente(const Lettera* nodo, std::string& base, const char initialChar) const;
+
+    // Restituisce "maxCount" parole in ordine alfabetico figlie di "base"
+    void completaParolaDaNodoMulti(const Lettera* nodo, std::string& base, const char initialChar, std::vector<std::string>& risultati, size_t maxCount) const;
+
+    // Restituisce "maxCount" parole in ordine alfabetico INVERSO figlie di "base"
+    void completaParolaDaNodoPrecedenteMulti(const Lettera* nodo, std::string& base, const char initialChar, std::vector<std::string>& risultati, size_t maxCount) const;
 };
 
 #endif // DIZIONARIO_H
