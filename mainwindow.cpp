@@ -2,11 +2,9 @@
 #include "./ui_mainwindow.h"
 #include <QDesktopServices>
 #include <QUrl>
-#include <iostream>
 #include <qfiledialog.h>
 #include <QMessageBox>
 #include <QSettings>
-#include <chrono>
 
 
 MainWindow::MainWindow(QWidget *parent)
