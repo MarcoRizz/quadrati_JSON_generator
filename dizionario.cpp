@@ -296,7 +296,9 @@ bool Dizionario::completaParolaDaNodoPrecedente(const Lettera* nodo, std::string
 // --------------------------------------------------
 // Ricerca parole in range
 // --------------------------------------------------
-std::vector<std::string> Dizionario::cercaParoleInRange(const std::string& parola, const int up, const int down) {
+std::vector<std::string> Dizionario::cercaParoleInRange(const std::string& parola,
+                                                        const int up,
+                                                        const int down) {
     std::cout << "[DEBUG] Inizio cercaParoleInRange: parola=" << parola
               << ", up=" << up << ", down=" << down << std::endl;
 
@@ -311,9 +313,7 @@ std::vector<std::string> Dizionario::cercaParoleInRange(const std::string& parol
     for (char c : parolaPulita) {
         percorso.emplace_back(corrente, c);
         corrente = corrente->getFiglio(c);
-        if (!corrente) {
-            throw std::runtime_error("Parola non trovata nel dizionario.");
-        }
+        if (!corrente) throw std::runtime_error("Parola non trovata nel dizionario.");
     }
 
     // 2) Parola centrale
@@ -326,50 +326,58 @@ std::vector<std::string> Dizionario::cercaParoleInRange(const std::string& parol
     {
         std::cout << "[DEBUG] Raccolta " << down << " parole precedenti..." << std::endl;
         std::string base = parolaPulita;
-        for (int i = static_cast<int>(percorso.size()) - 1; i >= 0 && (int)precedenti.size() < down; --i) {
+        for (int i = static_cast<int>(percorso.size()) - 1;
+             i >= 0 && (int)precedenti.size() < down; --i) {
             base.pop_back();
             char start = static_cast<char>(percorso[i].second - 1);
-            std::cout << "[DEBUG] Livello " << i << ", base='" << base << "', start=" << start << std::endl;
+            std::cout << "[DEBUG] Livello " << i
+                      << ", base='" << base << "', start=" << start << std::endl;
             for (char c = start; c >= 'a' && (int)precedenti.size() < down; --c) {
                 Lettera* figlio = percorso[i].first->getFiglio(c);
                 if (figlio) {
                     std::string temp = base;
                     temp.push_back(c);
-                    std::cout << "[DEBUG]  → tenta ramo '" << c << "' con temp='" << temp << "'" << std::endl;
+                    std::cout << "[DEBUG]  → tenta ramo '" << c
+                              << "' con temp='" << temp << "'" << std::endl;
                     completaParolaDaNodoPrecedenteMulti(figlio, temp, 'z', precedenti, down);
                 }
                 if (c == 'a') break;  // evita underflow
             }
         }
-        std::reverse(precedenti.begin(), precedenti.end());
-        std::cout << "[DEBUG] Precedenti raccolte: " << precedenti.size() << std::endl;
+        // Ordiniamo lessicograficamente TUTTO il vettore
+        std::sort(precedenti.begin(), precedenti.end());
+        std::cout << "[DEBUG] Precedenti raccolte e ordinate: " << precedenti.size() << std::endl;
     }
 
-    // 4) Successivi
+    // 4) Successivi (rimane identico)
     {
         std::cout << "[DEBUG] Raccolta " << up << " parole successive..." << std::endl;
-        // primo livello figli diretti
+        // figli diretti
         for (char c = 'a'; c <= 'z' && (int)successivi.size() < up; ++c) {
             Lettera* figlio = corrente->getFiglio(c);
             if (figlio) {
                 std::string temp = parolaPulita;
                 temp.push_back(c);
-                std::cout << "[DEBUG]  → tenta ramo '" << c << "' con temp='" << temp << "'" << std::endl;
+                std::cout << "[DEBUG]  → tenta ramo '" << c
+                          << "' con temp='" << temp << "'" << std::endl;
                 completaParolaDaNodoMulti(figlio, temp, 'a', successivi, up);
             }
         }
-        // livelli superiori risalendo
+        // risalita nel percorso
         std::string base = parolaPulita;
-        for (int i = static_cast<int>(percorso.size()) - 1; i >= 0 && (int)successivi.size() < up; --i) {
+        for (int i = static_cast<int>(percorso.size()) - 1;
+             i >= 0 && (int)successivi.size() < up; --i) {
             base.pop_back();
             char start = static_cast<char>(percorso[i].second + 1);
-            std::cout << "[DEBUG] Livello " << i << ", base='" << base << "', start=" << start << std::endl;
+            std::cout << "[DEBUG] Livello " << i
+                      << ", base='" << base << "', start=" << start << std::endl;
             for (char c = start; c <= 'z' && (int)successivi.size() < up; ++c) {
                 Lettera* figlio = percorso[i].first->getFiglio(c);
                 if (figlio) {
                     std::string temp = base;
                     temp.push_back(c);
-                    std::cout << "[DEBUG]  → tenta ramo '" << c << "' con temp='" << temp << "'" << std::endl;
+                    std::cout << "[DEBUG]  → tenta ramo '" << c
+                              << "' con temp='" << temp << "'" << std::endl;
                     completaParolaDaNodoMulti(figlio, temp, 'a', successivi, up);
                 }
             }
