@@ -27,6 +27,7 @@ private:
     Etichette etichette_originale;
     PersistentMenu* menu;
     Generate_JSON* gen_JSON_address;
+    void aggiornaColoreSfondo();
 
 private slots:
     void onMenuClosed();
