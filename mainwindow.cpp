@@ -14,6 +14,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    // Cliccando su "rileva automaticamente" si disabilita il campo di input manuale
     connect(ui->checkBox_JSON_auto_start, &QCheckBox::checkStateChanged, this, &MainWindow::on_checkBox_checkStateChanged);
 
     connect(&generate_json, &Generate_JSON::logMessageRequested,
@@ -166,7 +167,6 @@ void MainWindow::on_selectDirectoryButton_clicked()
         qDebug() << "Nessuna directory selezionata.";
     }
 }
-
 
 void MainWindow::on_checkBox_checkStateChanged(const Qt::CheckState &arg1)
 {
