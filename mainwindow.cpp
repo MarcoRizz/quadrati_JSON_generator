@@ -36,7 +36,15 @@ MainWindow::MainWindow(QWidget *parent)
     //inizializzo widget_displayDictionary
     widget_displayDictionary *displayer = new widget_displayDictionary(this);
     displayer->setDizionario(&generate_json.dizionario); // il tuo oggetto dizionario
+    // Prepara i pulsanti e layout (presi dal .ui)
+    QVBoxLayout *layout = ui->verticalLayout_7;
+    QVector<QPushButton *> pulsanti;
+    for (int i = 1; i <= 21; ++i) {
+        QPushButton *btn = layout->findChild<QPushButton *>(QString("pushButton_%1").arg(i));
+        if (btn) pulsanti.append(btn);
+    }
 
+    displayer->setLayoutAndButtons(layout, pulsanti);
 }
 
 MainWindow::~MainWindow()
