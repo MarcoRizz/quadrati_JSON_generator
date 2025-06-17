@@ -6,6 +6,8 @@
 #include <QMessageBox>
 #include <QSettings>
 
+#include "widget_displayDictionary.h"
+
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -30,6 +32,11 @@ MainWindow::MainWindow(QWidget *parent)
     if (!m_selectedDirectory.isEmpty() && ui->selectedDirectoryLabel) {
         ui->selectedDirectoryLabel->setText(m_selectedDirectory);
     }
+
+    //inizializzo widget_displayDictionary
+    widget_displayDictionary *displayer = new widget_displayDictionary(this);
+    displayer->setDizionario(&generate_json.dizionario); // il tuo oggetto dizionario
+
 }
 
 MainWindow::~MainWindow()

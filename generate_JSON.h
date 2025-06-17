@@ -25,6 +25,8 @@ public:
 public:
     Generate_JSON(MainWindow* mainWindow); // Dichiarazione del costruttore
 
+    Dizionario dizionario;
+
     int run();
     void onModifiedWord(std::string parola, Etichette et);
 
@@ -41,7 +43,6 @@ private:
     WordList words;
     WordList words_bonus;
     WordList words_queue;
-    Dizionario dizionario;
 
     const std::string dictionary_path_json = "C:\\Users\\mav13\\Documents\\Qt\\Dizionari\\dizionario.json";
     std::vector<std::vector<DynArray>> passingWords;

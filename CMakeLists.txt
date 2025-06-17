@@ -31,6 +31,7 @@ set(PROJECT_SOURCES
 qt_add_executable(Quadrati_JSON_generator
     MANUAL_FINALIZATION
     ${PROJECT_SOURCES}
+    widget_displaydictionary.h widget_displaydictionary.cpp
 )
 
 qt_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
