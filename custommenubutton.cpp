@@ -80,10 +80,29 @@ CustomMenuButton::CustomMenuButton(const QString& text, const Etichette &et, Gen
         etichette_originale = etichette; // salva lo stato attuale
         menu->exec(this->mapToGlobal(QPoint(0, this->height())));
     });
+
+    // Assegno il colore
+    aggiornaColoreSfondo();
 }
 
 void CustomMenuButton::onMenuClosed() {
     if (!(etichette == etichette_originale)) {
         gen_JSON_address->onModifiedWord(text().toStdString(), etichette);
+        aggiornaColoreSfondo();
     }
 }
+
+
+void CustomMenuButton::aggiornaColoreSfondo() {
+    if (etichette.haUnaEtichetta(Etichette(Etichette::Approvate))) {
+        this->setStyleSheet("background-color: #4CAF50; color: white;"); // Verde scuro, testo bianco
+    } else if (etichette.haUnaEtichetta(Etichette(
+                   Etichette::BonusNome |
+                   Etichette::BonusRaro |
+                   Etichette::BonusStraniero))) {
+        this->setStyleSheet("background-color: #FFD700; color: black;"); // Giallo oro, testo nero
+    } else {
+        this->setStyleSheet(""); // Default
+    }
+}
+
