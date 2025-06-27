@@ -6,6 +6,8 @@
 
 int main(int argc, char *argv[])
 {
+    qDebug() << "Inizio main()";
+
     QApplication a(argc, argv);
 
     QTranslator translator;

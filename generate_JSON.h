@@ -19,7 +19,6 @@ class MainWindow; // Forward declaration
 class FindPath; // Forward declaration di FindPath
 
 class Generate_JSON : public QObject {
-public:
     Q_OBJECT
 
 public:

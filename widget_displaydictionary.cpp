@@ -9,7 +9,7 @@ widget_displayDictionary::widget_displayDictionary(QWidget *parent)
     setMouseTracking(true);
 }
 
-void widget_displayDictionary::setLayoutAndButtons(QVBoxLayout *layout, const QVector<QPushButton *> &btns) {
+void widget_displayDictionary::setLayoutAndButtons(QVBoxLayout *layout, const QVector<CustomMenuButton *> &btns) {
     layoutRef = layout;
     buttons = btns;
 
@@ -24,6 +24,24 @@ void widget_displayDictionary::setLayoutAndButtons(QVBoxLayout *layout, const QV
 
 void widget_displayDictionary::setDizionario(Dizionario *diz) {
     dizionario = diz;
+}
+
+bool widget_displayDictionary::displayParola(std::string parola) {
+
+    if (!dizionario) return false;
+
+    std::vector<std::string> lista = dizionario->cercaParoleInRange(parola, 10, 10); //TODO: qui bisogna recuperare anche tutte le etichette
+    //TODO: verificare anche che questi pulsanti sovrascrivano correttamente il dizionario se viene modificata qualche parola.
+
+    if (lista.size() == 20) return false;
+
+    int count = std::min<int>(lista.size(), buttons.size());  // evita fuoriuscite
+
+    for (int i = 0; i < count; ++i) {
+        buttons[i]->setText(QString::fromStdString(lista[i]));
+    }
+
+    return false;
 }
 
 bool widget_displayDictionary::eventFilter(QObject *obj, QEvent *event) {

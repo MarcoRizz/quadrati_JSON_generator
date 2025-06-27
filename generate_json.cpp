@@ -418,6 +418,7 @@ void Generate_JSON::converti_e_scrivi_JSON() {
 void Generate_JSON::onModifiedWord(std::string parola, Etichette et) {
     customButton_destination dest = findDestination(et);
 
+    std::cout<<"dentro onModifiedWord"<<std::endl;
     switch (dest) {
     case Accepted:
         if (words.add_word(parola)) {

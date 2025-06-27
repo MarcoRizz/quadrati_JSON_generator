@@ -730,7 +730,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
           <property name="widgetResizable">
            <bool>true</bool>
           </property>
-          <widget class="QWidget" name="scrollAreaWidgetContents">
+          <widget class="QWidget" name="dizionarioScrollArea">
            <property name="geometry">
             <rect>
              <x>0</x>

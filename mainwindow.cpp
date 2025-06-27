@@ -6,13 +6,11 @@
 #include <QMessageBox>
 #include <QSettings>
 
-#include "widget_displayDictionary.h"
-
-
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , generate_json(this)
+    , dictionaryDisplayer(new widget_displayDictionary)
 {
     ui->setupUi(this);
 
@@ -34,22 +32,31 @@ MainWindow::MainWindow(QWidget *parent)
     }
 
     //inizializzo widget_displayDictionary
-    widget_displayDictionary *displayer = new widget_displayDictionary(this);
-    displayer->setDizionario(&generate_json.dizionario); // il tuo oggetto dizionario
+    dictionaryDisplayer->setDizionario(&generate_json.dizionario); // il tuo oggetto dizionario
     // Prepara i pulsanti e layout (presi dal .ui)
-    QVBoxLayout *layout = ui->verticalLayout_7;
-    QVector<QPushButton *> pulsanti;
+    QVector<CustomMenuButton *> pulsanti;
     for (int i = 1; i <= 21; ++i) {
-        QPushButton *btn = layout->findChild<QPushButton *>(QString("pushButton_%1").arg(i));
-        if (btn) pulsanti.append(btn);
+        CustomMenuButton *btn = ui->dizionarioScrollArea->findChild<CustomMenuButton *>(QString("pushButton_%1").arg(i));
+        if (btn) {
+            qDebug() << "CustomMenuButton trovato:" << btn->objectName();
+            pulsanti.append(btn);
+            bool ok = connect(btn, &CustomMenuButton::parolaModificata, &generate_json, &Generate_JSON::onModifiedWord);
+            qDebug() << (ok ? "Connect riuscita" : "Connect fallita");
+
+        } else {
+            qDebug() << "pushButton_" << i << " non è CustomMenuButton!";
+        }
     }
 
-    displayer->setLayoutAndButtons(layout, pulsanti);
+    dictionaryDisplayer->setLayoutAndButtons(ui->verticalLayout_7, pulsanti); //TODO: ui->verticalLayout_7 non funziona (dovrebbe scorrere su e giù allo scorrere della rotella
+    dictionaryDisplayer->setDizionario(&generate_json.dizionario);
+    dictionaryDisplayer->displayParola("dizionario");
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+    delete dictionaryDisplayer;
 }
 
 void MainWindow::calculateFileNumbers(std::queue<int>* list)
@@ -220,7 +227,9 @@ void MainWindow::addWord(const QString &word, const Etichette &etichette, custom
     CustomMenuButton* label = removeWordFromDestination(word, dest);
 
     if (!label) {
-        label = new CustomMenuButton(word, etichette, &generate_json);
+        label = new CustomMenuButton(word, etichette);
+        connect(label, &CustomMenuButton::parolaModificata, &generate_json, &Generate_JSON::onModifiedWord);
+        connect(label, &CustomMenuButton::highLightW, dictionaryDisplayer, &widget_displayDictionary::displayParola);
     }
 
     QWidget* list;

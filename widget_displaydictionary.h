@@ -11,6 +11,8 @@
 #include <QVector>
 #include <QString>
 
+#include "custommenubutton.h"
+
 class Dizionario; // Forward declaration della tua classe Dizionario
 
 class widget_displayDictionary : public QWidget
@@ -21,21 +23,21 @@ public:
     explicit widget_displayDictionary(QWidget *parent = nullptr);
 
     // Inizializza i riferimenti esterni
-    void setLayoutAndButtons(QVBoxLayout *layout, const QVector<QPushButton *> &buttons);
+    void setLayoutAndButtons(QVBoxLayout *layout, const QVector<CustomMenuButton *> &buttons);
     void setDizionario(Dizionario *diz);
+    bool displayParola(std::string parola);
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
 
 private:
     QVBoxLayout *layoutRef = nullptr;
-    QVector<QPushButton *> buttons;
+    QVector<CustomMenuButton *> buttons;
     Dizionario *dizionario = nullptr;
 
     QString parolaCentrale;  // riferimento alla parola attuale mostrata al centro
 
     void scorriDizionario(bool avanti); // true = avanti, false = indietro
-    void cercaParola(std::string parola);
 };
 
 

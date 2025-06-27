@@ -6,6 +6,7 @@
 #include "common_enums.h"
 #include "generate_JSON.h"
 #include "custommenubutton.h"
+#include "widget_displayDictionary.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -58,6 +59,7 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+    widget_displayDictionary *dictionaryDisplayer;
     int saveDictionary = 0;     // A fine generazione, salva modifiche al dizionario
 };
 #endif // MAINWINDOW_H

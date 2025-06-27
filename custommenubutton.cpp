@@ -24,10 +24,15 @@ bool PersistentMenu::event(QEvent* e)
     return QMenu::event(e);
 }
 
+CustomMenuButton::CustomMenuButton(QWidget* parent)
+    : CustomMenuButton("CustomButton", Etichette(), parent)
+{}
+
 // Costruttore della CustomMenuButton //TODO: impostare mainWindow->highlightTiles(path, parola.length()) al clic sul bottone
-CustomMenuButton::CustomMenuButton(const QString& text, const Etichette &et, Generate_JSON* generate_json, QWidget* parent)
-    : QPushButton(text, parent), etichette(et), gen_JSON_address(generate_json)
+CustomMenuButton::CustomMenuButton(const QString& text, const Etichette &et, QWidget* parent)
+    : QPushButton(text, parent), etichette(et)
 {
+    qDebug() << "New CustomButton:" << text;
     // Crea il menu personalizzato
     menu = new PersistentMenu(this);
 
@@ -78,6 +83,7 @@ CustomMenuButton::CustomMenuButton(const QString& text, const Etichette &et, Gen
     // Mostra il menu al clic del pulsante
     connect(this, &QPushButton::clicked, this, [this]() {
         etichette_originale = etichette; // salva lo stato attuale
+        emit highLightW(this->text().toStdString());
         menu->exec(this->mapToGlobal(QPoint(0, this->height())));
     });
 
@@ -87,10 +93,11 @@ CustomMenuButton::CustomMenuButton(const QString& text, const Etichette &et, Gen
 
 void CustomMenuButton::onMenuClosed() {
     if (!(etichette == etichette_originale)) {
-        gen_JSON_address->onModifiedWord(text().toStdString(), etichette);
+        emit parolaModificata(text().toStdString(), etichette);
         aggiornaColoreSfondo();
     }
 }
+
 
 
 void CustomMenuButton::aggiornaColoreSfondo() {
@@ -105,4 +112,3 @@ void CustomMenuButton::aggiornaColoreSfondo() {
         this->setStyleSheet(""); // Default
     }
 }
-
