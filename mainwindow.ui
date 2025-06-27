@@ -818,6 +818,12 @@ li.checked::marker { content: &quot;\2612&quot;; }
             </item>
             <item>
              <widget class="CustomMenuButton" name="pushButton_11">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>40</height>
+               </size>
+              </property>
               <property name="text">
                <string>11</string>
               </property>
