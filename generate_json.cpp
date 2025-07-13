@@ -478,8 +478,6 @@ void Generate_JSON::FindPath::returnFinalWord(int pathLength) {
         switch (dest) {
         case Accepted:
             if (parent.words.add_word(parola)) {
-                //parent.mainWindow->addWord(QString::fromStdString(parola), *rispostaDizionario, Accepted);
-                //parent.mainWindow->logMessage(QString("#%1: %2").arg(parent.words.get_size()).arg(QString::fromStdString(parola)));
                 emit parent.wordFound(QString::fromStdString(parola), *rispostaDizionario);
                 emit parent.logMessageRequested(QString("#%1: %2").arg(parent.words.get_size()).arg(QString::fromStdString(parola)));
             }

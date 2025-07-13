@@ -40,7 +40,7 @@ MainWindow::MainWindow(QWidget *parent)
         if (btn) {
             qDebug() << "CustomMenuButton trovato:" << btn->objectName();
             pulsanti.append(btn);
-            bool ok = connect(btn, &CustomMenuButton::parolaModificata, &generate_json, &Generate_JSON::onModifiedWord);
+            bool ok = connect(btn, &CustomMenuButton::parolaModificata, this, &MainWindow::MoveWordIfExist);
             qDebug() << (ok ? "Connect riuscita" : "Connect fallita");
 
         } else {
@@ -299,6 +299,28 @@ CustomMenuButton* MainWindow::removeWordFromOriginalList(const QString &word, cu
     }
 
     return nullptr;
+}
+
+void MainWindow::MoveWordIfExist(std::string parola, Etichette et) {
+    QList<QWidget*> lists = { ui->boxAccepted, ui->boxBonus, ui->boxQueue };
+    QString qparola = QString::fromStdString(parola);
+
+    for (int i = 0; i < lists.size(); ++i) {
+        QWidget* list = lists[i];
+        QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(list->layout());
+        if (!layout)
+            continue;
+
+        for (int j = 0; j < layout->count(); ++j) {
+            QWidget* widget = layout->itemAt(j)->widget();
+            if (CustomMenuButton* btn = qobject_cast<CustomMenuButton*>(widget)) {
+                if (btn->text() == qparola) {
+                    generate_json.onModifiedWord(parola, et);
+                }
+            }
+        }
+    }
+
 }
 
 
