@@ -42,7 +42,7 @@ public:
 
     //riguarda l'elenco di parole trovate
     void addWord(const QString &word, const Etichette &etichette, customButton_destination dest = Accepted);
-    CustomMenuButton* removeWordFromDestination(const QString &word, customButton_destination exclude);
+    CustomMenuButton* removeWordFromOriginalList(const QString &word, customButton_destination exclude);
     void clearWords();
 
     bool boxQueueIsEmpty();

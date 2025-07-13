@@ -224,7 +224,7 @@ void MainWindow::highlightTiles(const std::pair<int, int>* positions, int size) 
 }
 
 void MainWindow::addWord(const QString &word, const Etichette &etichette, customButton_destination dest) {
-    CustomMenuButton* label = removeWordFromDestination(word, dest);
+    CustomMenuButton* label = removeWordFromOriginalList(word, dest);
 
     if (!label) {
         label = new CustomMenuButton(word, etichette);
@@ -274,7 +274,7 @@ void MainWindow::addWord(const QString &word, const Etichette &etichette, custom
 
 
 
-CustomMenuButton* MainWindow::removeWordFromDestination(const QString &word, customButton_destination exclude) {
+CustomMenuButton* MainWindow::removeWordFromOriginalList(const QString &word, customButton_destination exclude) {
     QList<QWidget*> lists = { ui->boxAccepted, ui->boxBonus, ui->boxQueue };
 
     for (int i = 0; i < lists.size(); ++i) {
