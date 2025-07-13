@@ -91,9 +91,17 @@ CustomMenuButton::CustomMenuButton(const QString& text, const Etichette &et, QWi
     aggiornaColoreSfondo();
 }
 
+void CustomMenuButton::cambiaParola(QString& text, const Etichette &et) {
+    setText(text);
+    etichette = et;
+
+    aggiornaColoreSfondo();
+}
+
 void CustomMenuButton::onMenuClosed() {
     if (!(etichette == etichette_originale)) {
         emit parolaModificata(text().toStdString(), etichette);
+
         aggiornaColoreSfondo();
     }
 }

@@ -22,6 +22,8 @@ public:
     explicit CustomMenuButton(QWidget* parent);
     explicit CustomMenuButton(const QString& text = "CustomButton", const Etichette &et = Etichette(), QWidget* parent = nullptr);
 
+    void cambiaParola(const QString& text, const Etichette &et = Etichette());
+
 signals:
     void parolaModificata(const std::string& testo, const Etichette& etichette);
     void highLightW(const std::string& testo);
@@ -31,6 +33,7 @@ private:
     Etichette etichette;
     Etichette etichette_originale;
     PersistentMenu* menu;
+
     void aggiornaColoreSfondo();
 
 private slots:

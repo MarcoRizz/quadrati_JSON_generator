@@ -38,7 +38,7 @@ bool widget_displayDictionary::displayParola(std::string parola) {
     int count = std::min<int>(lista.size(), buttons.size());  // evita fuoriuscite
 
     for (int i = 0; i < count; ++i) {
-        buttons[i]->setText(QString::fromStdString(lista[i]));
+        buttons[i]->cambiaParola(QString::fromStdString(lista[i]));
     }
 
     return false;
@@ -86,7 +86,7 @@ void widget_displayDictionary::scorriDizionario(bool avanti) {
 
     // Aggiorna i bottoni
     for (int i = 0; i < buttons.size(); ++i) {
-        buttons[i]->setText(nuoveParole[i]);
+        buttons[i]->cambiaParola(nuoveParole[i]);
     }
 
     parolaCentrale = nuoveParole[buttons.size() / 2];
