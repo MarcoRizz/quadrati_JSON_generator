@@ -4,6 +4,12 @@
 #include <optional>
 #include "lettera.h"
 
+struct parola
+{
+    std::string voce;
+    Etichette etichetta;
+};
+
 class Dizionario {
 private:
     std::unique_ptr<Lettera> radice;
@@ -42,7 +48,7 @@ public:
     std::string cercaParolaPrecedente(const std::string& parola);
 
     // Cerca un range di parole a partire da "parola"
-    std::vector<std::string> cercaParoleInRange(const std::string& parola, const int up, const int down);
+    std::vector<parola> cercaParoleInRange(const std::string& parola, const int up, const int down);
 
 private:
     // Metodo ricorsivo per eliminare una parola
@@ -64,10 +70,10 @@ private:
     bool completaParolaDaNodoPrecedente(const Lettera* nodo, std::string& base, const char initialChar) const;
 
     // Restituisce "maxCount" parole in ordine alfabetico figlie di "base"
-    void completaParolaDaNodoMulti(const Lettera* nodo, std::string& base, const char initialChar, std::vector<std::string>& risultati, size_t maxCount) const;
+    void completaParolaDaNodoMulti(const Lettera* nodo, std::string& base, const char initialChar, std::vector<parola>& risultati, size_t maxCount) const;
 
     // Restituisce "maxCount" parole in ordine alfabetico INVERSO figlie di "base"
-    void completaParolaDaNodoPrecedenteMulti(const Lettera* nodo, std::string& base, const char initialChar, std::vector<std::string>& risultati, size_t maxCount) const;
+    void completaParolaDaNodoPrecedenteMulti(const Lettera* nodo, std::string& base, const char initialChar, std::vector<parola>& risultati, size_t maxCount) const;
 };
 
 #endif // DIZIONARIO_H

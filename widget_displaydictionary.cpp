@@ -30,7 +30,7 @@ bool widget_displayDictionary::displayParola(std::string parola) {
 
     if (!dizionario) return false;
 
-    std::vector<std::string> lista = dizionario->cercaParoleInRange(parola, 10, 10); //TODO: qui bisogna recuperare anche tutte le etichette
+    std::vector<struct parola> lista = dizionario->cercaParoleInRange(parola, 10, 10); //TODO: qui bisogna recuperare anche tutte le etichette
     //TODO: verificare anche che questi pulsanti sovrascrivano correttamente il dizionario se viene modificata qualche parola.
 
     if (lista.size() == 20) return false;
@@ -38,7 +38,7 @@ bool widget_displayDictionary::displayParola(std::string parola) {
     int count = std::min<int>(lista.size(), buttons.size());  // evita fuoriuscite
 
     for (int i = 0; i < count; ++i) {
-        buttons[i]->cambiaParola(QString::fromStdString(lista[i]));
+        buttons[i]->cambiaParola(QString::fromStdString(lista[i].voce), lista[i].etichetta);
     }
 
     return false;
