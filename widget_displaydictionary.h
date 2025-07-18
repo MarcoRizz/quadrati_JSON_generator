@@ -26,6 +26,7 @@ public:
     void setLayoutAndButtons(QVBoxLayout *layout, const QVector<CustomMenuButton *> &buttons);
     void setDizionario(Dizionario *diz);
     bool displayParola(std::string parola);
+    bool parolaModificata(const std::string& testo, const Etichette& etichette);
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;

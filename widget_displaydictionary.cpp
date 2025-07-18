@@ -44,6 +44,18 @@ bool widget_displayDictionary::displayParola(std::string parola) {
     return false;
 }
 
+bool widget_displayDictionary::parolaModificata(const std::string& testo, const Etichette& etichette) {
+    QString qtesto = QString::fromStdString(testo);
+
+    for (CustomMenuButton *btn : buttons) {
+        if (btn->text() == qtesto) {
+            btn->cambiaParola(qtesto, etichette);
+            return true;
+        }
+    }
+    return false;
+}
+
 bool widget_displayDictionary::eventFilter(QObject *obj, QEvent *event) {
     if (obj == layoutRef && event->type() == QEvent::Wheel) {
         QWheelEvent *wheelEvent = static_cast<QWheelEvent *>(event);
@@ -62,7 +74,7 @@ void widget_displayDictionary::scorriDizionario(bool avanti) {
     if (!dizionario || buttons.isEmpty()) return;
 
     QVector<QString> paroleCorrenti;
-    for (QPushButton *btn : buttons) {
+    for (CustomMenuButton *btn : buttons) {
         paroleCorrenti.append(btn->text());
     }
 

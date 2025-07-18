@@ -229,6 +229,7 @@ void MainWindow::addWord(const QString &word, const Etichette &etichette, custom
     if (!label) {
         label = new CustomMenuButton(word, etichette);
         connect(label, &CustomMenuButton::parolaModificata, &generate_json, &Generate_JSON::onModifiedWord);
+        connect(label, &CustomMenuButton::parolaModificata, dictionaryDisplayer, &widget_displayDictionary::parolaModificata);
         connect(label, &CustomMenuButton::highLightW, dictionaryDisplayer, &widget_displayDictionary::displayParola);
     }
 
