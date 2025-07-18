@@ -458,6 +458,12 @@ void Generate_JSON::onModifiedWord(std::string parola, Etichette et) {
     QApplication::processEvents();
 }
 
+void Generate_JSON::aggiorna_dizionario(const std::string& testo, const Etichette& etichette) {
+    // Salvo le modifiche alle etichette nel dizionario
+    dizionario.inserisciParola(testo, etichette, true);
+}
+
+
 // Costruttore della classe FindPath
 Generate_JSON::FindPath::FindPath(Generate_JSON& gen_json) : parent(gen_json) {}
 

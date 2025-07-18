@@ -28,6 +28,7 @@ public:
 
     int run();
     void onModifiedWord(std::string parola, Etichette et);
+    void aggiorna_dizionario(const std::string& testo, const Etichette& etichette);
 
 signals:
     void wordFound(const QString& parola, Etichette et, customButton_destination dest = Accepted);

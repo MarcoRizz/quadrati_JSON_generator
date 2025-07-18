@@ -94,9 +94,41 @@ CustomMenuButton::CustomMenuButton(const QString& text, const Etichette &et, QWi
 void CustomMenuButton::cambiaParola(const QString& text, const Etichette &et) {
     setText(text);
     etichette = et;
+    etichette_originale = et;
 
     aggiornaColoreSfondo();
+
+    // Aggiorna i checkbox del menu
+    const QList<QAction*> azioni = menu->actions();
+    int counter = 0;
+    for (QAction* azione : azioni) {
+        QWidgetAction* widgetAction = qobject_cast<QWidgetAction*>(azione);
+        if (!widgetAction) continue;
+
+        QCheckBox* check = qobject_cast<QCheckBox*>(widgetAction->defaultWidget());
+        if (!check) continue;
+
+        // Ricollega la chiave tramite testo
+        Etichette::Valore key;
+        switch (counter) {
+        case 0: key = Etichette::DizionarioComune; break;
+        case 1: key = Etichette::Coniugazioni; break;
+        case 2: key = Etichette::Approvate; break;
+        case 3: key = Etichette::BonusRaro; break;
+        case 4: key = Etichette::BonusStraniero; break;
+        case 5: key = Etichette::BonusNome; break;
+        default: continue;
+        }
+
+        // Blocca i segnali temporaneamente per evitare chiamate a toggle
+        check->blockSignals(true);
+        check->setChecked(et.haUnaEtichetta(Etichette(key)));
+        check->blockSignals(false);
+
+        ++counter;
+    }
 }
+
 
 void CustomMenuButton::onMenuClosed() {
     if (!(etichette == etichette_originale)) {

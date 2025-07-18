@@ -40,8 +40,11 @@ MainWindow::MainWindow(QWidget *parent)
         if (btn) {
             qDebug() << "CustomMenuButton trovato:" << btn->objectName();
             pulsanti.append(btn);
+            //collegamento per spostare dalle liste una parola, solo se presente
             bool ok = connect(btn, &CustomMenuButton::parolaModificata, this, &MainWindow::MoveWordIfExist);
-            qDebug() << (ok ? "Connect riuscita" : "Connect fallita");
+            //collegamento per aggiorare il dizionario con ogni modifica
+            bool ook = connect(btn, &CustomMenuButton::parolaModificata, &generate_json, &Generate_JSON::aggiorna_dizionario);
+            qDebug() << ((ok & ook) ? "Connect riuscita" : "Connect fallita");
 
         } else {
             qDebug() << "pushButton_" << i << " non è CustomMenuButton!";
@@ -228,9 +231,15 @@ void MainWindow::addWord(const QString &word, const Etichette &etichette, custom
 
     if (!label) {
         label = new CustomMenuButton(word, etichette);
+
+        //collegamento per muovere il bottone tra le liste
         connect(label, &CustomMenuButton::parolaModificata, &generate_json, &Generate_JSON::onModifiedWord);
+        //collegamento per aggiornare il dizionario ad ogni modifica
         connect(label, &CustomMenuButton::parolaModificata, dictionaryDisplayer, &widget_displayDictionary::parolaModificata);
+        //collegamento per evideziare ogni parola cliccata
         connect(label, &CustomMenuButton::highLightW, dictionaryDisplayer, &widget_displayDictionary::displayParola);
+    } else {
+        label->cambiaParola(word, etichette);
     }
 
     QWidget* list;
