@@ -6,6 +6,8 @@
 #include <QMessageBox>
 #include <QSettings>
 
+#include "modificadizionario.h"
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -371,4 +373,9 @@ bool MainWindow::boxQueueIsEmpty() {
     return true;
 }
 
-
+void MainWindow::on_actionModifica_Dizionario_triggered()
+{
+    auto* editor = new ModificaDizionario(&generate_json.dizionario, this);
+    editor->setAttribute(Qt::WA_DeleteOnClose);
+    editor->show();
+}

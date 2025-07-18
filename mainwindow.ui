@@ -930,11 +930,17 @@ li.checked::marker { content: &quot;\2612&quot;; }
    </property>
    <widget class="QMenu" name="menuQuadrati_JSON_generator">
     <property name="title">
-     <string>Quadrati JSON generator</string>
+     <string>Opzioni</string>
     </property>
+    <addaction name="actionModifica_Dizionario"/>
    </widget>
    <addaction name="menuQuadrati_JSON_generator"/>
   </widget>
+  <action name="actionModifica_Dizionario">
+   <property name="text">
+    <string>Modifica Dizionario</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>

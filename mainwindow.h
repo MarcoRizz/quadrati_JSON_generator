@@ -58,6 +58,8 @@ private slots:
 
     void on_checkBox_checkStateChanged(const Qt::CheckState &arg1);
 
+    void on_actionModifica_Dizionario_triggered();  // slot collegato alla voce di menu
+
 private:
     Ui::MainWindow *ui;
     widget_displayDictionary *dictionaryDisplayer;
