@@ -24,10 +24,15 @@ bool PersistentMenu::event(QEvent* e)
     return QMenu::event(e);
 }
 
+CustomMenuButton::CustomMenuButton(QWidget* parent)
+    : CustomMenuButton("CustomButton", Etichette(), parent)
+{}
+
 // Costruttore della CustomMenuButton //TODO: impostare mainWindow->highlightTiles(path, parola.length()) al clic sul bottone
-CustomMenuButton::CustomMenuButton(const QString& text, const Etichette &et, Generate_JSON* generate_json, QWidget* parent)
-    : QPushButton(text, parent), etichette(et), gen_JSON_address(generate_json)
+CustomMenuButton::CustomMenuButton(const QString& text, const Etichette &et, QWidget* parent)
+    : QPushButton(text, parent), etichette(et)
 {
+    qDebug() << "New CustomButton:" << text;
     // Crea il menu personalizzato
     menu = new PersistentMenu(this);
 
@@ -78,6 +83,7 @@ CustomMenuButton::CustomMenuButton(const QString& text, const Etichette &et, Gen
     // Mostra il menu al clic del pulsante
     connect(this, &QPushButton::clicked, this, [this]() {
         etichette_originale = etichette; // salva lo stato attuale
+        emit highLightW(this->text().toStdString());
         menu->exec(this->mapToGlobal(QPoint(0, this->height())));
     });
 
@@ -85,12 +91,53 @@ CustomMenuButton::CustomMenuButton(const QString& text, const Etichette &et, Gen
     aggiornaColoreSfondo();
 }
 
+void CustomMenuButton::cambiaParola(const QString& text, const Etichette &et) {
+    setText(text);
+    etichette = et;
+    etichette_originale = et;
+
+    aggiornaColoreSfondo();
+
+    // Aggiorna i checkbox del menu
+    const QList<QAction*> azioni = menu->actions();
+    int counter = 0;
+    for (QAction* azione : azioni) {
+        QWidgetAction* widgetAction = qobject_cast<QWidgetAction*>(azione);
+        if (!widgetAction) continue;
+
+        QCheckBox* check = qobject_cast<QCheckBox*>(widgetAction->defaultWidget());
+        if (!check) continue;
+
+        // Ricollega la chiave tramite testo
+        Etichette::Valore key;
+        switch (counter) {
+        case 0: key = Etichette::DizionarioComune; break;
+        case 1: key = Etichette::Coniugazioni; break;
+        case 2: key = Etichette::Approvate; break;
+        case 3: key = Etichette::BonusRaro; break;
+        case 4: key = Etichette::BonusStraniero; break;
+        case 5: key = Etichette::BonusNome; break;
+        default: continue;
+        }
+
+        // Blocca i segnali temporaneamente per evitare chiamate a toggle
+        check->blockSignals(true);
+        check->setChecked(et.haUnaEtichetta(Etichette(key)));
+        check->blockSignals(false);
+
+        ++counter;
+    }
+}
+
+
 void CustomMenuButton::onMenuClosed() {
     if (!(etichette == etichette_originale)) {
-        gen_JSON_address->onModifiedWord(text().toStdString(), etichette);
+        emit parolaModificata(text().toStdString(), etichette);
+
         aggiornaColoreSfondo();
     }
 }
+
 
 
 void CustomMenuButton::aggiornaColoreSfondo() {
@@ -105,4 +152,3 @@ void CustomMenuButton::aggiornaColoreSfondo() {
         this->setStyleSheet(""); // Default
     }
 }
-

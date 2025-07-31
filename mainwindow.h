@@ -6,6 +6,7 @@
 #include "common_enums.h"
 #include "generate_JSON.h"
 #include "custommenubutton.h"
+#include "widget_displayDictionary.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -41,7 +42,8 @@ public:
 
     //riguarda l'elenco di parole trovate
     void addWord(const QString &word, const Etichette &etichette, customButton_destination dest = Accepted);
-    CustomMenuButton* removeWordFromDestination(const QString &word, customButton_destination exclude);
+    CustomMenuButton* removeWordFromOriginalList(const QString &word, customButton_destination exclude);
+    void MoveWordIfExist(std::string parola, Etichette et);
     void clearWords();
 
     bool boxQueueIsEmpty();
@@ -56,8 +58,11 @@ private slots:
 
     void on_checkBox_checkStateChanged(const Qt::CheckState &arg1);
 
+    void on_actionModifica_Dizionario_triggered();  // slot collegato alla voce di menu
+
 private:
     Ui::MainWindow *ui;
+    widget_displayDictionary *dictionaryDisplayer;
     int saveDictionary = 0;     // A fine generazione, salva modifiche al dizionario
 };
 #endif // MAINWINDOW_H

@@ -418,6 +418,7 @@ void Generate_JSON::converti_e_scrivi_JSON() {
 void Generate_JSON::onModifiedWord(std::string parola, Etichette et) {
     customButton_destination dest = findDestination(et);
 
+    std::cout<<"dentro onModifiedWord"<<std::endl;
     switch (dest) {
     case Accepted:
         if (words.add_word(parola)) {
@@ -457,6 +458,12 @@ void Generate_JSON::onModifiedWord(std::string parola, Etichette et) {
     QApplication::processEvents();
 }
 
+void Generate_JSON::aggiorna_dizionario(const std::string& testo, const Etichette& etichette) {
+    // Salvo le modifiche alle etichette nel dizionario
+    dizionario.inserisciParola(testo, etichette, true);
+}
+
+
 // Costruttore della classe FindPath
 Generate_JSON::FindPath::FindPath(Generate_JSON& gen_json) : parent(gen_json) {}
 
@@ -477,8 +484,6 @@ void Generate_JSON::FindPath::returnFinalWord(int pathLength) {
         switch (dest) {
         case Accepted:
             if (parent.words.add_word(parola)) {
-                //parent.mainWindow->addWord(QString::fromStdString(parola), *rispostaDizionario, Accepted);
-                //parent.mainWindow->logMessage(QString("#%1: %2").arg(parent.words.get_size()).arg(QString::fromStdString(parola)));
                 emit parent.wordFound(QString::fromStdString(parola), *rispostaDizionario);
                 emit parent.logMessageRequested(QString("#%1: %2").arg(parent.words.get_size()).arg(QString::fromStdString(parola)));
             }

@@ -296,11 +296,11 @@ bool Dizionario::completaParolaDaNodoPrecedente(const Lettera* nodo, std::string
 // --------------------------------------------------
 // Ricerca parole in range
 // --------------------------------------------------
-std::vector<std::string> Dizionario::cercaParoleInRange(const std::string& parola, const int up, const int down) {
+std::vector<parola> Dizionario::cercaParoleInRange(const std::string& parola, const int up, const int down) {
 
-    std::vector<std::string> precedenti;
-    std::vector<std::string> successivi;
-    std::string centrale;
+    std::vector<struct parola> precedenti;
+    std::vector<struct parola> successivi;
+    struct parola centrale;
 
     // 1) Trova il nodo della parola
     std::string parolaPulita = rimuoviAccenti(parola);
@@ -313,8 +313,10 @@ std::vector<std::string> Dizionario::cercaParoleInRange(const std::string& parol
     }
 
     // 2) Parola centrale
-    if (corrente->fineParola)
-        centrale = parolaPulita;
+    if (corrente->fineParola) {
+        centrale.voce = parolaPulita;
+        centrale.etichetta = corrente->etichette;
+    }
 
     // 3) Precedenti
     {
@@ -334,7 +336,11 @@ std::vector<std::string> Dizionario::cercaParoleInRange(const std::string& parol
             }
         }
         // Ordiniamo lessicograficamente TUTTO il vettore
-        std::sort(precedenti.begin(), precedenti.end());
+        std::sort(precedenti.begin(), precedenti.end(),
+                  [](const struct parola& a, const struct parola& b) {
+                      return a.voce < b.voce;
+                  });
+
     }
 
     // 4) Successivi
@@ -366,10 +372,10 @@ std::vector<std::string> Dizionario::cercaParoleInRange(const std::string& parol
     }
 
     // 5) Unione finale
-    std::vector<std::string> result;
-    result.reserve(precedenti.size() + (!centrale.empty()) + successivi.size());
+    std::vector<struct parola> result;
+    result.reserve(precedenti.size() + (!centrale.voce.empty()) + successivi.size());
     result.insert(result.end(), precedenti.begin(), precedenti.end());
-    if (!centrale.empty()) result.push_back(centrale);
+    if (!centrale.voce.empty()) result.push_back(centrale);
     result.insert(result.end(), successivi.begin(), successivi.end());
 
     return result;
@@ -378,10 +384,10 @@ std::vector<std::string> Dizionario::cercaParoleInRange(const std::string& parol
 // --------------------------------------------------
 // Completa parole verso destra (alfabetico crescente)
 // --------------------------------------------------
-void Dizionario::completaParolaDaNodoMulti(const Lettera* nodo, std::string& base, const char initialChar, std::vector<std::string>& risultati, size_t maxCount) const {
+void Dizionario::completaParolaDaNodoMulti(const Lettera* nodo, std::string& base, const char initialChar, std::vector<parola>& risultati, size_t maxCount) const {
     if (risultati.size() >= maxCount) return;
     if (nodo->fineParola) {
-        risultati.push_back(base);
+        risultati.push_back((parola){base, nodo->etichette});
         if (risultati.size() >= maxCount) return;
     }
     for (char c = initialChar; c <= 'z' && risultati.size() < maxCount; ++c) {
@@ -396,10 +402,10 @@ void Dizionario::completaParolaDaNodoMulti(const Lettera* nodo, std::string& bas
 // --------------------------------------------------
 // Completa parole verso sinistra (alfabetico decrescente)
 // --------------------------------------------------
-void Dizionario::completaParolaDaNodoPrecedenteMulti(const Lettera* nodo, std::string& base, const char initialChar, std::vector<std::string>& risultati, size_t maxCount) const {
+void Dizionario::completaParolaDaNodoPrecedenteMulti(const Lettera* nodo, std::string& base, const char initialChar, std::vector<parola>& risultati, size_t maxCount) const {
     if (risultati.size() >= maxCount) return;
     if (nodo->fineParola) {
-        risultati.push_back(base);
+        risultati.push_back((parola){base, nodo->etichette});
         if (risultati.size() >= maxCount) return;
     }
     for (char c = initialChar; c >= 'a' && risultati.size() < maxCount; --c) {

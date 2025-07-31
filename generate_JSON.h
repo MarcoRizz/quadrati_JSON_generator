@@ -19,14 +19,16 @@ class MainWindow; // Forward declaration
 class FindPath; // Forward declaration di FindPath
 
 class Generate_JSON : public QObject {
-public:
     Q_OBJECT
 
 public:
     Generate_JSON(MainWindow* mainWindow); // Dichiarazione del costruttore
 
+    Dizionario dizionario;
+
     int run();
     void onModifiedWord(std::string parola, Etichette et);
+    void aggiorna_dizionario(const std::string& testo, const Etichette& etichette);
 
 signals:
     void wordFound(const QString& parola, Etichette et, customButton_destination dest = Accepted);
@@ -41,7 +43,6 @@ private:
     WordList words;
     WordList words_bonus;
     WordList words_queue;
-    Dizionario dizionario;
 
     const std::string dictionary_path_json = "C:\\Users\\mav13\\Documents\\Qt\\Dizionari\\dizionario.json";
     std::vector<std::vector<DynArray>> passingWords;

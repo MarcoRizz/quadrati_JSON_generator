@@ -6,14 +6,17 @@
 #include <QMessageBox>
 #include <QSettings>
 
+#include "modificadizionario.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , generate_json(this)
+    , dictionaryDisplayer(new widget_displayDictionary)
 {
     ui->setupUi(this);
 
+    // Cliccando su "rileva automaticamente" si disabilita il campo di input manuale
     connect(ui->checkBox_JSON_auto_start, &QCheckBox::checkStateChanged, this, &MainWindow::on_checkBox_checkStateChanged);
 
     connect(&generate_json, &Generate_JSON::logMessageRequested,
@@ -29,11 +32,36 @@ MainWindow::MainWindow(QWidget *parent)
     if (!m_selectedDirectory.isEmpty() && ui->selectedDirectoryLabel) {
         ui->selectedDirectoryLabel->setText(m_selectedDirectory);
     }
+
+    //inizializzo widget_displayDictionary
+    dictionaryDisplayer->setDizionario(&generate_json.dizionario); // il tuo oggetto dizionario
+    // Prepara i pulsanti e layout (presi dal .ui)
+    QVector<CustomMenuButton *> pulsanti;
+    for (int i = 1; i <= 21; ++i) {
+        CustomMenuButton *btn = ui->dizionarioScrollArea->findChild<CustomMenuButton *>(QString("pushButton_%1").arg(i));
+        if (btn) {
+            qDebug() << "CustomMenuButton trovato:" << btn->objectName();
+            pulsanti.append(btn);
+            //collegamento per spostare dalle liste una parola, solo se presente
+            bool ok = connect(btn, &CustomMenuButton::parolaModificata, this, &MainWindow::MoveWordIfExist);
+            //collegamento per aggiorare il dizionario con ogni modifica
+            bool ook = connect(btn, &CustomMenuButton::parolaModificata, &generate_json, &Generate_JSON::aggiorna_dizionario);
+            qDebug() << ((ok & ook) ? "Connect riuscita" : "Connect fallita");
+
+        } else {
+            qDebug() << "pushButton_" << i << " non è CustomMenuButton!";
+        }
+    }
+
+    dictionaryDisplayer->setLayoutAndButtons(ui->verticalLayout_7, pulsanti); //TODO: ui->verticalLayout_7 non funziona (dovrebbe scorrere su e giù allo scorrere della rotella
+    dictionaryDisplayer->setDizionario(&generate_json.dizionario);
+    dictionaryDisplayer->displayParola("dizionario");
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+    delete dictionaryDisplayer;
 }
 
 void MainWindow::calculateFileNumbers(std::queue<int>* list)
@@ -167,7 +195,6 @@ void MainWindow::on_selectDirectoryButton_clicked()
     }
 }
 
-
 void MainWindow::on_checkBox_checkStateChanged(const Qt::CheckState &arg1)
 {
     ui->TextEdit_JSON_start_number->setEnabled(!arg1);
@@ -202,10 +229,19 @@ void MainWindow::highlightTiles(const std::pair<int, int>* positions, int size) 
 }
 
 void MainWindow::addWord(const QString &word, const Etichette &etichette, customButton_destination dest) {
-    CustomMenuButton* label = removeWordFromDestination(word, dest);
+    CustomMenuButton* label = removeWordFromOriginalList(word, dest);
 
     if (!label) {
-        label = new CustomMenuButton(word, etichette, &generate_json);
+        label = new CustomMenuButton(word, etichette);
+
+        //collegamento per muovere il bottone tra le liste
+        connect(label, &CustomMenuButton::parolaModificata, &generate_json, &Generate_JSON::onModifiedWord);
+        //collegamento per aggiornare il dizionario ad ogni modifica
+        connect(label, &CustomMenuButton::parolaModificata, dictionaryDisplayer, &widget_displayDictionary::parolaModificata);
+        //collegamento per evideziare ogni parola cliccata
+        connect(label, &CustomMenuButton::highLightW, dictionaryDisplayer, &widget_displayDictionary::displayParola);
+    } else {
+        label->cambiaParola(word, etichette);
     }
 
     QWidget* list;
@@ -250,7 +286,7 @@ void MainWindow::addWord(const QString &word, const Etichette &etichette, custom
 
 
 
-CustomMenuButton* MainWindow::removeWordFromDestination(const QString &word, customButton_destination exclude) {
+CustomMenuButton* MainWindow::removeWordFromOriginalList(const QString &word, customButton_destination exclude) {
     QList<QWidget*> lists = { ui->boxAccepted, ui->boxBonus, ui->boxQueue };
 
     for (int i = 0; i < lists.size(); ++i) {
@@ -275,6 +311,28 @@ CustomMenuButton* MainWindow::removeWordFromDestination(const QString &word, cus
     }
 
     return nullptr;
+}
+
+void MainWindow::MoveWordIfExist(std::string parola, Etichette et) {
+    QList<QWidget*> lists = { ui->boxAccepted, ui->boxBonus, ui->boxQueue };
+    QString qparola = QString::fromStdString(parola);
+
+    for (int i = 0; i < lists.size(); ++i) {
+        QWidget* list = lists[i];
+        QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(list->layout());
+        if (!layout)
+            continue;
+
+        for (int j = 0; j < layout->count(); ++j) {
+            QWidget* widget = layout->itemAt(j)->widget();
+            if (CustomMenuButton* btn = qobject_cast<CustomMenuButton*>(widget)) {
+                if (btn->text() == qparola) {
+                    generate_json.onModifiedWord(parola, et);
+                }
+            }
+        }
+    }
+
 }
 
 
@@ -315,4 +373,9 @@ bool MainWindow::boxQueueIsEmpty() {
     return true;
 }
 
-
+void MainWindow::on_actionModifica_Dizionario_triggered()
+{
+    auto* editor = new ModificaDizionario(&generate_json.dizionario, this);
+    editor->setAttribute(Qt::WA_DeleteOnClose);
+    editor->show();
+}

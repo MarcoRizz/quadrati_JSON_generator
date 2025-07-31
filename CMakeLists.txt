@@ -8,6 +8,8 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
 # ---- Qt ----
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets Concurrent LinguistTools)
 
@@ -31,6 +33,8 @@ set(PROJECT_SOURCES
 qt_add_executable(Quadrati_JSON_generator
     MANUAL_FINALIZATION
     ${PROJECT_SOURCES}
+    widget_displaydictionary.h widget_displaydictionary.cpp
+    modificadizionario.h modificadizionario.cpp modificadizionario.ui
 )
 
 qt_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
