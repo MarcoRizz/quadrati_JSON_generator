@@ -30,8 +30,7 @@ bool widget_displayDictionary::displayParola(std::string parola) {
 
     if (!dizionario) return false;
 
-    std::vector<struct parola> lista = dizionario->cercaParoleInRange(parola, 10, 10); //TODO: qui bisogna recuperare anche tutte le etichette
-    //TODO: verificare anche che questi pulsanti sovrascrivano correttamente il dizionario se viene modificata qualche parola.
+    std::vector<struct parola> lista = dizionario->cercaParoleInRange(parola, 10, 10);
 
     if (lista.size() == 20) return false;
 

@@ -170,7 +170,8 @@ std::string Dizionario::cercaParolaSuccessiva(const std::string& parola) {
         percorso.emplace_back(corrente, c);
         corrente = corrente->getFiglio(c);
         if (!corrente) {
-            throw std::runtime_error("Parola non trovata nel dizionario.");
+            //throw std::runtime_error("Parola non trovata nel dizionario.");
+            return "";
         }
     }
 
@@ -309,7 +310,7 @@ std::vector<parola> Dizionario::cercaParoleInRange(const std::string& parola, co
     for (char c : parolaPulita) {
         percorso.emplace_back(corrente, c);
         corrente = corrente->getFiglio(c);
-        if (!corrente) throw std::runtime_error("Parola non trovata nel dizionario.");
+        if (!corrente) return {};//throw std::runtime_error("Parola non trovata nel dizionario.");
     }
 
     // 2) Parola centrale
@@ -319,7 +320,7 @@ std::vector<parola> Dizionario::cercaParoleInRange(const std::string& parola, co
     }
 
     // 3) Precedenti
-    {
+    {  //TODO: nel caso di lista {errore, erroree, errori} se si cerca 'erroree' questo algoritmo salta 'errore'
         std::string base = parolaPulita;
         for (int i = static_cast<int>(percorso.size()) - 1;
              i >= 0 && (int)precedenti.size() < down; --i) {

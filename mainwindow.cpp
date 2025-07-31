@@ -54,7 +54,7 @@ MainWindow::MainWindow(QWidget *parent)
     }
 
     dictionaryDisplayer->setLayoutAndButtons(ui->verticalLayout_7, pulsanti); //TODO: ui->verticalLayout_7 non funziona (dovrebbe scorrere su e giù allo scorrere della rotella
-    dictionaryDisplayer->setDizionario(&generate_json.dizionario);
+    //dictionaryDisplayer->setDizionario(&generate_json.dizionario);
     dictionaryDisplayer->displayParola("dizionario");
 }
 
