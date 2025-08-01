@@ -34,6 +34,8 @@ private slots:
 
     void on_btn_salva_clicked();
 
+    void closeEvent(QCloseEvent* event);
+
 private:
     Ui::ModificaDizionario *ui;
     Dizionario* dizionario;

@@ -373,9 +373,18 @@ bool MainWindow::boxQueueIsEmpty() {
     return true;
 }
 
+
 void MainWindow::on_actionModifica_Dizionario_triggered()
 {
     auto* editor = new ModificaDizionario(&generate_json.dizionario, this);
+    connect(editor, &ModificaDizionario::editorChiuso, this, &MainWindow::aggiorna_widget_Dictionary);
     editor->setAttribute(Qt::WA_DeleteOnClose);
     editor->show();
+}
+
+
+void MainWindow::aggiorna_widget_Dictionary()
+{
+    QString parola_attuale = ui->pushButton_11->text();
+    dictionaryDisplayer->displayParola(parola_attuale.toStdString());
 }

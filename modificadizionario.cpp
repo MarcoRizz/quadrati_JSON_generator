@@ -132,3 +132,9 @@ void ModificaDizionario::on_btn_salva_clicked()
     }
 }
 
+
+void ModificaDizionario::closeEvent(QCloseEvent* event)
+{
+    emit editorChiuso();
+    QMainWindow::closeEvent(event);
+}
