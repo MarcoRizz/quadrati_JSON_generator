@@ -126,9 +126,10 @@ void ModificaDizionario::on_btn_salva_clicked()
     MainWindow* mainWin = qobject_cast<MainWindow*>(parent());
     if (mainWin) {
         dizionario->salvaInFileCompatto(mainWin->generate_json.dictionary_path_json);
-        qWarning("Salvataggio effettuato con successo");
+        mainWin->logMessage("Salvataggio effettuato con successo");
     } else {
         qWarning("Impossibile castare parent a MainWindow");
+        mainWin->logMessage("Impossibile castare parent a MainWindow");
     }
 }
 
