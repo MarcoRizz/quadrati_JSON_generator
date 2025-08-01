@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include "dizionario.h"
 #include "widget_displayDictionary.h"
+#include "mainwindow.h"
 
 namespace Ui {
 class ModificaDizionario;
@@ -14,21 +15,24 @@ class ModificaDizionario : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit ModificaDizionario(Dizionario* diz, QWidget *parent = nullptr);
+    explicit ModificaDizionario(Dizionario* diz, MainWindow *parent = nullptr);
     ~ModificaDizionario();
 
+signals:
+    void editorChiuso();
+
 private slots:
-    void on_pushButton_clicked();
+    void on_btn_rimuovi_clicked();
 
-    void on_pushButton_23_clicked();
-
-    void on_pushButton_22_clicked();
+    void on_btn_aggiungi_clicked();
 
     void on_txt_rimuovi_textChanged(const QString &arg1);
 
     void on_txt_aggiungi_textChanged(const QString &arg1);
 
     void on_txt_cerca_textChanged(const QString &arg1);
+
+    void on_btn_salva_clicked();
 
 private:
     Ui::ModificaDizionario *ui;

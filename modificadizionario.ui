@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>795</width>
-    <height>836</height>
+    <width>767</width>
+    <height>902</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,10 +19,16 @@
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
        <widget class="QGroupBox" name="groupBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="title">
          <string>Cerca</string>
         </property>
-        <widget class="QPushButton" name="pushButton">
+        <widget class="QPushButton" name="btn_cerca">
          <property name="geometry">
           <rect>
            <x>240</x>
@@ -52,7 +58,7 @@
         <property name="title">
          <string>Aggiungi</string>
         </property>
-        <widget class="QPushButton" name="pushButton_22">
+        <widget class="QPushButton" name="btn_aggiungi">
          <property name="geometry">
           <rect>
            <x>260</x>
@@ -136,7 +142,7 @@
         <property name="title">
          <string>Rimuovi</string>
         </property>
-        <widget class="QPushButton" name="pushButton_23">
+        <widget class="QPushButton" name="btn_rimuovi">
          <property name="geometry">
           <rect>
            <x>250</x>
@@ -159,6 +165,13 @@
           </rect>
          </property>
         </widget>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btn_salva">
+        <property name="text">
+         <string>Salva Modifiche</string>
+        </property>
        </widget>
       </item>
      </layout>
@@ -209,8 +222,8 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>381</width>
-           <height>745</height>
+           <width>367</width>
+           <height>811</height>
           </rect>
          </property>
          <property name="sizePolicy">
@@ -386,7 +399,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>795</width>
+     <width>767</width>
      <height>21</height>
     </rect>
    </property>
