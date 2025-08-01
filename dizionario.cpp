@@ -2,8 +2,6 @@
 
 #include <iostream>
 #include <fstream>
-#include <qdebug.h>
-#include <qlogging.h>
 
 Dizionario::Dizionario() : radice(std::make_unique<Lettera>()) {}
 
@@ -323,7 +321,7 @@ std::vector<parola> Dizionario::cercaParoleInRange(const std::string& parola, co
     }
 
     // 3) Precedenti
-    {  //TODO: nel caso di lista {errore, erroree, errori} se si cerca 'erroree' questo algoritmo salta 'errore'
+    {
         std::string base = parolaPulita;
         for (int i = static_cast<int>(percorso.size()) - 1; i >= 0 && static_cast<int>(precedenti.size()) < down; --i) {
             base.pop_back();
@@ -384,27 +382,6 @@ std::vector<parola> Dizionario::cercaParoleInRange(const std::string& parola, co
     result.insert(result.end(), precedenti.begin(), precedenti.end());
     if (!centrale.voce.empty()) result.push_back(centrale);
     result.insert(result.end(), successivi.begin(), successivi.end());
-
-    //DEBUG
-    if (true) {
-        QString dbString;
-        for(struct parola parolaX : result) {
-            dbString.append(parolaX.voce + ", ");
-        }
-        qDebug() << "Exit from cercaParoleInRange (" + QString::number(result.size()) + "): " + dbString;
-
-        dbString = "";
-        for(struct parola parolaX : precedenti) {
-            dbString.append(parolaX.voce + ", ");
-        }
-        qDebug() << "Precedenti: " + dbString;
-
-        dbString = "";
-        for(struct parola parolaX : successivi) {
-            dbString.append(parolaX.voce + ", ");
-        }
-        qDebug() << "Successivi: " + dbString;
-    }
 
     return result;
 }
