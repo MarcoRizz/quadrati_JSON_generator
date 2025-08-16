@@ -170,7 +170,8 @@ std::string Dizionario::cercaParolaSuccessiva(const std::string& parola) {
         percorso.emplace_back(corrente, c);
         corrente = corrente->getFiglio(c);
         if (!corrente) {
-            throw std::runtime_error("Parola non trovata nel dizionario.");
+            //throw std::runtime_error("Parola non trovata nel dizionario.");
+            return "";
         }
     }
 
@@ -309,7 +310,8 @@ std::vector<parola> Dizionario::cercaParoleInRange(const std::string& parola, co
     for (char c : parolaPulita) {
         percorso.emplace_back(corrente, c);
         corrente = corrente->getFiglio(c);
-        if (!corrente) throw std::runtime_error("Parola non trovata nel dizionario.");
+        if (!corrente)
+            return {};//throw std::runtime_error("Parola non trovata nel dizionario.");
     }
 
     // 2) Parola centrale
@@ -321,16 +323,19 @@ std::vector<parola> Dizionario::cercaParoleInRange(const std::string& parola, co
     // 3) Precedenti
     {
         std::string base = parolaPulita;
-        for (int i = static_cast<int>(percorso.size()) - 1;
-             i >= 0 && (int)precedenti.size() < down; --i) {
+        for (int i = static_cast<int>(percorso.size()) - 1; i >= 0 && static_cast<int>(precedenti.size()) < down; --i) {
             base.pop_back();
-            char start = static_cast<char>(percorso[i].second - 1);
-            for (char c = start; c >= 'a' && (int)precedenti.size() < down; --c) {
+            char start = static_cast<char>(percorso[i].second - (i == static_cast<int>(percorso.size()) - 1 ? 1 : 0));
+            for (char c = start; c >= 'a' && static_cast<int>(precedenti.size()) < down; --c) {
                 Lettera* figlio = percorso[i].first->getFiglio(c);
                 if (figlio) {
                     std::string temp = base;
                     temp.push_back(c);
-                    completaParolaDaNodoPrecedenteMulti(figlio, temp, 'z', precedenti, down);
+                    if (c != start || i == static_cast<int>(percorso.size()) - 1)
+                        completaParolaDaNodoPrecedenteMulti(figlio, temp, 'z', precedenti, down);
+                    else if (figlio->fineParola) {
+                        precedenti.push_back((struct parola){temp, figlio->etichette});
+                    }
                 }
                 if (c == 'a') break;  // evita underflow
             }
@@ -346,7 +351,7 @@ std::vector<parola> Dizionario::cercaParoleInRange(const std::string& parola, co
     // 4) Successivi
     {
         // figli diretti
-        for (char c = 'a'; c <= 'z' && (int)successivi.size() < up; ++c) {
+        for (char c = 'a'; c <= 'z' && static_cast<int>(successivi.size()) < up; ++c) {
             Lettera* figlio = corrente->getFiglio(c);
             if (figlio) {
                 std::string temp = parolaPulita;
@@ -357,10 +362,10 @@ std::vector<parola> Dizionario::cercaParoleInRange(const std::string& parola, co
         // risalita nel percorso
         std::string base = parolaPulita;
         for (int i = static_cast<int>(percorso.size()) - 1;
-             i >= 0 && (int)successivi.size() < up; --i) {
+             i >= 0 && static_cast<int>(successivi.size()) < up; --i) {
             base.pop_back();
             char start = static_cast<char>(percorso[i].second + 1);
-            for (char c = start; c <= 'z' && (int)successivi.size() < up; ++c) {
+            for (char c = start; c <= 'z' && static_cast<int>(successivi.size()) < up; ++c) {
                 Lettera* figlio = percorso[i].first->getFiglio(c);
                 if (figlio) {
                     std::string temp = base;
@@ -404,10 +409,7 @@ void Dizionario::completaParolaDaNodoMulti(const Lettera* nodo, std::string& bas
 // --------------------------------------------------
 void Dizionario::completaParolaDaNodoPrecedenteMulti(const Lettera* nodo, std::string& base, const char initialChar, std::vector<parola>& risultati, size_t maxCount) const {
     if (risultati.size() >= maxCount) return;
-    if (nodo->fineParola) {
-        risultati.push_back((parola){base, nodo->etichette});
-        if (risultati.size() >= maxCount) return;
-    }
+
     for (char c = initialChar; c >= 'a' && risultati.size() < maxCount; --c) {
         Lettera* figlio = nodo->getFiglio(c);
         if (!figlio) continue;
@@ -415,5 +417,9 @@ void Dizionario::completaParolaDaNodoPrecedenteMulti(const Lettera* nodo, std::s
         completaParolaDaNodoPrecedenteMulti(figlio, base, 'z', risultati, maxCount);
         base.pop_back();
         if (c == 'a') break;  // evita underflow
+    }
+
+    if (nodo->fineParola && risultati.size() < maxCount) {
+        risultati.push_back((parola){base, nodo->etichette});
     }
 }

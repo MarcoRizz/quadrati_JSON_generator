@@ -30,6 +30,8 @@ public:
     void onModifiedWord(std::string parola, Etichette et);
     void aggiorna_dizionario(const std::string& testo, const Etichette& etichette);
 
+    const std::string dictionary_path_json = "C:\\Users\\mav13\\Documents\\Qt\\Dizionari\\dizionario.json";
+
 signals:
     void wordFound(const QString& parola, Etichette et, customButton_destination dest = Accepted);
     void logMessageRequested(const QString& testo);
@@ -44,7 +46,6 @@ private:
     WordList words_bonus;
     WordList words_queue;
 
-    const std::string dictionary_path_json = "C:\\Users\\mav13\\Documents\\Qt\\Dizionari\\dizionario.json";
     std::vector<std::vector<DynArray>> passingWords;
 
     int n_words_old = 0;
