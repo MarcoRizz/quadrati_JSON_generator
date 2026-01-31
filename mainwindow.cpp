@@ -209,19 +209,42 @@ void MainWindow::on_checkBox_checkStateChanged(const Qt::CheckState &arg1)
 }
 
 
-void MainWindow::updateGridColors(const std::vector<std::vector<DynArray>>& passingWords) {
-    for (int x = 0; x < 4; ++x) {
-        for (int y = 0; y < 4; ++y) {
-            int val = passingWords[x][y].get_size();
-            QLabel* label = letterGrid[x][y];
+bool MainWindow::isGridCompleted() {
+    for (int r = 0; r < 4; ++r) {
+        for (int c = 0; c < 4; ++c) {
 
-            if (val == 0)
-                label->setStyleSheet("background-color: lightgrey; color: black;");
-            else
-                label->setStyleSheet("background-color: green; color: white;");
+            if (auto* tessera = qobject_cast<CustomGridLetter*>(letterGrid[r][c])) {
+
+                if (!tessera->isUsed()) return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+
+void MainWindow::updateGridColors()
+{
+    for (int r = 0; r < 4; ++r) {
+        for (int c = 0; c < 4; ++c) {
+
+            if (auto* tessera = qobject_cast<CustomGridLetter*>(letterGrid[r][c])) {
+
+                if (tessera->isUsed()) {
+                    tessera->setStyleSheet(
+                        "background-color: lightgrey; color: black;"
+                        );
+                } else {
+                    tessera->setStyleSheet(
+                        "background-color: green; color: white;"
+                        );
+                }
+            }
         }
     }
 }
+
 
 
 void MainWindow::highlightTiles(const std::pair<int, int>* positions, int size) {

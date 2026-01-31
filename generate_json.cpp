@@ -64,10 +64,6 @@ int Generate_JSON::run()
         n_paths_old = 0;
         n_paths = 0;
 
-        words.clear();
-        passingWords.clear();
-        passingWords = std::vector<std::vector<DynArray>>(DIM1, std::vector<DynArray>(DIM2, DynArray(words.get_size())));
-
         mainWindow->clearWords();
 
         completed_grid = false;
@@ -76,7 +72,7 @@ int Generate_JSON::run()
         while (!completed_grid  && loop < MAX_LOOPS) {
 
             //aggiorno la schermata
-            mainWindow->updateGridColors(passingWords);
+            mainWindow->updateGridColors();
             QApplication::processEvents();
 
             creazione_grid();
@@ -256,7 +252,7 @@ void Generate_JSON::creazione_gridLinks() {
         }
         words.add_startingTile_by_insertion(running_start, word_i); // e con questo completo words.startingTile
     }
-    mainWindow->updateGridColors(passingWords);
+    mainWindow->updateGridColors();
     QApplication::processEvents();
 
     //timer_end = std::chrono::high_resolution_clock::now();

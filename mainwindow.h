@@ -37,7 +37,10 @@ public:
     // Funzione dedicata per l'output
     void logMessage(const QString &message);
 
-    void updateGridColors(const std::vector<std::vector<DynArray>>& passingWords); // Funzione per aggiornare i colori della griglia
+    //gestione griglia 4x4
+    bool isGridCompleted();
+    bool isLetterXYUsed(const int x, const int y);
+    void updateGridColors(); // Funzione per aggiornare i colori della griglia
     void highlightTiles(const std::pair<int, int>* positions, int size); // Evidenzia alcune celle
 
     //riguarda l'elenco di parole trovate

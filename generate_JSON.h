@@ -8,9 +8,9 @@
 
 #include <qobject.h>
 #include <queue>
-#include "wordlist.h"
+//#include "wordlist.h" TODO: controllare se si può cancellare la classe
 #include "dizionario.h"
-#include "dynarray.h"
+//#include "dynarray.h" TODO: controllare se si può cancellare la classe
 #include "common_enums.h"
 
 customButton_destination findDestination(const Etichette et);
@@ -42,17 +42,11 @@ private:
 
     std::queue<int> jsons_to_elaborate;
     char grid[DIM1][DIM2];
-    WordList words;
-    WordList words_bonus;
-    WordList words_queue;
-
-    std::vector<std::vector<DynArray>> passingWords;
 
     int n_words_old = 0;
     int n_paths_old = 0;
     int n_paths = 0;
 
-    bool completed_grid = false;
     int loop = 0;
 
     void creazione_grid();
