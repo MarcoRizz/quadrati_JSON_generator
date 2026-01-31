@@ -48,32 +48,8 @@ customButton_destination findDestination(const Etichette et) {
     }
 }
 
-int Generate_JSON::run() {
-    /*words.add_word("auguri");
-    words.add_word( "marcelo");
-    passingWords[0][0].add_value(0);
-    passingWords[0][1].add_value(0);
-    passingWords[0][2].add_value(0);
-    passingWords[0][3].add_value(0);
-    passingWords[1][3].add_value(0);
-    passingWords[2][3].add_value(0);
-
-    passingWords[3][3].add_value(1);
-    passingWords[3][2].add_value(1);
-    passingWords[3][1].add_value(1);
-    passingWords[3][0].add_value(1);
-    passingWords[2][0].add_value(1);
-    passingWords[1][0].add_value(1);
-    passingWords[1][1].add_value(1);*/
-
-    // Inizializza il seme del generatore di numeri casuali
-    //auto timer_overall_start = std::chrono::high_resolution_clock::now();
-    //std::srand(std::time(0));
-
-    //auto timer_end = std::chrono::high_resolution_clock::now();
-    //std::chrono::duration<double, std::milli> duration = timer_end - timer_overall_start;
-    //mainWindow->logMessage(QString("Dizionario caricato - elapsed time: %1 ms").arg(duration.count()));
-
+int Generate_JSON::run()
+{
     //calcolo jsons_to_elaborate
     mainWindow->calculateFileNumbers(&jsons_to_elaborate);
 
@@ -171,8 +147,8 @@ int Generate_JSON::run() {
 
 void Generate_JSON::creazione_grid() {
     /***********************************************************************************
-            // CREAZIONE ARRAY-2D GRID
-            ***********************************************************************************/
+    // CREAZIONE ARRAY-2D GRID
+    ***********************************************************************************/
     // Popoliamo grid con lettere casuali
     for (int i = 0; i < DIM1; ++i) {
         for (int j = 0; j < DIM2; ++j) {
@@ -491,8 +467,6 @@ void Generate_JSON::FindPath::returnFinalWord(int pathLength) {
             break;
         case Bonus:
             if (parent.words_bonus.add_word(parola)) {
-                //parent.mainWindow->addWord(QString::fromStdString(parola), *rispostaDizionario, Bonus);
-                //parent.mainWindow->logMessage(QString("#%1: %2 - (bonus)").arg(parent.words_bonus.get_size()).arg(QString::fromStdString(parola)));
                 emit parent.wordFound(QString::fromStdString(parola), *rispostaDizionario, Bonus);
                 emit parent.logMessageRequested(QString("#%1: %2 - (bonus)").arg(parent.words.get_size()).arg(QString::fromStdString(parola)));
             }
@@ -500,7 +474,6 @@ void Generate_JSON::FindPath::returnFinalWord(int pathLength) {
             break;
         case Queue:
             if (parent.words_queue.add_word(parola)) {
-                //parent.mainWindow->addWord(QString::fromStdString(parola), *rispostaDizionario, Queue);
                 emit parent.wordFound(QString::fromStdString(parola), *rispostaDizionario, Queue);
             }
 

@@ -174,7 +174,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
         <item>
          <layout class="QGridLayout" name="gridLayout">
           <item row="0" column="3">
-           <widget class="QLabel" name="label_03">
+           <widget class="CustomGridLetter" name="label_03">
             <property name="font">
              <font>
               <pointsize>25</pointsize>
@@ -195,7 +195,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
            </widget>
           </item>
           <item row="0" column="2">
-           <widget class="QLabel" name="label_02">
+           <widget class="CustomGridLetter" name="label_02">
             <property name="font">
              <font>
               <pointsize>25</pointsize>
@@ -216,7 +216,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
            </widget>
           </item>
           <item row="2" column="0">
-           <widget class="QLabel" name="label_20">
+           <widget class="CustomGridLetter" name="label_20">
             <property name="font">
              <font>
               <pointsize>25</pointsize>
@@ -237,7 +237,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QLabel" name="label_01">
+           <widget class="CustomGridLetter" name="label_01">
             <property name="font">
              <font>
               <pointsize>25</pointsize>
@@ -258,7 +258,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
            </widget>
           </item>
           <item row="0" column="0">
-           <widget class="QLabel" name="label_00">
+           <widget class="CustomGridLetter" name="label_00">
             <property name="font">
              <font>
               <pointsize>25</pointsize>
@@ -279,7 +279,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
            </widget>
           </item>
           <item row="1" column="0">
-           <widget class="QLabel" name="label_10">
+           <widget class="CustomGridLetter" name="label_10">
             <property name="font">
              <font>
               <pointsize>25</pointsize>
@@ -300,7 +300,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
            </widget>
           </item>
           <item row="3" column="0">
-           <widget class="QLabel" name="label_30">
+           <widget class="CustomGridLetter" name="label_30">
             <property name="font">
              <font>
               <pointsize>25</pointsize>
@@ -321,7 +321,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QLabel" name="label_11">
+           <widget class="CustomGridLetter" name="label_11">
             <property name="font">
              <font>
               <pointsize>25</pointsize>
@@ -342,7 +342,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
            </widget>
           </item>
           <item row="1" column="2">
-           <widget class="QLabel" name="label_12">
+           <widget class="CustomGridLetter" name="label_12">
             <property name="font">
              <font>
               <pointsize>25</pointsize>
@@ -363,7 +363,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
            </widget>
           </item>
           <item row="1" column="3">
-           <widget class="QLabel" name="label_13">
+           <widget class="CustomGridLetter" name="label_13">
             <property name="font">
              <font>
               <pointsize>25</pointsize>
@@ -384,7 +384,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
            </widget>
           </item>
           <item row="2" column="1">
-           <widget class="QLabel" name="label_21">
+           <widget class="CustomGridLetter" name="label_21">
             <property name="font">
              <font>
               <pointsize>25</pointsize>
@@ -405,7 +405,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
            </widget>
           </item>
           <item row="2" column="2">
-           <widget class="QLabel" name="label_22">
+           <widget class="CustomGridLetter" name="label_22">
             <property name="font">
              <font>
               <pointsize>25</pointsize>
@@ -426,7 +426,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
            </widget>
           </item>
           <item row="2" column="3">
-           <widget class="QLabel" name="label_23">
+           <widget class="CustomGridLetter" name="label_23">
             <property name="font">
              <font>
               <pointsize>25</pointsize>
@@ -447,7 +447,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
            </widget>
           </item>
           <item row="3" column="1">
-           <widget class="QLabel" name="label_31">
+           <widget class="CustomGridLetter" name="label_31">
             <property name="font">
              <font>
               <pointsize>25</pointsize>
@@ -468,7 +468,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
            </widget>
           </item>
           <item row="3" column="2">
-           <widget class="QLabel" name="label_32">
+           <widget class="CustomGridLetter" name="label_32">
             <property name="font">
              <font>
               <pointsize>25</pointsize>
@@ -489,7 +489,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
            </widget>
           </item>
           <item row="3" column="3">
-           <widget class="QLabel" name="label_33">
+           <widget class="CustomGridLetter" name="label_33">
             <property name="font">
              <font>
               <pointsize>25</pointsize>
@@ -947,6 +947,11 @@ li.checked::marker { content: &quot;\2612&quot;; }
    <class>CustomMenuButton</class>
    <extends>QPushButton</extends>
    <header>custommenubutton.h</header>
+  </customwidget>
+  <customwidget>
+   <class>CustomGridLetter</class>
+   <extends>QLabel</extends>
+   <header>customgridletter.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

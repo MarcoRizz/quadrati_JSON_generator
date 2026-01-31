@@ -3,6 +3,7 @@
 
 #include <QPushButton>
 #include <QMenu>
+#include <qlabel.h>
 #include "etichette.h"
 
 class PersistentMenu : public QMenu {
@@ -15,12 +16,18 @@ protected:
     bool event(QEvent* e) override;
 };
 
+//=============================================================================
+
 class CustomMenuButton : public QPushButton {
     Q_OBJECT
 
 public:
     explicit CustomMenuButton(QWidget* parent);
-    explicit CustomMenuButton(const QString& text = "CustomButton", const Etichette &et = Etichette(), QWidget* parent = nullptr);
+    explicit CustomMenuButton(
+        const QString& text = "CustomButton",
+        const Etichette &et = Etichette(),
+        const QVector<QLabel*> per = {},
+        QWidget* parent = nullptr);
 
     void cambiaParola(const QString& text, const Etichette &et = Etichette());
 
@@ -32,6 +39,7 @@ signals:
 private:
     Etichette etichette;
     Etichette etichette_originale;
+    QVector<QLabel*> percorso;
     PersistentMenu* menu;
 
     void aggiornaColoreSfondo();

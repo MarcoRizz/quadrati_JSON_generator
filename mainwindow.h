@@ -65,6 +65,7 @@ private:
     Ui::MainWindow *ui;
     widget_displayDictionary *dictionaryDisplayer;
     int saveDictionary = 0;     // A fine generazione, salva modifiche al dizionario
+    QLabel* letterGrid[4][4];
 
     void aggiorna_widget_Dictionary();
 };

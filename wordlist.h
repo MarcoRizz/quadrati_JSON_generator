@@ -7,7 +7,7 @@
 class WordList {
 private:
     struct WordEntry {
-        std::string word;                      // Parola
+        std::string word;                 // Parola
         int index;                        // Indice di inserimento
         std::pair<int, int> startingTile; // Casella di partenza
 

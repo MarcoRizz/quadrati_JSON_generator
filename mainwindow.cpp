@@ -35,25 +35,33 @@ MainWindow::MainWindow(QWidget *parent)
 
     //inizializzo widget_displayDictionary
     dictionaryDisplayer->setDizionario(&generate_json.dizionario); // il tuo oggetto dizionario
+
     // Prepara i pulsanti e layout (presi dal .ui)
-    QVector<CustomMenuButton *> pulsanti;
+    for (int x = 0; x < 4; ++x) {
+        for (int y = 0; y < 4; ++y) {
+            letterGrid[x][y] = findChild<QLabel*>(QString("label_%1%2").arg(x).arg(y));
+            if (!letterGrid[x][y]) {
+                qWarning() << "Assegnazione letterGrid fallita";
+                return;
+            }
+        }
+    }
+    QVector<CustomMenuButton *> pulsanti_dizionario;
     for (int i = 1; i <= 21; ++i) {
         CustomMenuButton *btn = ui->dizionarioScrollArea->findChild<CustomMenuButton *>(QString("pushButton_%1").arg(i));
         if (btn) {
-            qDebug() << "CustomMenuButton trovato:" << btn->objectName();
-            pulsanti.append(btn);
+            pulsanti_dizionario.append(btn);
             //collegamento per spostare dalle liste una parola, solo se presente
             bool ok = connect(btn, &CustomMenuButton::parolaModificata, this, &MainWindow::MoveWordIfExist);
             //collegamento per aggiorare il dizionario con ogni modifica
             bool ook = connect(btn, &CustomMenuButton::parolaModificata, &generate_json, &Generate_JSON::aggiorna_dizionario);
-            qDebug() << ((ok & ook) ? "Connect riuscita" : "Connect fallita");
 
         } else {
             qDebug() << "pushButton_" << i << " non è CustomMenuButton!";
         }
     }
 
-    dictionaryDisplayer->setLayoutAndButtons(ui->verticalLayout_7, pulsanti); //TODO: ui->verticalLayout_7 non funziona (dovrebbe scorrere su e giù allo scorrere della rotella
+    dictionaryDisplayer->setLayoutAndButtons(ui->verticalLayout_7, pulsanti_dizionario); //TODO: ui->verticalLayout_7 non funziona (dovrebbe scorrere su e giù allo scorrere della rotella
     //dictionaryDisplayer->setDizionario(&generate_json.dizionario);
     dictionaryDisplayer->displayParola("dizionario");
 }
@@ -133,7 +141,7 @@ void MainWindow::calculateFileNumbers(std::queue<int>* list)
 
 void MainWindow::setGridTile(int x, int y, QChar letter)
 {
-    QLabel* label = findChild<QLabel*>(QString("label_%1%2").arg(x).arg(y));
+    QLabel* label = letterGrid[x][y];
     if (label) {
         label->setText(letter);
     }
@@ -205,7 +213,7 @@ void MainWindow::updateGridColors(const std::vector<std::vector<DynArray>>& pass
     for (int x = 0; x < 4; ++x) {
         for (int y = 0; y < 4; ++y) {
             int val = passingWords[x][y].get_size();
-            QLabel* label = findChild<QLabel*>(QString("label_%1%2").arg(x).arg(y));
+            QLabel* label = letterGrid[x][y];
 
             if (val == 0)
                 label->setStyleSheet("background-color: lightgrey; color: black;");
@@ -220,7 +228,7 @@ void MainWindow::highlightTiles(const std::pair<int, int>* positions, int size) 
     for (int i = 0; i < size; ++i) {
         int x = positions[i].first;
         int y = positions[i].second;
-        QLabel* label = findChild<QLabel*>(QString("label_%1%2").arg(x).arg(y));
+        QLabel* label = letterGrid[x][y];
 
         if (label) {
             label->setStyleSheet("background-color: yellow; color: black;");
