@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QLabel>
 #include "common_enums.h"
+#include "customgridletter.h"
 #include "generate_JSON.h"
 #include "custommenubutton.h"
 #include "widget_displayDictionary.h"
@@ -27,8 +28,6 @@ public:
 
     void calculateFileNumbers(std::queue<int>* list);
 
-    void setGridTile(int x, int y, QChar letter);
-
     void setAskWord(const QString& word);
     Etichette getAskResult() const;
 
@@ -38,6 +37,8 @@ public:
     void logMessage(const QString &message);
 
     //gestione griglia 4x4
+    void setGridTile(int x, int y, QChar letter);
+    QChar TileChar(int x, int y);
     bool isGridCompleted();
     bool isLetterXYUsed(const int x, const int y);
     void updateGridColors(); // Funzione per aggiornare i colori della griglia
@@ -68,7 +69,7 @@ private:
     Ui::MainWindow *ui;
     widget_displayDictionary *dictionaryDisplayer;
     int saveDictionary = 0;     // A fine generazione, salva modifiche al dizionario
-    QLabel* letterGrid[4][4];
+    CustomGridLetter* letterGrid[4][4];
 
     void aggiorna_widget_Dictionary();
 };

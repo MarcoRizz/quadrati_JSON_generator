@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <QtConcurrent>
+#include <QRandomGenerator>
 #include "mainwindow.h"
 #include <qapplication.h>
 
@@ -21,10 +22,15 @@ bool isValid(int x, int y) {
     return x >= 0 && x < DIM1 && y >= 0 && y < DIM2 && !visited[x][y];
 }
 
+QChar randomLetter()
+{
+    int v = QRandomGenerator::global()->bounded(26); // 0..25
+    return QChar::fromLatin1('a' + v);
+}
+
 // Costruttore di Generate_JSON
 Generate_JSON::Generate_JSON(MainWindow* mainWindow)
-    : passingWords(DIM1, std::vector<DynArray>(DIM2, DynArray(words.get_size()))),
-    pathFinder(*this), // Inizializzazione dell'istanza della classe FindPath
+    : pathFinder(*this), // Inizializzazione dell'istanza della classe FindPath
     mainWindow(mainWindow)
 {
     //apro il dizionario
@@ -66,10 +72,9 @@ int Generate_JSON::run()
 
         mainWindow->clearWords();
 
-        completed_grid = false;
         loop = 0;
 
-        while (!completed_grid  && loop < MAX_LOOPS) {
+        while (!mainWindow->isGridCompleted()  && loop < MAX_LOOPS) {
 
             //aggiorno la schermata
             mainWindow->updateGridColors();
@@ -81,20 +86,6 @@ int Generate_JSON::run()
 
             creazione_gridLinks();
 
-            //se una lettera rimane priva di link, dovrò sostituirla e ripetere il calcolo
-            completed_grid = true;
-            for (int i = 0; i < DIM1; ++i) {
-                for (int j = 0; j < DIM2; ++j) {
-                    if (passingWords[i][j].get_size() == 0) {
-                        completed_grid = false;
-                        break;
-                    }
-                }
-                if (!completed_grid) {
-                    mainWindow->logMessage(QString("Elaboro una nuova griglia sostituendo le lettere inutilizzate (iterazione %1)\n").arg(loop + 1));
-                    break;
-                }
-            }
             loop++;
         }
 
@@ -105,10 +96,7 @@ int Generate_JSON::run()
             std::cerr << "Numero massimo di iterazioni raggiunto, griglia non trovata" << std::endl;
 
             //riazzero le variabili ad ogni iterazione
-            words.clear();
-            passingWords.clear();
-            passingWords = std::vector<std::vector<DynArray>>(DIM1, std::vector<DynArray>(DIM2, DynArray(words.get_size())));
-            words_bonus.clear();
+            mainWindow->clearWords();
 
             continue;  //senza jsons_to_elaborate.pop() ripete l'iterazione
         } else {
@@ -148,10 +136,8 @@ void Generate_JSON::creazione_grid() {
     // Popoliamo grid con lettere casuali
     for (int i = 0; i < DIM1; ++i) {
         for (int j = 0; j < DIM2; ++j) {
-            if (passingWords[i][j].get_size() == 0) {
-                grid[i][j] = 'a' + std::rand() % 26;  // Lettera casuale tra 'a' e 'z' (lavoro con lettere minuscole perché il dizionario usa solo minuscole. Converto in CAPS quando scrivo il JSON)
-
-                mainWindow->setGridTile(i, j, QChar(grid[i][j]));
+            if (!mainWindow->isLetterXYUsed(i, j)) {
+                mainWindow->setGridTile(i, j, randomLetter());  // Lettera casuale tra 'a' e 'z' (lavoro con lettere minuscole perché il dizionario usa solo minuscole. Converto in CAPS quando scrivo il JSON)
             }
         }
     }
@@ -160,7 +146,7 @@ void Generate_JSON::creazione_grid() {
     QString gridContent;
     for (int j = 0; j < DIM2; ++j) {
         for (int i = 0; i < DIM1; ++i) {
-            gridContent += QString("%1 ").arg(QChar(grid[i][j] + 'A' - 'a'));
+            gridContent += mainWindow->TileChar(i, j).toUpper() + ' ';
         }
         gridContent += "\n"; // Aggiunge una nuova riga dopo ogni riga della griglia
     }

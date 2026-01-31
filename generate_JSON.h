@@ -41,7 +41,6 @@ private:
     MainWindow* mainWindow;
 
     std::queue<int> jsons_to_elaborate;
-    char grid[DIM1][DIM2];
 
     int n_words_old = 0;
     int n_paths_old = 0;

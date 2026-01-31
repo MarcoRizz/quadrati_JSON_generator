@@ -39,7 +39,7 @@ MainWindow::MainWindow(QWidget *parent)
     // Prepara i pulsanti e layout (presi dal .ui)
     for (int x = 0; x < 4; ++x) {
         for (int y = 0; y < 4; ++y) {
-            letterGrid[x][y] = findChild<QLabel*>(QString("label_%1%2").arg(x).arg(y));
+            letterGrid[x][y] = findChild<CustomGridLetter*>(QString("label_%1%2").arg(x).arg(y));
             if (!letterGrid[x][y]) {
                 qWarning() << "Assegnazione letterGrid fallita";
                 return;
@@ -139,14 +139,6 @@ void MainWindow::calculateFileNumbers(std::queue<int>* list)
     }
 }
 
-void MainWindow::setGridTile(int x, int y, QChar letter)
-{
-    QLabel* label = letterGrid[x][y];
-    if (label) {
-        label->setText(letter);
-    }
-}
-
 void MainWindow::on_generate_JSON_clicked()
 {
     saveDictionary = 0;
@@ -209,11 +201,22 @@ void MainWindow::on_checkBox_checkStateChanged(const Qt::CheckState &arg1)
 }
 
 
+void MainWindow::setGridTile(int x, int y, QChar letter)
+{
+    letterGrid[x][y]->setText(letter);
+}
+
+
+QChar MainWindow::TileChar(int x, int y) {
+    return letterGrid[x][y]->text().at(0);
+}
+
+
 bool MainWindow::isGridCompleted() {
     for (int r = 0; r < 4; ++r) {
         for (int c = 0; c < 4; ++c) {
 
-            if (auto* tessera = qobject_cast<CustomGridLetter*>(letterGrid[r][c])) {
+            if (auto* tessera = letterGrid[r][c]) {
 
                 if (!tessera->isUsed()) return false;
             }
@@ -223,13 +226,18 @@ bool MainWindow::isGridCompleted() {
     return true;
 }
 
+bool MainWindow::isLetterXYUsed(const int x, int y) {
+
+    return letterGrid[x][y]->isUsed();
+}
+
 
 void MainWindow::updateGridColors()
 {
     for (int r = 0; r < 4; ++r) {
         for (int c = 0; c < 4; ++c) {
 
-            if (auto* tessera = qobject_cast<CustomGridLetter*>(letterGrid[r][c])) {
+            if (auto* tessera = letterGrid[r][c]) {
 
                 if (tessera->isUsed()) {
                     tessera->setStyleSheet(
@@ -251,7 +259,7 @@ void MainWindow::highlightTiles(const std::pair<int, int>* positions, int size) 
     for (int i = 0; i < size; ++i) {
         int x = positions[i].first;
         int y = positions[i].second;
-        QLabel* label = letterGrid[x][y];
+        CustomGridLetter* label = letterGrid[x][y];
 
         if (label) {
             label->setStyleSheet("background-color: yellow; color: black;");
