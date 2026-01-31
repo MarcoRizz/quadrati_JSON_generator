@@ -260,28 +260,7 @@ void MainWindow::addWord(const QString &word, const Etichette &etichette, custom
         return;
     }
 
-    QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(list->layout());
-    if (!layout) {
-        qWarning() << "Layout non trovato!";
-        return;
-    }
-
-    // Inserisci il pulsante in ordine alfabetico
-    bool inserted = false;
-    for (int i = 0; i < layout->count(); ++i) {
-        QWidget* widget = layout->itemAt(i)->widget();
-        if (CustomMenuButton* btn = qobject_cast<CustomMenuButton*>(widget)) {
-            if (QString::compare(word, btn->text(), Qt::CaseInsensitive) < 0) {
-                layout->insertWidget(i, label);
-                inserted = true;
-                break;
-            }
-        }
-    }
-
-    if (!inserted) {
-        layout->addWidget(label); // Se più grande di tutti, aggiungi in fondo
-    }
+    insertWordInList(label, list);
 }
 
 
@@ -312,6 +291,35 @@ CustomMenuButton* MainWindow::removeWordFromOriginalList(const QString &word, cu
 
     return nullptr;
 }
+
+
+void MainWindow::insertWordInList(CustomMenuButton* btn_new, QWidget* list) {
+    QString word = btn_new->text();
+
+    QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(list->layout());
+    if (!layout) {
+        qWarning() << "Layout non trovato!";
+        return;
+    }
+
+    // Inserisci il pulsante in ordine alfabetico
+    bool inserted = false;
+    for (int i = 0; i < layout->count(); ++i) {
+        QWidget* widget = layout->itemAt(i)->widget();
+        if (CustomMenuButton* btn = qobject_cast<CustomMenuButton*>(widget)) {
+            if (QString::compare(word, btn->text(), Qt::CaseInsensitive) < 0) {
+                layout->insertWidget(i, btn_new);
+                inserted = true;
+                break;
+            }
+        }
+    }
+
+    if (!inserted) {
+        layout->addWidget(btn_new); // Se più grande di tutti, aggiungi in fondo
+    }
+}
+
 
 void MainWindow::MoveWordIfExist(std::string parola, Etichette et) {
     QList<QWidget*> lists = { ui->boxAccepted, ui->boxBonus, ui->boxQueue };
