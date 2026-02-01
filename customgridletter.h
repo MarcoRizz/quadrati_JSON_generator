@@ -13,7 +13,7 @@ public:
 
     void setText(const QString& text);
 
-    void connectWord(CustomMenuButton* word);
+    void connectWord(CustomMenuButton* word, bool isBonus = false);
     void disconnectWord(CustomMenuButton* word);
 
     bool isUsed() const;
@@ -31,6 +31,7 @@ private slots:
 
 private:
     QSet<CustomMenuButton*> m_words;
+    QSet<CustomMenuButton*> m_words_bonus;
     bool unchanged = false;
 };
 

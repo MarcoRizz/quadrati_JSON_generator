@@ -67,8 +67,6 @@ int Generate_JSON::run()
     //calcolo i singoli json
     while (!jsons_to_elaborate.empty()) {
         n_words_old = 0;
-        n_paths_old = 0;
-        n_paths = 0;
 
         mainWindow->clearWords();
 
@@ -237,12 +235,6 @@ void Generate_JSON::creazione_gridLinks() {
     mainWindow->updateGridColors();
     QApplication::processEvents();
 
-    //timer_end = std::chrono::high_resolution_clock::now();
-    //duration = timer_end - timer_overall_start;
-    mainWindow->logMessage(QString("Array PASSINGWORDS: %1 nuovi percorsi")// - elapsed time: %2 ms")
-                               .arg(n_paths - n_paths_old));
-    //                           .arg(duration.count()));
-    n_paths_old = n_paths;
 }
 
 void Generate_JSON::converti_e_scrivi_JSON() {
@@ -425,33 +417,31 @@ Generate_JSON::FindPath::FindPath(Generate_JSON& gen_json) : parent(gen_json) {}
 //ELABORO TUTTI I POSSIBILI PERCORSI NELLA GRIGLIA
 
 void Generate_JSON::FindPath::returnFinalWord(int pathLength) {
-    std::string parola;
+    QString parola;
     for (int i = 0; i < pathLength; ++i) {
-        parola += parent.mainWindow->TileChar(path[i].first, path[i].second).toLatin1();
+        parola.append(parent.mainWindow->TileChar(path[i].first, path[i].second));
     }
 
     if (!parent.mainWindow->findWordInLists(parola))
     {
-        auto rispostaDizionario = parent.dizionario.cercaParola(parola);
+        auto rispostaDizionario = parent.dizionario.cercaParola(parola.toStdString());
 
         if (rispostaDizionario)
         {
-            std::cout << "Parola: " << parola << " --> etichette: " << rispostaDizionario->printBitmask() << std::endl;
+            std::cout << "Parola: " << parola.toStdString() << " --> etichette: " << rispostaDizionario->printBitmask() << std::endl;
 
             customButton_destination dest = findDestination(*rispostaDizionario);
             switch (dest) {
             case Accepted:
-                emit parent.wordFound(QString::fromStdString(parola), *rispostaDizionario);
-                emit parent.logMessageRequested(QString("#%1: %2").arg(parent.words.get_size()).arg(QString::fromStdString(parola)));
+                emit parent.wordFound(parola, *rispostaDizionario);
 
                 break;
             case Bonus:
-                emit parent.wordFound(QString::fromStdString(parola), *rispostaDizionario, Bonus);
-                emit parent.logMessageRequested(QString("#%1: %2 - (bonus)").arg(parent.words.get_size()).arg(QString::fromStdString(parola)));
+                emit parent.wordFound(parola, *rispostaDizionario, Bonus);
 
                 break;
             case Queue:
-                emit parent.wordFound(QString::fromStdString(parola), *rispostaDizionario, Queue);
+                emit parent.wordFound(parola, *rispostaDizionario, Queue);
 
                 break;
             default:
@@ -491,38 +481,20 @@ void Generate_JSON::FindPath::findPaths(int x, int y, int step, int path_size, b
 //--------------------------------------------------------------------------------
 //IDENTIFICO I PERCORSI DI UNA PAROLA
 
-void Generate_JSON::FindPath::returnFinalPath(int pathLength, int wordIndex, std::pair<int, int>& startingtile) {
-    bool nuovoPath = false;
-    for (int i = 0; i < pathLength; ++i) {
-        nuovoPath |= parent.passingWords[path[i].first][path[i].second].add_value(wordIndex);
-        if (i == 0 && startingtile == std::make_pair(-1, -1)) {
-            startingtile = path[i];
-        }
-    }
-    if (nuovoPath) {
-        parent.mainWindow->logMessage(QString("%1 -> nuovo path: ").arg(QString::fromStdString(parent.words.get_word_by_insertion(wordIndex))));
-        for (int i = 0; i < pathLength; ++i) {
-            parent.mainWindow->logMessage(QString("{%1, %2}, ").arg(path[i].first).arg(path[i].second));
-        }
-        parent.mainWindow->logMessage(QString("\n"));
-        parent.n_paths++;
-    }
-}
-
 //cerca tutti i possibili percorsi di una specifica parola
-void Generate_JSON::FindPath::findWordPaths(int x, int y, int step, std::string word, int wordIndex, std::pair<int, int>& startingtile) {
+void Generate_JSON::FindPath::findWordPaths(int x, int y, int step, std::string word) {
     path[step] = {x, y};
     visited[x][y] = true;
 
     // Se abbiamo raggiunto il numero di passi massimo, stampiamo il percorso
     if (step + 1 == word.size()) {
-        returnFinalPath(step + 1, wordIndex, startingtile);
+        parent.mainWindow->addPathToWord(word, path);
     } else {
         for (int i = 0; i < DIRECTIONS_n; ++i) {
             int newX = x + directions[i].first;
             int newY = y + directions[i].second;
             if (isValid(newX, newY) && parent.grid[newX][newY] == word[step + 1]) {
-                findWordPaths(newX, newY, step + 1, word, wordIndex, startingtile);
+                findWordPaths(newX, newY, step + 1, word);
             }
         }
     }

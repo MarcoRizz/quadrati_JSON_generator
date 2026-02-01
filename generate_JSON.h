@@ -43,8 +43,6 @@ private:
     std::queue<int> jsons_to_elaborate;
 
     int n_words_old = 0;
-    int n_paths_old = 0;
-    int n_paths = 0;
 
     int loop = 0;
 
@@ -58,14 +56,13 @@ private:
         explicit FindPath(Generate_JSON& gen_json); // Costruttore che riceve un riferimento a Generate_JSON
 
         void findPaths(int x, int y, int step, int max_size, bool analyzedPath = true);
-        void findWordPaths(int x, int y, int step, std::string word, int wordIndex, std::pair<int, int>& startingtile);
+        void findWordPaths(int x, int y, int step, std::string word);
         bool is_still_in_grid(int x, int y, int step, const std::string& word);
 
     private:
         Generate_JSON& parent; // Riferimento alla classe Generate_JSON
 
         void returnFinalWord(int pathLength);
-        void returnFinalPath(int pathLength, int wordIndex, std::pair<int, int>& startingtile);
     };
 
     FindPath pathFinder; // Istanza della classe nidificata

@@ -54,6 +54,7 @@ public:
     void MoveWordIfExist(std::string parola, Etichette et);
     int countInList(customButton_destination list);
     void clearWords();
+    void addPathToWord(std::string parola, std::pair<int, int>* path);
 
     bool boxQueueIsEmpty();
 
