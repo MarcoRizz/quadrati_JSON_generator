@@ -4,7 +4,8 @@
 enum customButton_destination {
     Accepted,
     Bonus,
-    Queue
+    Queue,
+    NotFound
 };
 
 #endif // COMMON_ENUMS_H

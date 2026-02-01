@@ -427,41 +427,41 @@ Generate_JSON::FindPath::FindPath(Generate_JSON& gen_json) : parent(gen_json) {}
 void Generate_JSON::FindPath::returnFinalWord(int pathLength) {
     std::string parola;
     for (int i = 0; i < pathLength; ++i) {
-        parola += parent.grid[path[i].first][path[i].second];
+        parola += parent.mainWindow->TileChar(path[i].first, path[i].second).toLatin1();
     }
 
-    auto rispostaDizionario = parent.dizionario.cercaParola(parola);
-    if (rispostaDizionario) {
-        std::cout << "Parola: " << parola << " --> etichette: " << rispostaDizionario->printBitmask() << std::endl;
+    if (!parent.mainWindow->findWordInLists(parola))
+    {
+        auto rispostaDizionario = parent.dizionario.cercaParola(parola);
 
-        customButton_destination dest = findDestination(*rispostaDizionario);
-        switch (dest) {
-        case Accepted:
-            if (parent.words.add_word(parola)) {
+        if (rispostaDizionario)
+        {
+            std::cout << "Parola: " << parola << " --> etichette: " << rispostaDizionario->printBitmask() << std::endl;
+
+            customButton_destination dest = findDestination(*rispostaDizionario);
+            switch (dest) {
+            case Accepted:
                 emit parent.wordFound(QString::fromStdString(parola), *rispostaDizionario);
                 emit parent.logMessageRequested(QString("#%1: %2").arg(parent.words.get_size()).arg(QString::fromStdString(parola)));
-            }
 
-            break;
-        case Bonus:
-            if (parent.words_bonus.add_word(parola)) {
+                break;
+            case Bonus:
                 emit parent.wordFound(QString::fromStdString(parola), *rispostaDizionario, Bonus);
                 emit parent.logMessageRequested(QString("#%1: %2 - (bonus)").arg(parent.words.get_size()).arg(QString::fromStdString(parola)));
-            }
 
-            break;
-        case Queue:
-            if (parent.words_queue.add_word(parola)) {
+                break;
+            case Queue:
                 emit parent.wordFound(QString::fromStdString(parola), *rispostaDizionario, Queue);
+
+                break;
+            default:
+                qWarning() << "Destinazione non trovata!";
+                break;
             }
 
-            break;
-        default:
-            qWarning() << "Destinazione non trovata!";
-            break;
+            QApplication::processEvents();
         }
 
-        QApplication::processEvents();
     }
 }
 

@@ -39,6 +39,7 @@ public:
     //gestione griglia 4x4
     void setGridTile(int x, int y, QChar letter);
     QChar TileChar(int x, int y);
+    void setTileOld(int x, int y);
     bool isTileOld(int x, int y);
     bool isGridCompleted();
     bool isLetterXYUsed(const int x, const int y);
@@ -47,6 +48,7 @@ public:
 
     //riguarda l'elenco di parole trovate
     void addWord(const QString &word, const Etichette &etichette, customButton_destination dest = Accepted);
+    CustomMenuButton* findWordInLists(const QString& word, customButton_destination* foundIn = nullptr) const;
     CustomMenuButton* removeWordFromOriginalList(const QString &word, customButton_destination exclude);
     void insertWordInList(CustomMenuButton* btn, QWidget* list);
     void MoveWordIfExist(std::string parola, Etichette et);

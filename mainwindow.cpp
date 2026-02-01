@@ -316,6 +316,39 @@ void MainWindow::addWord(const QString &word, const Etichette &etichette, custom
 }
 
 
+CustomMenuButton* MainWindow::findWordInLists(
+    const QString& word,
+    customButton_destination* foundIn /* = nullptr */
+    ) const
+{
+    auto searchInBox = [&](QWidget* box, customButton_destination dest) -> CustomMenuButton* {
+        QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(box->layout());
+        if (!layout)
+            return nullptr;
+
+        for (int i = 0; i < layout->count(); ++i) {
+            QWidget* w = layout->itemAt(i)->widget();
+            if (auto* btn = qobject_cast<CustomMenuButton*>(w)) {
+                if (QString::compare(btn->text(), word, Qt::CaseInsensitive) == 0) {
+                    if (foundIn)
+                        *foundIn = dest;
+                    return btn;
+                }
+            }
+        }
+        return nullptr;
+    };
+
+    if (auto* b = searchInBox(ui->boxAccepted, Accepted)) return b;
+    if (auto* b = searchInBox(ui->boxBonus,    Bonus))    return b;
+    if (auto* b = searchInBox(ui->boxQueue,    Queue))    return b;
+
+    if (foundIn)
+        *foundIn = NotFound;
+
+    return nullptr;
+}
+
 
 CustomMenuButton* MainWindow::removeWordFromOriginalList(const QString &word, customButton_destination exclude) {
     QList<QWidget*> lists = { ui->boxAccepted, ui->boxBonus, ui->boxQueue };
