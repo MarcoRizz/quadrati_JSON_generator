@@ -11,11 +11,16 @@ class CustomGridLetter : public QLabel
 public:
     explicit CustomGridLetter(QWidget* parent = nullptr);
 
+    void setText(const QString& text);
+
     void connectWord(CustomMenuButton* word);
     void disconnectWord(CustomMenuButton* word);
 
     bool isUsed() const;
     bool isUsedBy(CustomMenuButton* word) const;
+
+    void setUnchanged(bool set);
+    bool isUnchanged() const;
 
 signals:
     void wordConnected(CustomMenuButton* word);
@@ -26,6 +31,7 @@ private slots:
 
 private:
     QSet<CustomMenuButton*> m_words;
+    bool unchanged = false;
 };
 
 #endif // CUSTOMGRIDLETTER_H

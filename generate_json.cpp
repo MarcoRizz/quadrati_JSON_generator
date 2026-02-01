@@ -138,6 +138,8 @@ void Generate_JSON::creazione_grid() {
         for (int j = 0; j < DIM2; ++j) {
             if (!mainWindow->isLetterXYUsed(i, j)) {
                 mainWindow->setGridTile(i, j, randomLetter());  // Lettera casuale tra 'a' e 'z' (lavoro con lettere minuscole perché il dizionario usa solo minuscole. Converto in CAPS quando scrivo il JSON)
+            } else {
+                mainWindow->setTileOld(i, j);
             }
         }
     }
@@ -210,20 +212,14 @@ void Generate_JSON::creazione_words() {
     while (!mainWindow->boxQueueIsEmpty()) {
         QApplication::processEvents();
     }
-    words_queue.clear();
 
-    //timer_end = std::chrono::high_resolution_clock::now();
-    //duration = timer_end - timer_overall_start;
-    mainWindow->logMessage(QString("Array WORDS: %1 nuove parole")// - elapsed time: %2 ms")
-       .arg(words.get_size() - n_words_old));
-    //   .arg(duration.count()));
-    //n_words_old = words.get_size();
+    //TODO: conta di quante nuove parole ho recuperato in questo loop
 }
 
 void Generate_JSON::creazione_gridLinks() {
     /***********************************************************************************
-            // CREAZIONE ARRAY-3D GRID_LINKS
-            ***********************************************************************************/
+    // CREAZIONE ARRAY-3D GRID_LINKS
+    ***********************************************************************************/
     //qui devo calcolare tutte le possibilità e calcolare quali parole possono passare da ciascuna lettera (e quali possono iniziare)
 
     for (int word_i = 0; word_i < words.get_size(); ++word_i) {
@@ -470,19 +466,20 @@ void Generate_JSON::FindPath::returnFinalWord(int pathLength) {
 }
 
 //cerca tutti i possibili percorsi nella griglia
-void Generate_JSON::FindPath::findPaths(int x, int y, int step, int path_size) {
+void Generate_JSON::FindPath::findPaths(int x, int y, int step, int path_size, bool analyzedPath) {
     path[step] = {x, y};
     visited[x][y] = true;
+    analyzedPath = analyzedPath && parent.mainWindow->isTileOld(x, y);
 
-    // Se abbiamo raggiunto il numero di passi massimo, stampiamo il percorso
-    if (step + 1 == path_size) {
+    // Se abbiamo raggiunto il numero di passi massimo (e non è un percorso già analizzato), stampiamo il percorso
+    if (step + 1 == path_size && !analyzedPath) {
         returnFinalWord(step + 1);
     } else {
         for (int i = 0; i < DIRECTIONS_n; ++i) {
             int newX = x + directions[i].first;
             int newY = y + directions[i].second;
             if (isValid(newX, newY)) {
-                findPaths(newX, newY, step + 1, path_size);
+                findPaths(newX, newY, step + 1, path_size, analyzedPath);
             }
         }
     }

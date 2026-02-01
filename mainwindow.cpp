@@ -207,12 +207,14 @@ void MainWindow::setGridTile(int x, int y, QChar letter)
 }
 
 
-QChar MainWindow::TileChar(int x, int y) {
+QChar MainWindow::TileChar(int x, int y)
+{
     return letterGrid[x][y]->text().at(0);
 }
 
 
-bool MainWindow::isGridCompleted() {
+bool MainWindow::isGridCompleted()
+{
     for (int r = 0; r < 4; ++r) {
         for (int c = 0; c < 4; ++c) {
 
@@ -226,8 +228,19 @@ bool MainWindow::isGridCompleted() {
     return true;
 }
 
-bool MainWindow::isLetterXYUsed(const int x, int y) {
+void MainWindow::setTileOld(int x, int y)
+{
+    letterGrid[x][y]->setUnchanged(true);
+    return;
+}
 
+bool MainWindow::isTileOld(int x, int y)
+{
+    return letterGrid[x][y]->isUnchanged();
+}
+
+bool MainWindow::isLetterXYUsed(const int x, int y)
+{
     return letterGrid[x][y]->isUsed();
 }
 
@@ -380,6 +393,31 @@ void MainWindow::MoveWordIfExist(std::string parola, Etichette et) {
         }
     }
 
+}
+
+
+int MainWindow::countInList(customButton_destination list) {
+    QWidget* targetWidget;
+    switch (list) {
+    case Accepted:
+        targetWidget = ui->boxAccepted;
+        break;
+    case Bonus:
+        targetWidget = ui->boxBonus;
+        break;
+    case Queue:
+        targetWidget = ui->boxQueue;
+        break;
+    default:
+        qWarning() << "Layout non trovato in boxBonus!";
+        return -1;
+    }
+
+    QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(targetWidget->layout());
+    if (!layout)
+        return -1;
+
+    return layout->count();
 }
 
 

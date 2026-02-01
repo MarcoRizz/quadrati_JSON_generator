@@ -25,12 +25,12 @@ bool PersistentMenu::event(QEvent* e)
 }
 
 CustomMenuButton::CustomMenuButton(QWidget* parent)
-    : CustomMenuButton("CustomButton", Etichette(), QVector<QLabel*>(), parent)
+    : CustomMenuButton("CustomButton", Etichette(), QVector<QVector<QLabel*>> (), parent)
 {}
 
 // Costruttore della CustomMenuButton //TODO: impostare mainWindow->highlightTiles(path, parola.length()) al clic sul bottone
-CustomMenuButton::CustomMenuButton(const QString& text, const Etichette &et, const QVector<QLabel*> per, QWidget* parent)
-    : QPushButton(text, parent), etichette(et), percorso(per)
+CustomMenuButton::CustomMenuButton(const QString& text, const Etichette &et, const QVector<QVector<QLabel *>> &percorsi, QWidget* parent)
+    : QPushButton(text, parent), etichette(et), percorsi(percorsi)
 {
     // Crea il menu personalizzato
     menu = new PersistentMenu(this);
@@ -90,10 +90,11 @@ CustomMenuButton::CustomMenuButton(const QString& text, const Etichette &et, con
     aggiornaColoreSfondo();
 }
 
-void CustomMenuButton::cambiaParola(const QString& text, const Etichette &et) {
+void CustomMenuButton::cambiaParola(const QString& text, const Etichette &et, const QVector<QVector<QLabel *> > &perc) {
     setText(text);
     etichette = et;
     etichette_originale = et;
+    percorsi = perc;
 
     aggiornaColoreSfondo();
 

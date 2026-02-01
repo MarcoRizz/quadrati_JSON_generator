@@ -5,6 +5,12 @@ CustomGridLetter::CustomGridLetter(QWidget* parent)
 {
 }
 
+void CustomGridLetter::setText(const QString& text)
+{
+    QLabel::setText(text);  // comportamento originale
+    unchanged = false;      // tua logica aggiuntiva
+}
+
 void CustomGridLetter::connectWord(CustomMenuButton* word)
 {
     if (!word || m_words.contains(word))
@@ -46,3 +52,13 @@ bool CustomGridLetter::isUsedBy(CustomMenuButton* word) const
     return m_words.contains(word);
 }
 
+void CustomGridLetter::setUnchanged(bool set)
+{
+    unchanged = set;
+    return;
+}
+
+bool CustomGridLetter::isUnchanged() const
+{
+    return unchanged;
+}

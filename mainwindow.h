@@ -39,6 +39,7 @@ public:
     //gestione griglia 4x4
     void setGridTile(int x, int y, QChar letter);
     QChar TileChar(int x, int y);
+    bool isTileOld(int x, int y);
     bool isGridCompleted();
     bool isLetterXYUsed(const int x, const int y);
     void updateGridColors(); // Funzione per aggiornare i colori della griglia
@@ -49,6 +50,7 @@ public:
     CustomMenuButton* removeWordFromOriginalList(const QString &word, customButton_destination exclude);
     void insertWordInList(CustomMenuButton* btn, QWidget* list);
     void MoveWordIfExist(std::string parola, Etichette et);
+    int countInList(customButton_destination list);
     void clearWords();
 
     bool boxQueueIsEmpty();

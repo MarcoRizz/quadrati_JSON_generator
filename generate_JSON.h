@@ -57,7 +57,7 @@ private:
     public:
         explicit FindPath(Generate_JSON& gen_json); // Costruttore che riceve un riferimento a Generate_JSON
 
-        void findPaths(int x, int y, int step, int max_size);
+        void findPaths(int x, int y, int step, int max_size, bool analyzedPath = true);
         void findWordPaths(int x, int y, int step, std::string word, int wordIndex, std::pair<int, int>& startingtile);
         bool is_still_in_grid(int x, int y, int step, const std::string& word);
 
