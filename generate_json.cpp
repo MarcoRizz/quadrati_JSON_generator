@@ -139,6 +139,7 @@ void Generate_JSON::creazione_grid() {
             } else {
                 mainWindow->setTileOld(i, j);
             }
+            QApplication::processEvents();
         }
     }
 
@@ -188,6 +189,9 @@ void Generate_JSON::creazione_words() {
 
         /* ------------- fine del lavoro pesante ----------------------- */
 
+        mainWindow->updateGridColors();
+        QApplication::processEvents();
+
         emit logMessageRequested(tr("Fine ricerca parole…"));
         // Avvisa la GUI che abbiamo terminato
         emit wordsComputationFinished();
@@ -220,20 +224,16 @@ void Generate_JSON::creazione_gridLinks() {
     ***********************************************************************************/
     //qui devo calcolare tutte le possibilità e calcolare quali parole possono passare da ciascuna lettera (e quali possono iniziare)
 
-    for (int word_i = 0; word_i < words.get_size(); ++word_i) {
-        std::string running_word = words.get_word_by_insertion(word_i);
-        std::pair<int, int> running_start = words.get_startingTile_by_insertion(word_i); //TODO: running_start viene passato a findWordPaths inutilmente, non serve assolutamenet a nulla. Rivedere
+    auto activeWords = mainWindow->getAllActiveWords();
+    for (CustomMenuButton* word : activeWords) {
         for (int i = 0; i < DIM1; ++i) {
             for (int j = 0; j < DIM2; ++j) {
-                if(grid[i][j] == running_word[0]) {
-                    pathFinder.findWordPaths(i, j, 0, running_word, word_i, running_start);  //qui dentro riempio passingWords
-                }
+                pathFinder.findWordPaths(i, j, 0, word);
             }
         }
-        words.add_startingTile_by_insertion(running_start, word_i); // e con questo completo words.startingTile
+        mainWindow->updateGridColors();
+        QApplication::processEvents();
     }
-    mainWindow->updateGridColors();
-    QApplication::processEvents();
 
 }
 
@@ -249,7 +249,7 @@ void Generate_JSON::converti_e_scrivi_JSON() {
     for (int i = 0; i < DIM1; ++i) {
         json row = json::array();
         for (int j = 0; j < DIM2; ++j) {
-            row.push_back(std::string(1, grid[i][j] + 'A' - 'a'));  // converto il char in stringa per il JSON (trasformando in CAP letter)
+            row.push_back(std::string(1, mainWindow->TileChar(i, j).toLower().toLatin1()));  // converto il char in stringa per il JSON (trasformando in CAP letter)
         }
         grid_json.push_back(row);
     }
@@ -257,20 +257,31 @@ void Generate_JSON::converti_e_scrivi_JSON() {
     QString gridContent;
     for (int j = 0; j < DIM2; ++j) {
         for (int i = 0; i < DIM1; ++i) {
-            gridContent += QString("%1 ").arg(grid[i][j]);
+            gridContent += QString("%1 ").arg(mainWindow->TileChar(i, j));
         }
         gridContent += "\n"; // Aggiunge una nuova riga dopo ogni riga della griglia
     }
     mainWindow->logMessage(gridContent);
 
+    // Converto words e words_bonus in JSON
     mainWindow->logMessage(QString("words:"));
-    // Converto le parole in JSON
     json words_json = json::array();
-    for (int i = 0; i < words.get_size(); ++i) {
-        std::string word_i = words.get_word_by_alphabetical(i);
-        mainWindow->logMessage(QString("#%1: %2\n").arg(i).arg(QString::fromStdString(word_i)));
-        std::transform(word_i.begin(), word_i.end(), word_i.begin(), ::toupper); // Converte ogni carattere in maiuscolo
-        words_json.push_back(word_i);
+    json words_bonus_json = json::array();
+
+    QVector<CustomMenuButton*> listaParole;
+    listaParole = mainWindow->getAllActiveWords();
+    for (auto parola : listaParole)
+    {
+        std::string word_i = parola->text().toStdString();
+
+        if (parola->isBonus())
+        {
+            std::transform(word_i.begin(), word_i.end(), word_i.begin(), ::toupper); // Converte ogni carattere in maiuscolo
+            words_bonus_json.push_back(word_i);
+        } else {
+            std::transform(word_i.begin(), word_i.end(), word_i.begin(), ::toupper); // Converte ogni carattere in maiuscolo
+            words_json.push_back(word_i);
+        }
     }
 
     // Converto passingWords in JSON
@@ -279,62 +290,47 @@ void Generate_JSON::converti_e_scrivi_JSON() {
     for (int i = 0; i < DIM1; ++i) {
         json json_row = json::array();
         for (int j = 0; j < DIM2; ++j) {
-            json json_link = json::array();
-            int num_links = passingWords[i][j].get_size(); // Ottieni il numero di collegamenti
+            QSet<CustomMenuButton*> paroleConnesse = mainWindow->TileListOfWords(i, j);
+            QVector<int> indices;
+            indices.reserve(paroleConnesse.size());
 
-            mainWindow->logMessage(QString("{%1, %2}").arg(i).arg(j));
-            DynArray alphabetical_index;
-            for (int k = 0; k < num_links; ++k) {
-                alphabetical_index.add_value(words.get_alphabetical_index(passingWords[i][j].get_value(k)));
+            for (CustomMenuButton* btn : paroleConnesse) {
+                int idx = btn->getAlphabeticalIndex();
+                if (idx >= 0) {          // ignora valori invalidi
+                    indices.push_back(idx);
+                }
             }
-            for (int k = 0; k < num_links; ++k) {
-                int value = alphabetical_index.get_value(k);
-                mainWindow->logMessage(QString("%1 ").arg(value));
-                json_link.push_back(value);
+
+            std::sort(indices.begin(), indices.end());  // ordine crescente
+
+            json json_link = json::array();
+            for (auto i : indices)
+            {
+                json_link.push_back(i);
             }
+
             json_row.push_back(json_link);
-            mainWindow->logMessage(QString("\n"));
         }
         passingLinks_json.push_back(json_row);
     }
 
     // Converti startingLinks in JSON
     mainWindow->logMessage(QString("\nwords startingLinks:\n"));
+
     json startingLinks_json = json::array();
-    for (int i = 0; i < words.get_size(); ++i) {
+    for (auto parola : listaParole)
+    {
+        if (parola->isBonus())
+            continue;
+
+        QVector<QVector<CustomGridLetter*>> percorsi = parola->getPercorsi();
+        int dado = QRandomGenerator::global()->bounded(percorsi.count());
+        std::pair<int, int> startingTile = mainWindow->getTileIndexes(percorsi.at(dado).at(0));
+
         json json_pair = json::array();
-        std::pair<int, int> startingTile = words.get_startingTile_by_alphabetical(i);
-        mainWindow->logMessage(QString("#%1 -> {%2, %3}").arg(i).arg(startingTile.first).arg(startingTile.second));
         json_pair.push_back(startingTile.first);
         json_pair.push_back(startingTile.second);
         startingLinks_json.push_back(json_pair);
-    }
-
-    // Converto words_bonus in JSON
-    mainWindow->logMessage(QString("\nbonus:\n"));
-    json words_bonus_json = json::array();
-    for (int i = 0; i < words_bonus.get_size(); ++i) {
-        std::string word_bonus_i = words_bonus.get_word_by_alphabetical(i);
-
-        bool in_grid = false;
-        for (int i = 0; i < DIM1; ++i) {
-            for (int j = 0; j < DIM2; ++j) {
-                if (grid[i][j] == word_bonus_i.front()) {  //.front() estrae il primo carattere
-                    in_grid = pathFinder.is_still_in_grid(i, j, 0, word_bonus_i);
-                    if (in_grid) {
-                        break;
-                    }
-                }
-            }
-            if (in_grid) {
-                break;
-            }
-        }
-        if (in_grid) {
-            mainWindow->logMessage(QString("#%1: %2").arg(i).arg(QString::fromStdString(word_bonus_i)));
-            std::transform(word_bonus_i.begin(), word_bonus_i.end(), word_bonus_i.begin(), ::toupper); // Converte ogni carattere in maiuscolo
-            words_bonus_json.push_back(word_bonus_i);
-        }
     }
 
     // creo il contenuto JSON finale
@@ -364,38 +360,31 @@ void Generate_JSON::converti_e_scrivi_JSON() {
 void Generate_JSON::onModifiedWord(std::string parola, Etichette et) {
     customButton_destination dest = findDestination(et);
 
-    std::cout<<"dentro onModifiedWord"<<std::endl;
-    switch (dest) {
-    case Accepted:
-        if (words.add_word(parola)) {
-            words_bonus.remove_word(parola);
-            words_queue.remove_word(parola);
+    customButton_destination originalLocation;
+    mainWindow->findWordInLists(QString::fromStdString(parola), &originalLocation);
+
+    if (dest!=originalLocation)
+    {
+        switch (dest) {
+        case Accepted:
             mainWindow->addWord(QString::fromStdString(parola), et, Accepted);
             mainWindow->logMessage(QString("#%1->ACETTATE").arg(QString::fromStdString(parola)));
-        }
 
-        break;
-    case Bonus:
-        if (words_bonus.add_word(parola)) {
-            words.remove_word(parola);
-            words_queue.remove_word(parola);
+            break;
+        case Bonus:
             mainWindow->addWord(QString::fromStdString(parola), et, Bonus);
             mainWindow->logMessage(QString("#%1->BONUS").arg(QString::fromStdString(parola)));
-        }
 
-        break;
-    case Queue:
-        if (words_queue.add_word(parola)) {
-            words.remove_word(parola);
-            words_bonus.remove_word(parola);
+            break;
+        case Queue:
             mainWindow->addWord(QString::fromStdString(parola), et, Queue);
             mainWindow->logMessage(QString("#%1->QUEUE").arg(QString::fromStdString(parola)));
-        }
 
-        break;
-    default:
-        qWarning() << "Destinazione non trovata!";
-        break;
+            break;
+        default:
+            qWarning() << "Destinazione non trovata!";
+            break;
+        }
     }
 
     // Salvo le modifiche alle etichette nel dizionario
@@ -421,6 +410,8 @@ void Generate_JSON::FindPath::returnFinalWord(int pathLength) {
     for (int i = 0; i < pathLength; ++i) {
         parola.append(parent.mainWindow->TileChar(path[i].first, path[i].second));
     }
+
+    //TODO: investigare qui
 
     if (!parent.mainWindow->findWordInLists(parola))
     {
@@ -482,63 +473,25 @@ void Generate_JSON::FindPath::findPaths(int x, int y, int step, int path_size, b
 //IDENTIFICO I PERCORSI DI UNA PAROLA
 
 //cerca tutti i possibili percorsi di una specifica parola
-void Generate_JSON::FindPath::findWordPaths(int x, int y, int step, std::string word) {
-    path[step] = {x, y};
-    visited[x][y] = true;
+void Generate_JSON::FindPath::findWordPaths(int x, int y, int step, CustomMenuButton *word) {
+    if (parent.mainWindow->TileChar(x, y) == word->text().at(step)) {
+        path[step] = {x, y};
+        visited[x][y] = true;
 
-    // Se abbiamo raggiunto il numero di passi massimo, stampiamo il percorso
-    if (step + 1 == word.size()) {
-        parent.mainWindow->addPathToWord(word, path);
-    } else {
-        for (int i = 0; i < DIRECTIONS_n; ++i) {
-            int newX = x + directions[i].first;
-            int newY = y + directions[i].second;
-            if (isValid(newX, newY) && parent.grid[newX][newY] == word[step + 1]) {
-                findWordPaths(newX, newY, step + 1, word);
+        // Se abbiamo raggiunto il numero di passi massimo, stampiamo il percorso
+        if (step + 1 == word->text().length()) {
+            parent.mainWindow->addPathToWord(word, path);
+        } else {
+            for (int i = 0; i < DIRECTIONS_n; ++i) {
+                int newX = x + directions[i].first;
+                int newY = y + directions[i].second;
+                if (isValid(newX, newY)) {
+                    findWordPaths(newX, newY, step + 1, word);
+                }
             }
         }
     }
 
     // Backtracking
     visited[x][y] = false;
-}
-
-
-//--------------------------------------------------------------------------------
-//VALUTO SE LA PAROLA È ANCORA NELLA GRIGLIA
-
-// Cerca il primo percorso possibile per una specifica parola
-bool Generate_JSON::FindPath::is_still_in_grid(int x, int y, int step, const std::string& word) {
-    // Segna la posizione attuale
-    path[step] = {x, y};
-
-    // Se abbiamo raggiunto la lunghezza della parola, stampiamo il percorso
-    if (step + 1 == word.size()) {
-        return true; // Percorso trovato
-    }
-
-    // Esplora le direzioni
-    for (int i = 0; i < DIRECTIONS_n; ++i) {
-        int newX = x + directions[i].first;
-        int newY = y + directions[i].second;
-
-        // Controlla se la nuova posizione è valida, se corrisponde alla lettera successiva della parola
-        // e se non corrisponde a uno step precedente di path
-        bool isStepPreviouslyVisited = false;
-        for (int j = 0; j <= step; ++j) {
-            if (path[j] == std::make_pair(newX, newY)) {
-                isStepPreviouslyVisited = true;
-                break;
-            }
-        }
-
-        if (isValid(newX, newY) && parent.grid[newX][newY] == word[step + 1] && !isStepPreviouslyVisited) {
-            if (is_still_in_grid(newX, newY, step + 1, word)) {
-                return true; // Se troviamo un percorso, restituiamo true
-            }
-        }
-    }
-
-    // Non troviamo alcun percorso
-    return false;
 }

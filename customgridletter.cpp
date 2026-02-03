@@ -1,4 +1,5 @@
 #include "customgridletter.h"
+#include "custommenubutton.h"
 
 CustomGridLetter::CustomGridLetter(QWidget* parent)
     : QLabel(parent)
@@ -9,6 +10,7 @@ void CustomGridLetter::setText(const QString& text)
 {
     QLabel::setText(text);  // comportamento originale
     unchanged = false;      // tua logica aggiuntiva
+    emit tileChanged(this);
 }
 
 void CustomGridLetter::connectWord(CustomMenuButton* word, bool isBonus)
@@ -60,6 +62,14 @@ bool CustomGridLetter::isUsed() const
 bool CustomGridLetter::isUsedBy(CustomMenuButton* word) const
 {
     return m_words.contains(word) || m_words_bonus.contains(word);
+}
+
+QSet<CustomMenuButton*> CustomGridLetter::UsedBy(bool fromBonus) const
+{
+    if (fromBonus)
+        return m_words_bonus;
+    else
+        return m_words;
 }
 
 void CustomGridLetter::setUnchanged(bool set)

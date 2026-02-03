@@ -1,4 +1,5 @@
 #include "CustomMenuButton.h"
+#include "customgridletter.h"
 
 #include <QWidgetAction>
 #include <QPushButton>
@@ -7,6 +8,7 @@
 #include <QStringList>
 #include <QCheckBox>
 #include <QMouseEvent>
+#include <qboxlayout.h>
 
 // Costruttore della PersistentMenu
 PersistentMenu::PersistentMenu(QWidget* parent)
@@ -25,11 +27,11 @@ bool PersistentMenu::event(QEvent* e)
 }
 
 CustomMenuButton::CustomMenuButton(QWidget* parent)
-    : CustomMenuButton("CustomButton", Etichette(), QVector<QVector<QLabel*>> (), parent)
+    : CustomMenuButton("CustomButton", Etichette(), QVector<QVector<CustomGridLetter*>> (), parent)
 {}
 
 // Costruttore della CustomMenuButton //TODO: impostare mainWindow->highlightTiles(path, parola.length()) al clic sul bottone
-CustomMenuButton::CustomMenuButton(const QString& text, const Etichette &et, const QVector<QVector<QLabel *>> &percorsi, QWidget* parent)
+CustomMenuButton::CustomMenuButton(const QString& text, const Etichette &et, const QVector<QVector<CustomGridLetter *>> &percorsi, QWidget* parent)
     : QPushButton(text, parent), etichette(et), percorsi(percorsi)
 {
     // Crea il menu personalizzato
@@ -90,7 +92,7 @@ CustomMenuButton::CustomMenuButton(const QString& text, const Etichette &et, con
     aggiornaColoreSfondo();
 }
 
-void CustomMenuButton::cambiaParola(const QString& text, const Etichette &et, const QVector<QVector<QLabel *> > &perc) {
+void CustomMenuButton::cambiaParola(const QString& text, const Etichette &et, const QVector<QVector<CustomGridLetter *> > &perc) {
     setText(text);
     etichette = et;
     etichette_originale = et;
@@ -126,6 +128,106 @@ void CustomMenuButton::cambiaParola(const QString& text, const Etichette &et, co
         check->blockSignals(false);
 
         ++counter;
+    }
+}
+
+
+bool CustomMenuButton::isBonus() const
+{
+    QWidget* p = parentWidget();
+    while (p) {
+        if (p->objectName() == "boxBonus") {
+            return true;
+        }
+        p = p->parentWidget();
+    }
+    return false;
+}
+
+
+int CustomMenuButton::getAlphabeticalIndex() const
+{
+    QWidget* p = parentWidget();
+    if (!p) return -1;
+
+    QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(p->layout());
+    if (!layout) return -1;
+
+    QString myText = text();
+    int index = 0;
+
+    for (int i = 0; i < layout->count(); ++i) {
+        QWidget* w = layout->itemAt(i)->widget();
+        if (!w || w == this) break; // siamo arrivati a noi
+        if (auto* btn = qobject_cast<CustomMenuButton*>(w)) {
+            if (QString::compare(btn->text(), myText, Qt::CaseInsensitive) < 0) {
+                ++index;
+            } else {
+                break;
+            }
+        }
+    }
+
+    return index;
+}
+
+bool CustomMenuButton::addPercorso(const QVector<CustomGridLetter*>& percorso)
+{
+    if (percorso.isEmpty() || percorsi.contains(percorso))
+        return false;
+
+    percorsi.append(percorso);
+
+    for (auto tile : percorso)
+        connect(tile, &CustomGridLetter::tileChanged,
+                this, &CustomMenuButton::checkPaths);
+
+    return true;
+}
+
+
+bool CustomMenuButton::removePercorso(const QVector<CustomGridLetter*>& percorso)
+{
+    int before = percorsi.size();
+    percorsi.removeAll(percorso);
+    return percorsi.size() < before;
+}
+
+
+bool CustomMenuButton::removePercorso(int index)
+{
+    if (index < 0 || index >= percorsi.size())
+        return false;
+
+    percorsi.removeAt(index);
+    return true;
+}
+
+
+void CustomMenuButton::clearPercorsi()
+{
+    percorsi.clear();
+}
+
+
+const QVector<QVector<CustomGridLetter*>>& CustomMenuButton::getPercorsi() const
+{
+    return percorsi;
+}
+
+
+void CustomMenuButton::checkPaths(CustomGridLetter* tile_eliminata)
+{
+    // Rimuove tutti i percorsi che contengono tile_eliminata
+    for (int i = percorsi.size() - 1; i >= 0; --i) {
+        if (percorsi[i].contains(tile_eliminata)) {
+            percorsi.removeAt(i);
+        }
+    }
+
+    // Se non rimane alcun percorso, emetti un segnale per far eliminare il bottone
+    if (percorsi.isEmpty()) {
+        emit toEliminate(this);
     }
 }
 

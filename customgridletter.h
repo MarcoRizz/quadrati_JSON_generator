@@ -2,7 +2,8 @@
 #define CUSTOMGRIDLETTER_H
 
 #include <QLabel>
-#include "custommenubutton.h"
+
+class CustomMenuButton;
 
 class CustomGridLetter : public QLabel
 {
@@ -18,6 +19,7 @@ public:
 
     bool isUsed() const;
     bool isUsedBy(CustomMenuButton* word) const;
+    QSet<CustomMenuButton*> UsedBy(bool fromBonus = false) const;
 
     void setUnchanged(bool set);
     bool isUnchanged() const;
@@ -25,6 +27,7 @@ public:
 signals:
     void wordConnected(CustomMenuButton* word);
     void wordDisconnected(CustomMenuButton* word);
+    void tileChanged(CustomGridLetter* tile);
 
 private slots:
     void onWordDestroyed(QObject* obj);

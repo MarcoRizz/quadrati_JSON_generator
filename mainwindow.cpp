@@ -6,6 +6,10 @@
 #include <QMessageBox>
 #include <QSettings>
 
+#include "customgridletter.h"
+#include "generate_json.h"
+#include "custommenubutton.h"
+#include "widget_displayDictionary.h"
 #include "modificadizionario.h"
 
 MainWindow::MainWindow(QWidget *parent)
@@ -161,7 +165,7 @@ void MainWindow::on_btnEnd_Y_clicked()
     saveDictionary = 1;
 }
 
-void MainWindow::logMessage(const QString &message)
+void MainWindow::logMessage(const QString &message) const
 {
     // Aggiungi il messaggio al QPlainTextEdit
     if (ui->outputTextEdit) {
@@ -201,25 +205,47 @@ void MainWindow::on_checkBox_checkStateChanged(const Qt::CheckState &arg1)
 }
 
 
-void MainWindow::setGridTile(int x, int y, QChar letter)
+void MainWindow::setGridTile(const int x, const int y, const QChar letter)
 {
     letterGrid[x][y]->setText(letter);
 }
 
 
-QChar MainWindow::TileChar(int x, int y)
+QChar MainWindow::TileChar(const int x, const int y) const
 {
     return letterGrid[x][y]->text().at(0);
 }
 
 
-bool MainWindow::isGridCompleted()
+std::pair<int, int> MainWindow::getTileIndexes(const CustomGridLetter* tile) const
+{
+    std::pair<int, int> indexes;
+
+    for (int r = 0; r < 4; ++r) {
+        for (int c = 0; c < 4; ++c) {
+
+            if (tile == letterGrid[r][c])
+            {
+                indexes.first = r;
+                indexes.second = c;
+                return indexes;
+            }
+        }
+    }
+    indexes.first = -1;
+    indexes.second = -1;
+    return indexes;
+}
+
+
+bool MainWindow::isGridCompleted() const
 {
     for (int r = 0; r < 4; ++r) {
         for (int c = 0; c < 4; ++c) {
 
             if (auto* tessera = letterGrid[r][c]) {
 
+                if (!tessera->isUsed()) this->logMessage(QString("Tile[%1, %2] NOT used").arg(r).arg(c));
                 if (!tessera->isUsed()) return false;
             }
         }
@@ -228,20 +254,26 @@ bool MainWindow::isGridCompleted()
     return true;
 }
 
-void MainWindow::setTileOld(int x, int y)
+void MainWindow::setTileOld(const int x, const int y) const
 {
     letterGrid[x][y]->setUnchanged(true);
     return;
 }
 
-bool MainWindow::isTileOld(int x, int y)
+bool MainWindow::isTileOld(const int x, const int y) const
 {
     return letterGrid[x][y]->isUnchanged();
 }
 
-bool MainWindow::isLetterXYUsed(const int x, int y)
+bool MainWindow::isLetterXYUsed(const int x, const int y) const
 {
     return letterGrid[x][y]->isUsed();
+}
+
+
+QSet<CustomMenuButton*> MainWindow::TileListOfWords(const int x, const int y, bool fromBonus) const
+{
+    return letterGrid[x][y]->UsedBy(fromBonus);
 }
 
 
@@ -254,11 +286,11 @@ void MainWindow::updateGridColors()
 
                 if (tessera->isUsed()) {
                     tessera->setStyleSheet(
-                        "background-color: lightgrey; color: black;"
+                        "background-color: green; color: white;"
                         );
                 } else {
                     tessera->setStyleSheet(
-                        "background-color: green; color: white;"
+                        "background-color: lightgrey; color: black;"
                         );
                 }
             }
@@ -287,11 +319,17 @@ void MainWindow::addWord(const QString &word, const Etichette &etichette, custom
         label = new CustomMenuButton(word, etichette);
 
         //collegamento per muovere il bottone tra le liste
-        connect(label, &CustomMenuButton::parolaModificata, &generate_json, &Generate_JSON::onModifiedWord);
+        connect(label, &CustomMenuButton::parolaModificata,
+                &generate_json, &Generate_JSON::onModifiedWord);
         //collegamento per aggiornare il dizionario ad ogni modifica
-        connect(label, &CustomMenuButton::parolaModificata, dictionaryDisplayer, &widget_displayDictionary::parolaModificata);
+        connect(label, &CustomMenuButton::parolaModificata,
+                dictionaryDisplayer, &widget_displayDictionary::parolaModificata);
         //collegamento per evideziare ogni parola cliccata
-        connect(label, &CustomMenuButton::highLightW, dictionaryDisplayer, &widget_displayDictionary::displayParola);
+        connect(label, &CustomMenuButton::highLightW,
+                dictionaryDisplayer, &widget_displayDictionary::displayParola);
+        //collegamento per eliminare il pulsante se rimane senza percorsi
+        connect(label, &CustomMenuButton::toEliminate,
+                this, &MainWindow::removeWord);
     } else {
         label->cambiaParola(word, etichette);
     }
@@ -350,7 +388,8 @@ CustomMenuButton* MainWindow::findWordInLists(
 }
 
 
-CustomMenuButton* MainWindow::removeWordFromOriginalList(const QString &word, customButton_destination exclude) {
+CustomMenuButton* MainWindow::removeWordFromOriginalList(const QString &word, customButton_destination exclude)
+{
     QList<QWidget*> lists = { ui->boxAccepted, ui->boxBonus, ui->boxQueue };
 
     for (int i = 0; i < lists.size(); ++i) {
@@ -378,7 +417,8 @@ CustomMenuButton* MainWindow::removeWordFromOriginalList(const QString &word, cu
 }
 
 
-void MainWindow::insertWordInList(CustomMenuButton* btn_new, QWidget* list) {
+void MainWindow::insertWordInList(CustomMenuButton* btn_new, QWidget* list)
+{
     QString word = btn_new->text();
 
     QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(list->layout());
@@ -406,7 +446,37 @@ void MainWindow::insertWordInList(CustomMenuButton* btn_new, QWidget* list) {
 }
 
 
-void MainWindow::MoveWordIfExist(std::string parola, Etichette et) {
+void MainWindow::removeWord(CustomMenuButton* btn)
+{
+    if (!btn) return;
+
+    // Trova il parent (layout) del pulsante
+    QWidget* parentWidget = btn->parentWidget();
+    if (!parentWidget) {
+        btn->deleteLater(); // se non ha parent, lo eliminiamo comunque in modo sicuro
+        return;
+    }
+
+    QLayout* layout = parentWidget->layout();
+    if (!layout) {
+        btn->deleteLater();
+        return;
+    }
+
+    // Rimuove il widget dal layout
+    layout->removeWidget(btn);
+
+    // Opzionale: nascondi prima di cancellare
+    btn->hide();
+
+    // Elimina il pulsante in modo sicuro (evita crash se ci sono segnali pendenti)
+    btn->deleteLater();
+}
+
+
+
+void MainWindow::MoveWordIfExist(std::string parola, Etichette et)
+{
     QList<QWidget*> lists = { ui->boxAccepted, ui->boxBonus, ui->boxQueue };
     QString qparola = QString::fromStdString(parola);
 
@@ -429,7 +499,33 @@ void MainWindow::MoveWordIfExist(std::string parola, Etichette et) {
 }
 
 
-int MainWindow::countInList(customButton_destination list) {
+QVector<CustomMenuButton*> MainWindow::getAllActiveWords() const
+{
+    QVector<CustomMenuButton*> result;
+
+    auto collectFromBox = [&result](QWidget* box) {
+        if (!box) return;
+
+        QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(box->layout());
+        if (!layout) return;
+
+        for (int i = 0; i < layout->count(); ++i) {
+            QWidget* w = layout->itemAt(i)->widget();
+            if (auto* btn = qobject_cast<CustomMenuButton*>(w)) {
+                result.push_back(btn);
+            }
+        }
+    };
+
+    collectFromBox(ui->boxAccepted);
+    collectFromBox(ui->boxBonus);
+
+    return result;
+}
+
+
+int MainWindow::countInList(customButton_destination list)
+{
     QWidget* targetWidget;
     switch (list) {
     case Accepted:
@@ -454,7 +550,8 @@ int MainWindow::countInList(customButton_destination list) {
 }
 
 
-void MainWindow::clearWords() {
+void MainWindow::clearWords()
+{
     auto clearLayout = [](QWidget* list) {
         QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(list->layout());
         if (!layout) return;
@@ -471,7 +568,29 @@ void MainWindow::clearWords() {
     clearLayout(ui->boxBonus);
 }
 
-bool MainWindow::boxQueueIsEmpty() {
+
+void MainWindow::addPathToWord(CustomMenuButton* parola, std::pair<int, int>* path)
+{
+    QVector<CustomGridLetter*> percorso;
+    for (int i = 0; i < parola->text().length(); ++i)
+    {
+        percorso.append(letterGrid[path[i].first][path[i].second]);
+    }
+
+    if (parola->addPercorso(percorso))
+    {
+        for (auto tessera : percorso)
+        {
+            tessera->connectWord(parola, parola->isBonus());
+        }
+    }
+
+    return;
+}
+
+
+bool MainWindow::boxQueueIsEmpty()
+{
     if (!ui->boxQueue)
         return true;
 

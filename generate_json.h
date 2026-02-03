@@ -1,6 +1,7 @@
 #ifndef GENERATE_JSON_H
 #define GENERATE_JSON_H
 
+#include "custommenubutton.h"
 #define DIM1 4
 #define DIM2 4
 
@@ -56,8 +57,7 @@ private:
         explicit FindPath(Generate_JSON& gen_json); // Costruttore che riceve un riferimento a Generate_JSON
 
         void findPaths(int x, int y, int step, int max_size, bool analyzedPath = true);
-        void findWordPaths(int x, int y, int step, std::string word);
-        bool is_still_in_grid(int x, int y, int step, const std::string& word);
+        void findWordPaths(int x, int y, int step, CustomMenuButton* word);
 
     private:
         Generate_JSON& parent; // Riferimento alla classe Generate_JSON

@@ -4,10 +4,11 @@
 #include <QMainWindow>
 #include <QLabel>
 #include "common_enums.h"
-#include "customgridletter.h"
 #include "generate_JSON.h"
-#include "custommenubutton.h"
-#include "widget_displayDictionary.h"
+
+class Generate_JSON;
+class CustomMenuButton;
+class widget_displayDictionary;
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -34,15 +35,17 @@ public:
     int getSaveDict() const;
 
     // Funzione dedicata per l'output
-    void logMessage(const QString &message);
+    void logMessage(const QString &message) const;
 
     //gestione griglia 4x4
-    void setGridTile(int x, int y, QChar letter);
-    QChar TileChar(int x, int y);
-    void setTileOld(int x, int y);
-    bool isTileOld(int x, int y);
-    bool isGridCompleted();
-    bool isLetterXYUsed(const int x, const int y);
+    void setGridTile(const int x, const int y, const QChar letter);
+    QChar TileChar(const int x, const int y) const;
+    std::pair<int, int> getTileIndexes(const CustomGridLetter* tile) const;
+    void setTileOld(const int x, const int y) const;
+    bool isTileOld(const int x, const int y) const;
+    bool isGridCompleted() const;
+    bool isLetterXYUsed(const int x, const int y) const;
+    QSet<CustomMenuButton*> TileListOfWords(const int x, const int y, bool fromBonus = false) const;
     void updateGridColors(); // Funzione per aggiornare i colori della griglia
     void highlightTiles(const std::pair<int, int>* positions, int size); // Evidenzia alcune celle
 
@@ -50,11 +53,10 @@ public:
     void addWord(const QString &word, const Etichette &etichette, customButton_destination dest = Accepted);
     CustomMenuButton* findWordInLists(const QString& word, customButton_destination* foundIn = nullptr) const;
     CustomMenuButton* removeWordFromOriginalList(const QString &word, customButton_destination exclude);
-    void insertWordInList(CustomMenuButton* btn, QWidget* list);
-    void MoveWordIfExist(std::string parola, Etichette et);
+    QVector<CustomMenuButton*> getAllActiveWords() const;
     int countInList(customButton_destination list);
     void clearWords();
-    void addPathToWord(std::string parola, std::pair<int, int>* path);
+    void addPathToWord(CustomMenuButton* parola, std::pair<int, int>* path);
 
     bool boxQueueIsEmpty();
 
@@ -75,6 +77,10 @@ private:
     widget_displayDictionary *dictionaryDisplayer;
     int saveDictionary = 0;     // A fine generazione, salva modifiche al dizionario
     CustomGridLetter* letterGrid[4][4];
+
+    void insertWordInList(CustomMenuButton* btn, QWidget* list);
+    void removeWord(CustomMenuButton* btn);
+    void MoveWordIfExist(std::string parola, Etichette et);
 
     void aggiorna_widget_Dictionary();
 };
