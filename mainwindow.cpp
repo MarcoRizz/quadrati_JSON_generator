@@ -238,6 +238,12 @@ std::pair<int, int> MainWindow::getTileIndexes(const CustomGridLetter* tile) con
 }
 
 
+CustomGridLetter* MainWindow::getTile(const int x, const int y) const
+{
+    return letterGrid[x][y];
+}
+
+
 bool MainWindow::isGridCompleted() const
 {
     for (int r = 0; r < 4; ++r) {
@@ -367,6 +373,7 @@ CustomMenuButton* MainWindow::findWordInLists(
         for (int i = 0; i < layout->count(); ++i) {
             QWidget* w = layout->itemAt(i)->widget();
             if (auto* btn = qobject_cast<CustomMenuButton*>(w)) {
+
                 if (QString::compare(btn->text(), word, Qt::CaseInsensitive) == 0) {
                     if (foundIn)
                         *foundIn = dest;

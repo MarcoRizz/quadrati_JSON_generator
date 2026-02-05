@@ -41,6 +41,7 @@ public:
     void setGridTile(const int x, const int y, const QChar letter);
     QChar TileChar(const int x, const int y) const;
     std::pair<int, int> getTileIndexes(const CustomGridLetter* tile) const;
+    CustomGridLetter* getTile(const int x, const int y) const;
     void setTileOld(const int x, const int y) const;
     bool isTileOld(const int x, const int y) const;
     bool isGridCompleted() const;

@@ -15,6 +15,12 @@
 #include "common_enums.h"
 
 customButton_destination findDestination(const Etichette et);
+struct FoundWord
+{
+    QString parola;
+    Etichette etichette;
+    QVector<QPoint> percorso;   // coordinate tiles
+};
 
 class MainWindow; // Forward declaration
 class FindPath; // Forward declaration di FindPath
@@ -26,6 +32,8 @@ public:
     Generate_JSON(MainWindow* mainWindow); // Dichiarazione del costruttore
 
     Dizionario dizionario;
+    QVector<QVector<QChar>> gridSnapshot;
+    QVector<FoundWord> threadResults;
 
     int run();
     void onModifiedWord(std::string parola, Etichette et);
@@ -37,6 +45,7 @@ signals:
     void wordFound(const QString& parola, Etichette et, customButton_destination dest = Accepted);
     void logMessageRequested(const QString& testo);
     void wordsComputationFinished();
+    void wordsReady(QVector<FoundWord> threadResults);
 
 private:
     MainWindow* mainWindow;
@@ -52,6 +61,9 @@ private:
     void creazione_gridLinks();
     void converti_e_scrivi_JSON();
 
+    void processWords(const QVector<FoundWord>& words);
+
+
     class FindPath {
     public:
         explicit FindPath(Generate_JSON& gen_json); // Costruttore che riceve un riferimento a Generate_JSON
@@ -60,9 +72,13 @@ private:
         void findWordPaths(int x, int y, int step, CustomMenuButton* word);
 
     private:
+        bool visited[DIM1][DIM2] = {false}; // Array di visitati
+        std::pair<int, int> path[DIM1 * DIM2]; // Array per memorizzare il percorso
+
         Generate_JSON& parent; // Riferimento alla classe Generate_JSON
 
         void returnFinalWord(int pathLength);
+        bool isValid(int x, int y);
     };
 
     FindPath pathFinder; // Istanza della classe nidificata

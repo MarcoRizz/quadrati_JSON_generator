@@ -10,15 +10,12 @@
 
 #define DIRECTIONS_n 8
 
-bool visited[DIM1][DIM2] = {false}; // Array di visitati
-std::pair<int, int> path[DIM1 * DIM2]; // Array per memorizzare il percorso
-
 // Direzioni: U, UR, R, DR, D, DL, L, UL
 const std::pair<int, int> directions[DIRECTIONS_n] = {
     {0, -1}, {1, -1}, {1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}
 };
 
-bool isValid(int x, int y) {
+bool Generate_JSON::FindPath::isValid(int x, int y) {
     return x >= 0 && x < DIM1 && y >= 0 && y < DIM2 && !visited[x][y];
 }
 
@@ -38,7 +35,17 @@ Generate_JSON::Generate_JSON(MainWindow* mainWindow)
         mainWindow->logMessage(QString("Errore nell'apertura del file al percorso: %1").arg(QString::fromStdString(dictionary_path_json)));
     }
 
+    gridSnapshot.resize(DIM1);
+    for (int i = 0; i < DIM1; ++i) {
+        gridSnapshot[i].resize(DIM2);
+    }
     // Altre inizializzazioni se necessarie
+    connect(this,
+            &Generate_JSON::wordsReady,
+            this,
+            &Generate_JSON::processWords,
+            Qt::QueuedConnection);
+
 }
 
 customButton_destination findDestination(const Etichette et) {
@@ -82,7 +89,7 @@ int Generate_JSON::run()
 
             creazione_words();
 
-            creazione_gridLinks();
+            //creazione_gridLinks();
 
             loop++;
         }
@@ -169,6 +176,18 @@ void Generate_JSON::creazione_words() {
 
     // 1) Segnalo l’inizio
     emit logMessageRequested(tr("Avvio ricerca parole…"));
+
+    for (int i = 0; i < DIM1; ++i) {
+        for (int j = 0; j < DIM2; ++j) {
+            gridSnapshot[i][j] = mainWindow->TileChar(i,j);
+        }
+    }
+
+    QEventLoop loop;
+    connect(this, &Generate_JSON::wordsComputationFinished,
+            &loop, &QEventLoop::quit,
+            Qt::QueuedConnection);
+
     /* ------------- parte pesante spostata in un thread --------------- */
     // 2) Lancio il job pesante in background
     QtConcurrent::run([this]{
@@ -179,23 +198,28 @@ void Generate_JSON::creazione_words() {
         const int maxSteps = DIM1 * DIM2;
         #endif
 
-        for (int path_size = 4; path_size <= maxSteps; ++path_size) {
+        /*for (int path_size = 4; path_size <= maxSteps; ++path_size) {
             for (int i = 0; i < DIM1; ++i) {
                 for (int j = 0; j < DIM2; ++j) {
                     pathFinder.findPaths(i, j, 0, path_size);
                 }
             }
-        }
+        }*/
 
-        /* ------------- fine del lavoro pesante ----------------------- */
+        threadResults.clear();
 
-        mainWindow->updateGridColors();
-        QApplication::processEvents();
+        for (int path_size = 4; path_size <= maxSteps; ++path_size)
+            for (int i = 0; i < DIM1; ++i)
+                for (int j = 0; j < DIM2; ++j)
+                    pathFinder.findPaths(i,j,0,path_size);
 
-        emit logMessageRequested(tr("Fine ricerca parole…"));
+        qDebug() << "finisco il thread separato";
+        emit wordsReady(threadResults);
         // Avvisa la GUI che abbiamo terminato
         emit wordsComputationFinished();
+
     });
+    /* ------------- fine del lavoro pesante ----------------------- */
 
     //TODO: qui controllo se ho delle parole in sospeso
     if (!mainWindow) {
@@ -203,11 +227,11 @@ void Generate_JSON::creazione_words() {
     }
 
     // 3) Attendo in modo “bloccante” ma reattivo fino al signal
-    QEventLoop loop;
-    connect(this, &Generate_JSON::wordsComputationFinished,
-            &loop, &QEventLoop::quit,
-            Qt::QueuedConnection);
     loop.exec();   // rimane qui finché non arriva quit()
+    qDebug() << "sblocco";
+    emit logMessageRequested(tr("Fine ricerca parole…"));
+    mainWindow->updateGridColors();
+    QApplication::processEvents();
 
     // 4) Ora posso tornare alla tua vecchia logica:
     //    aspetto che l’utente svuoti la boxQueue
@@ -393,6 +417,35 @@ void Generate_JSON::onModifiedWord(std::string parola, Etichette et) {
     QApplication::processEvents();
 }
 
+
+void Generate_JSON::processWords(const QVector<FoundWord>& words)
+{
+    for (const FoundWord& fw : words)
+    {
+        if (mainWindow->findWordInLists(fw.parola))
+            continue;
+
+        customButton_destination dest = findDestination(fw.etichette);
+
+        emit wordFound(fw.parola, fw.etichette, dest);
+
+        auto* btn = mainWindow->findWordInLists(fw.parola);
+
+        if (btn)
+        {
+            QVector<CustomGridLetter*> labels;
+
+            for (auto& p : fw.percorso)
+                labels.append(mainWindow->getTile(p.x(), p.y()));
+
+            btn->addPercorso(labels);
+        }
+    }
+
+    mainWindow->updateGridColors();
+}
+
+
 void Generate_JSON::aggiorna_dizionario(const std::string& testo, const Etichette& etichette) {
     // Salvo le modifiche alle etichette nel dizionario
     dizionario.inserisciParola(testo, etichette, true);
@@ -405,22 +458,20 @@ Generate_JSON::FindPath::FindPath(Generate_JSON& gen_json) : parent(gen_json) {}
 //--------------------------------------------------------------------------------
 //ELABORO TUTTI I POSSIBILI PERCORSI NELLA GRIGLIA
 
-void Generate_JSON::FindPath::returnFinalWord(int pathLength) {
+/*void Generate_JSON::FindPath::returnFinalWord(int pathLength) {
     QString parola;
     for (int i = 0; i < pathLength; ++i) {
         parola.append(parent.mainWindow->TileChar(path[i].first, path[i].second));
     }
 
-    //TODO: investigare qui
+    auto rispostaDizionario = parent.dizionario.cercaParola(parola.toStdString());
 
-    if (!parent.mainWindow->findWordInLists(parola))
+    if (rispostaDizionario)
     {
-        auto rispostaDizionario = parent.dizionario.cercaParola(parola.toStdString());
+        qDebug() << "Parola: " << parola << " --> etichette: " << rispostaDizionario->printBitmask();
 
-        if (rispostaDizionario)
+        if (!parent.mainWindow->findWordInLists(parola))
         {
-            std::cout << "Parola: " << parola.toStdString() << " --> etichette: " << rispostaDizionario->printBitmask() << std::endl;
-
             customButton_destination dest = findDestination(*rispostaDizionario);
             switch (dest) {
             case Accepted:
@@ -440,11 +491,42 @@ void Generate_JSON::FindPath::returnFinalWord(int pathLength) {
                 break;
             }
 
-            QApplication::processEvents();
-        }
+            qDebug() << "NON trovata";
 
+            QApplication::processEvents();
+        } else {
+            qDebug() << "trovata, skippo";
+        }
     }
+}*/
+void Generate_JSON::FindPath::returnFinalWord(int pathLength)
+{
+    QString parola;
+
+    QVector<QPoint> percorso;
+
+    for (int i = 0; i < pathLength; ++i) {
+
+        int x = path[i].first;
+        int y = path[i].second;
+
+        parola.append(parent.gridSnapshot[x][y]);
+        percorso.append(QPoint(x,y));
+    }
+
+    auto risposta = parent.dizionario.cercaParola(parola.toStdString());
+
+    if (!risposta)
+        return;
+
+    FoundWord fw;
+    fw.parola = parola;
+    fw.etichette = *risposta;
+    fw.percorso = percorso;
+
+    parent.threadResults.push_back(fw);
 }
+
 
 //cerca tutti i possibili percorsi nella griglia
 void Generate_JSON::FindPath::findPaths(int x, int y, int step, int path_size, bool analyzedPath) {
