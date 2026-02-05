@@ -244,6 +244,23 @@ CustomGridLetter* MainWindow::getTile(const int x, const int y) const
 }
 
 
+void MainWindow::assignWordToTiles(CustomMenuButton* parola, QVector<QPoint> path)
+{
+    QVector<CustomGridLetter*> percorso;
+    for (int i = 0; i < parola->text().length(); ++i)
+    {
+        percorso.append(letterGrid[path[i].x()][path[i].y()]);
+    }
+
+    for (auto tessera : percorso)
+    {
+        tessera->connectWord(parola, parola->isBonus());
+    }
+
+    return;
+}
+
+
 bool MainWindow::isGridCompleted() const
 {
     for (int r = 0; r < 4; ++r) {
@@ -273,6 +290,11 @@ bool MainWindow::isTileOld(const int x, const int y) const
 
 bool MainWindow::isLetterXYUsed(const int x, const int y) const
 {
+    if (letterGrid[x][y]->isUsed())
+        qDebug() << "letter " << x << ", " << y << ": is used";
+    else
+        qDebug() << "letter " << x << ", " << y << ": is NOT used";
+
     return letterGrid[x][y]->isUsed();
 }
 
@@ -288,7 +310,7 @@ void MainWindow::updateGridColors()
     for (int r = 0; r < 4; ++r) {
         for (int c = 0; c < 4; ++c) {
 
-            if (auto* tessera = letterGrid[r][c]) {
+            if (CustomGridLetter* tessera = letterGrid[r][c]) {
 
                 if (tessera->isUsed()) {
                     tessera->setStyleSheet(
@@ -321,6 +343,7 @@ void MainWindow::highlightTiles(const std::pair<int, int>* positions, int size) 
 void MainWindow::addWord(const QString &word, const Etichette &etichette, customButton_destination dest) {
     CustomMenuButton* label = removeWordFromOriginalList(word, dest);
 
+    qDebug() << "entro in addWord";
     if (!label) {
         label = new CustomMenuButton(word, etichette);
 
@@ -426,6 +449,15 @@ CustomMenuButton* MainWindow::removeWordFromOriginalList(const QString &word, cu
 
 void MainWindow::insertWordInList(CustomMenuButton* btn_new, QWidget* list)
 {
+    if (list == ui->boxAccepted)
+        qDebug() << "inserisco pulsante " << btn_new->text() << " in boxAccepted";
+    else if (list == ui->boxBonus)
+        qDebug() << "inserisco pulsante " << btn_new->text() << " in boxBonus";//WARNING TODO: le parole bonus trovate per prime spariscono!!! Non compaiono come pulsanti in GUI
+    else if (ui->boxQueue)
+        qDebug() << "inserisco pulsante " << btn_new->text() << " in boxQueue";
+    else
+        qDebug() << "inserisco pulsante " << btn_new->text() << " in ERRORE";
+
     QString word = btn_new->text();
 
     QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(list->layout());
@@ -573,26 +605,6 @@ void MainWindow::clearWords()
 
     clearLayout(ui->boxAccepted);
     clearLayout(ui->boxBonus);
-}
-
-
-void MainWindow::addPathToWord(CustomMenuButton* parola, std::pair<int, int>* path)
-{
-    QVector<CustomGridLetter*> percorso;
-    for (int i = 0; i < parola->text().length(); ++i)
-    {
-        percorso.append(letterGrid[path[i].first][path[i].second]);
-    }
-
-    if (parola->addPercorso(percorso))
-    {
-        for (auto tessera : percorso)
-        {
-            tessera->connectWord(parola, parola->isBonus());
-        }
-    }
-
-    return;
 }
 
 

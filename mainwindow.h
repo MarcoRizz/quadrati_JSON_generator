@@ -43,6 +43,7 @@ public:
     std::pair<int, int> getTileIndexes(const CustomGridLetter* tile) const;
     CustomGridLetter* getTile(const int x, const int y) const;
     void setTileOld(const int x, const int y) const;
+    void assignWordToTiles(CustomMenuButton* parola, QVector<QPoint> path);
     bool isTileOld(const int x, const int y) const;
     bool isGridCompleted() const;
     bool isLetterXYUsed(const int x, const int y) const;
@@ -57,7 +58,6 @@ public:
     QVector<CustomMenuButton*> getAllActiveWords() const;
     int countInList(customButton_destination list);
     void clearWords();
-    void addPathToWord(CustomMenuButton* parola, std::pair<int, int>* path);
 
     bool boxQueueIsEmpty();
 

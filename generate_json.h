@@ -55,13 +55,17 @@ private:
     int n_words_old = 0;
 
     int loop = 0;
+    bool wordsComputationRunning = false;
 
+    void startNextJson();
+    void startGenerationLoop();
     void creazione_grid();
     void creazione_words();
     void creazione_gridLinks();
     void converti_e_scrivi_JSON();
 
     void processWords(const QVector<FoundWord>& words);
+    void waitQueueEmpty();
 
 
     class FindPath {
