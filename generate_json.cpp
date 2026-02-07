@@ -2,7 +2,10 @@
 
 #include <fstream>
 #include <iostream>
-#include <QtConcurrent>
+#include <QtConcurrentRun>    // Per QtConcurrent::run
+#include <QFutureWatcher>     // Per gestire il segnale di fine lavoro
+#include <QFuture>            // Necessario per tipizzare il watcher (es. QFuture<void>)
+#include <qtimer.h>           // per QTimer
 #include <QRandomGenerator>
 #include "mainwindow.h"
 #include <qapplication.h>
@@ -103,6 +106,7 @@ void Generate_JSON::startGenerationLoop()
     if (mainWindow->isGridCompleted())
     {
         mainWindow->logMessage(QString("Loops: %1").arg(loop));
+        qDebug() << "qDebug 1";
         converti_e_scrivi_JSON();
         jsons_to_elaborate.pop();
 
@@ -126,79 +130,6 @@ void Generate_JSON::startGenerationLoop()
     creazione_words();   // async → continuerà via signal
 }
 
-
-/*int Generate_JSON::run()
-{
-    //calcolo jsons_to_elaborate
-    mainWindow->calculateFileNumbers(&jsons_to_elaborate);
-
-    if (jsons_to_elaborate.empty()){
-        mainWindow->logMessage(QString("Nessun file da generare."));
-        return -1;
-    }
-
-    //calcolo i singoli json
-    while (!jsons_to_elaborate.empty()) {
-        n_words_old = 0;
-
-        mainWindow->clearWords();
-
-        loop = 0;
-
-        while (!mainWindow->isGridCompleted()  && loop < MAX_LOOPS) {
-
-            //aggiorno la schermata
-            mainWindow->updateGridColors();
-            QApplication::processEvents();
-
-            creazione_grid();
-
-            creazione_words();
-
-            //creazione_gridLinks();
-
-            loop++;
-        }
-
-        //aggiorno la schermata
-        QApplication::processEvents();
-
-        if (loop == MAX_LOOPS) {
-            std::cerr << "Numero massimo di iterazioni raggiunto, griglia non trovata" << std::endl;
-
-            //riazzero le variabili ad ogni iterazione
-            mainWindow->clearWords();
-
-            continue;  //senza jsons_to_elaborate.pop() ripete l'iterazione
-        } else {
-            mainWindow->logMessage(QString("Loops: %1").arg(loop));
-        }
-
-        converti_e_scrivi_JSON();
-
-        //riazzero le variabili ad ogni iterazione
-        jsons_to_elaborate.pop(); //elimina il primo elemento
-    }
-
-    // chiedo se salvare le modifiche al dizionario
-    mainWindow->logMessage(QString("Salvare le modifiche del dizionario? S/N"));
-
-    // Attendiamo l'input dell'utente
-    while (mainWindow->getSaveDict() == 0) {
-        QApplication::processEvents();
-    }
-
-    if (mainWindow->getSaveDict() == 1) {
-        if (!dizionario.salvaInFileCompatto(dictionary_path_json)) {
-            mainWindow->logMessage(QString("errore nel salvataggio del dizionario al percorso: %1").arg(QString::fromStdString(dictionary_path_json)));
-            return -1;
-        } else {
-            mainWindow->logMessage(QString("Dizionario salvato correttamente in: %1").arg(QString::fromStdString(dictionary_path_json)));
-        }
-    }
-
-    return 0;
-}*/
 
 void Generate_JSON::creazione_grid() {
     /***********************************************************************************
@@ -226,10 +157,6 @@ void Generate_JSON::creazione_grid() {
     }
     mainWindow->logMessage("Contenuto di GRID:\n" + gridContent);
 
-    //timer_end = std::chrono::high_resolution_clock::now();
-    //duration = timer_end - timer_overall_start;
-    //mainWindow->logMessage(QString("Array GRID creato - elapsed time: %1 ms").arg(duration.count()));
-
     //aggiorno la schermata
     QApplication::processEvents();
 }
@@ -249,25 +176,41 @@ void Generate_JSON::creazione_words()
 
     emit logMessageRequested(tr("Avvio ricerca parole…"));
 
+    // 1. Prepariamo i dati per il thread (snapshot della griglia)
     for (int i = 0; i < DIM1; ++i)
         for (int j = 0; j < DIM2; ++j)
             gridSnapshot[i][j] = mainWindow->TileChar(i,j);
 
-    /* ------------- parte pesante spostata in un thread --------------- */
-    QtConcurrent::run([this] {
+    // 2. Creiamo il "Watcher" (l'osservatore)
+    // Lo creiamo nell'heap (new) con 'this' come parent per la pulizia automatica
+    auto* watcher = new QFutureWatcher<QVector<FoundWord>>(this);
 
+    // 3. Connettiamo il segnale: "Quando hai finito, passa i risultati a processWords"
+    connect(watcher, &QFutureWatcher<QVector<FoundWord>>::finished, this, [this, watcher]() {
+        processWords(watcher->result()); // Passa i risultati ottenuti
+        watcher->deleteLater();          // Pulisce il watcher
+    });
+
+    /* ------------- parte pesante spostata in un thread --------------- */
+    // 4.Avviamo il thread
+    QFuture<QVector<FoundWord>> future = QtConcurrent::run([this]() {
+        // Variabile LOCALE al thread: nessuna race condition!
+        QVector<FoundWord> localResults;
         const int maxSteps = DIM1 * DIM2;
 
-        threadResults.clear();
-
+        // Esegui la ricerca (pathFinder deve essere thread-safe o usare dati locali)
         for (int path_size = 4; path_size <= maxSteps; ++path_size)
             for (int i = 0; i < DIM1; ++i)
                 for (int j = 0; j < DIM2; ++j)
-                    pathFinder.findPaths(i,j,0,path_size);
+                    pathFinder.findPaths(i, j, 0, path_size, localResults);
+        // Nota: dovresti passare localResults a findPaths per riempirlo
 
-        emit wordsReady(threadResults);
+        return localResults;
     });
     /* ------------- fine del lavoro pesante ----------------------- */
+
+    // 5. Diamo il futuro al watcher
+    watcher->setFuture(future);
 
     //TODO: conta di quante nuove parole ho recuperato in questo loop
 }
@@ -280,7 +223,7 @@ void Generate_JSON::creazione_gridLinks() {
     //qui devo calcolare tutte le possibilità e calcolare quali parole possono passare da ciascuna lettera (e quali possono iniziare)
 
     auto activeWords = mainWindow->getAllActiveWords();
-    for (CustomMenuButton* word : activeWords) {
+    for (CustomMenuButton* word : std::as_const(activeWords)) {
         for (int i = 0; i < DIM1; ++i) {
             for (int j = 0; j < DIM2; ++j) {
                 pathFinder.findWordPaths(i, j, 0, word);
@@ -308,6 +251,7 @@ void Generate_JSON::converti_e_scrivi_JSON() {
         }
         grid_json.push_back(row);
     }
+    qDebug() << "qDebug 2";
     //stampo grid[][]
     QString gridContent;
     for (int j = 0; j < DIM2; ++j) {
@@ -318,6 +262,7 @@ void Generate_JSON::converti_e_scrivi_JSON() {
     }
     mainWindow->logMessage(gridContent);
 
+    qDebug() << "qDebug 3";
     // Converto words e words_bonus in JSON
     mainWindow->logMessage(QString("words:"));
     json words_json = json::array();
@@ -325,7 +270,7 @@ void Generate_JSON::converti_e_scrivi_JSON() {
 
     QVector<CustomMenuButton*> listaParole;
     listaParole = mainWindow->getAllActiveWords();
-    for (auto parola : listaParole)
+    for (auto parola : std::as_const(listaParole))
     {
         std::string word_i = parola->text().toStdString();
 
@@ -339,6 +284,7 @@ void Generate_JSON::converti_e_scrivi_JSON() {
         }
     }
 
+    qDebug() << "qDebug 4";
     // Converto passingWords in JSON
     mainWindow->logMessage("\nwords passingLinks:\n");
     json passingLinks_json = json::array();
@@ -349,7 +295,7 @@ void Generate_JSON::converti_e_scrivi_JSON() {
             QVector<int> indices;
             indices.reserve(paroleConnesse.size());
 
-            for (CustomMenuButton* btn : paroleConnesse) {
+            for (CustomMenuButton* btn : std::as_const(paroleConnesse)) {
                 int idx = btn->getAlphabeticalIndex();
                 if (idx >= 0) {          // ignora valori invalidi
                     indices.push_back(idx);
@@ -372,14 +318,29 @@ void Generate_JSON::converti_e_scrivi_JSON() {
     // Converti startingLinks in JSON
     mainWindow->logMessage(QString("\nwords startingLinks:\n"));
 
+    qDebug() << "qDebug 5";
     json startingLinks_json = json::array();
-    for (auto parola : listaParole)
+    for (auto parola : std::as_const(listaParole))
     {
         if (parola->isBonus())
             continue;
 
         QVector<QVector<CustomGridLetter*>> percorsi = parola->getPercorsi();
+
+        // CONTROLLO DI SICUREZZA
+        if (percorsi.isEmpty()) {
+            qWarning() << "Attenzione: la parola" << parola->text() << "non ha percorsi validi!";
+            continue; // Salta questa parola per evitare il crash
+        }
+
         int dado = QRandomGenerator::global()->bounded(percorsi.count());
+
+        // Ulteriore controllo per sicurezza sul primo elemento del percorso
+        if (percorsi.at(dado).isEmpty()) {
+            qWarning() << "Attenzione: il percorso #" << dado << "non è valido";
+            continue;
+        }
+
         std::pair<int, int> startingTile = mainWindow->getTileIndexes(percorsi.at(dado).at(0));
 
         json json_pair = json::array();
@@ -388,6 +349,7 @@ void Generate_JSON::converti_e_scrivi_JSON() {
         startingLinks_json.push_back(json_pair);
     }
 
+    qDebug() << "qDebug 6";
     // creo il contenuto JSON finale
     int todaysNum = jsons_to_elaborate.front();
     json data;
@@ -412,84 +374,88 @@ void Generate_JSON::converti_e_scrivi_JSON() {
     }
 }
 
-void Generate_JSON::onModifiedWord(std::string parola, Etichette et) {
-    customButton_destination dest = findDestination(et);
-
-    customButton_destination originalLocation;
-    mainWindow->findWordInLists(QString::fromStdString(parola), &originalLocation);
-
-    if (dest!=originalLocation)
-    {
-        switch (dest) {
-        case Accepted:
-            mainWindow->addWord(QString::fromStdString(parola), et, Accepted);
-            mainWindow->logMessage(QString("#%1->ACETTATE").arg(QString::fromStdString(parola)));
-
-            break;
-        case Bonus:
-            mainWindow->addWord(QString::fromStdString(parola), et, Bonus);
-            mainWindow->logMessage(QString("#%1->BONUS").arg(QString::fromStdString(parola)));
-
-            break;
-        case Queue:
-            mainWindow->addWord(QString::fromStdString(parola), et, Queue);
-            mainWindow->logMessage(QString("#%1->QUEUE").arg(QString::fromStdString(parola)));
-
-            break;
-        default:
-            qWarning() << "Destinazione non trovata!";
-            break;
-        }
-    }
-
+void Generate_JSON::onModifiedWord(std::string parola, Etichette et)
+{
     // Salvo le modifiche alle etichette nel dizionario
     dizionario.inserisciParola(parola, et, true);
 
-    QApplication::processEvents();
+    customButton_destination dest = findDestination(et);
+    customButton_destination originalLocation;
+
+    mainWindow->findWordInLists(QString::fromStdString(parola), &originalLocation);
+
+    if (dest == originalLocation)
+        return;
+
+    switch (dest) {
+    case Accepted:
+        mainWindow->addWord(QString::fromStdString(parola), et, Accepted);
+        mainWindow->logMessage(QString("#%1->ACETTATE").arg(QString::fromStdString(parola)));
+
+        break;
+    case Bonus:
+        mainWindow->addWord(QString::fromStdString(parola), et, Bonus);
+        mainWindow->logMessage(QString("#%1->BONUS").arg(QString::fromStdString(parola)));
+
+        break;
+    case Queue:
+        mainWindow->addWord(QString::fromStdString(parola), et, Queue);
+        mainWindow->logMessage(QString("#%1->QUEUE").arg(QString::fromStdString(parola)));
+
+        break;
+    default:
+        qWarning() << "Destinazione non trovata!";
+        break;
+    }
 }
 
 
 void Generate_JSON::processWords(const QVector<FoundWord>& words)
 {
     qDebug() << "entro in processWords";
+    qDebug() << "Elaborazione di" << words.size() << "parole trovate";
+
     for (const FoundWord& fw : words)
     {
+        customButton_destination dest = findDestination(fw.etichette);
+
         if (mainWindow->findWordInLists(fw.parola))
         {
             qDebug() << "parola già elaborata: " << fw.parola;
             continue;
         }
-        qDebug() << "parola da elaborare: " << fw.parola;
+        {
+            qDebug() << "parola da elaborare: " << fw.parola;
 
-        customButton_destination dest = findDestination(fw.etichette);
+            customButton_destination dest = findDestination(fw.etichette);
 
-        emit wordFound(fw.parola, fw.etichette, dest);
+            emit wordFound(fw.parola, fw.etichette, dest);
+        }
+
         //TODO: emetto wordFound poi devo lanciare findWordInLists --> spreco di risorse, ottimizzare
         CustomMenuButton* btn = mainWindow->findWordInLists(fw.parola);
 
-        if (btn)
+        if (!btn)
         {
-            QVector<CustomGridLetter*> labels;
-
-            for (auto& p : fw.percorso)
-                labels.append(mainWindow->getTile(p.x(), p.y()));
-
-            btn->addPercorso(labels);
-            
-            if (dest == Accepted or dest == Bonus)
-            {
-                mainWindow->assignWordToTiles(btn, fw.percorso);
-            }
-        } else {
             qDebug() << "btn fallito";
+            continue;
+        }
+
+        QVector<CustomGridLetter*> labels;
+
+        for (auto& p : fw.percorso)
+            labels.append(mainWindow->getTile(p.x(), p.y()));
+
+        if (btn->addPercorso(labels) && (dest == Accepted or dest == Bonus))
+        {
+            mainWindow->assignWordToTiles(btn, fw.percorso);
         }
     }
 
     mainWindow->updateGridColors();
-
     wordsComputationRunning = false;
 
-    qDebug() << "esco da processWords";
+    qDebug() << "esco da processWords e avvio waitQueueEmpty";
     emit wordsComputationFinished();       // ← SOLO QUI
 }
 
@@ -519,51 +485,8 @@ void Generate_JSON::aggiorna_dizionario(const std::string& testo, const Etichett
 // Costruttore della classe FindPath
 Generate_JSON::FindPath::FindPath(Generate_JSON& gen_json) : parent(gen_json) {}
 
-//--------------------------------------------------------------------------------
-//ELABORO TUTTI I POSSIBILI PERCORSI NELLA GRIGLIA
 
-/*void Generate_JSON::FindPath::returnFinalWord(int pathLength) {
-    QString parola;
-    for (int i = 0; i < pathLength; ++i) {
-        parola.append(parent.mainWindow->TileChar(path[i].first, path[i].second));
-    }
-
-    auto rispostaDizionario = parent.dizionario.cercaParola(parola.toStdString());
-
-    if (rispostaDizionario)
-    {
-        qDebug() << "Parola: " << parola << " --> etichette: " << rispostaDizionario->printBitmask();
-
-        if (!parent.mainWindow->findWordInLists(parola))
-        {
-            customButton_destination dest = findDestination(*rispostaDizionario);
-            switch (dest) {
-            case Accepted:
-                emit parent.wordFound(parola, *rispostaDizionario);
-
-                break;
-            case Bonus:
-                emit parent.wordFound(parola, *rispostaDizionario, Bonus);
-
-                break;
-            case Queue:
-                emit parent.wordFound(parola, *rispostaDizionario, Queue);
-
-                break;
-            default:
-                qWarning() << "Destinazione non trovata!";
-                break;
-            }
-
-            qDebug() << "NON trovata";
-
-            QApplication::processEvents();
-        } else {
-            qDebug() << "trovata, skippo";
-        }
-    }
-}*/
-void Generate_JSON::FindPath::returnFinalWord(int pathLength)
+void Generate_JSON::FindPath::returnFinalWord(int pathLength, QVector<FoundWord>& results)
 {
     QString parola;
 
@@ -593,12 +516,12 @@ void Generate_JSON::FindPath::returnFinalWord(int pathLength)
         qDebug() << "percorso: " << path[i].first << ", " << path[i].second;
     }
 
-    parent.threadResults.push_back(fw);
+    results.push_back(fw);
 }
 
 
 //cerca tutti i possibili percorsi nella griglia
-void Generate_JSON::FindPath::findPaths(int x, int y, int step, int path_size, bool analyzedPath) {
+void Generate_JSON::FindPath::findPaths(int x, int y, int step, int path_size, QVector<FoundWord>& results, bool analyzedPath) {
     path[step] = {x, y};
     visited[x][y] = true;
     analyzedPath = analyzedPath && parent.mainWindow->isTileOld(x, y);
@@ -606,16 +529,14 @@ void Generate_JSON::FindPath::findPaths(int x, int y, int step, int path_size, b
     // Se abbiamo raggiunto il numero di passi massimo (e non è un percorso già analizzato), stampiamo il percorso
     if (step + 1 == path_size) {
         if (!analyzedPath)
-            returnFinalWord(step + 1);
-        else {
-            qDebug() << "analyzedPath";
-        }
+            returnFinalWord(step + 1, results);
+
     } else {
         for (int i = 0; i < DIRECTIONS_n; ++i) {
             int newX = x + directions[i].first;
             int newY = y + directions[i].second;
             if (isValid(newX, newY)) {
-                findPaths(newX, newY, step + 1, path_size, analyzedPath);
+                findPaths(newX, newY, step + 1, path_size, results, analyzedPath);
             }
         }
     }

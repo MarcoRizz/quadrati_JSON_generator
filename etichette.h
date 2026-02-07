@@ -29,6 +29,10 @@ public:
     Etichette() : etichette(Nessuna) {}
     explicit Etichette(TipoEtichetta et) : etichette(et) {}
 
+    Etichette(const Etichette& other) {
+        *this = other; // Riutilizza la logica dell'assegnamento
+    }
+
     // Aggiunge un set di etichette
     void aggiungiEtichetta(const Etichette& et) { etichette |= et.etichette; }
 

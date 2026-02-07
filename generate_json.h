@@ -33,7 +33,6 @@ public:
 
     Dizionario dizionario;
     QVector<QVector<QChar>> gridSnapshot;
-    QVector<FoundWord> threadResults;
 
     int run();
     void onModifiedWord(std::string parola, Etichette et);
@@ -72,7 +71,7 @@ private:
     public:
         explicit FindPath(Generate_JSON& gen_json); // Costruttore che riceve un riferimento a Generate_JSON
 
-        void findPaths(int x, int y, int step, int max_size, bool analyzedPath = true);
+        void findPaths(int x, int y, int step, int max_size, QVector<FoundWord>& results, bool analyzedPath = true);
         void findWordPaths(int x, int y, int step, CustomMenuButton* word);
 
     private:
@@ -81,7 +80,7 @@ private:
 
         Generate_JSON& parent; // Riferimento alla classe Generate_JSON
 
-        void returnFinalWord(int pathLength);
+        void returnFinalWord(int pathLength, QVector<FoundWord>& results);
         bool isValid(int x, int y);
     };
 

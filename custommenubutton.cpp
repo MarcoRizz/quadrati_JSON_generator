@@ -177,9 +177,6 @@ bool CustomMenuButton::addPercorso(const QVector<CustomGridLetter*>& percorso)
     if (percorso.isEmpty() || percorsi.contains(percorso))
         return false;
 
-    for (auto element : percorso) {
-        qDebug() << element->text();
-    }
     percorsi.append(percorso);
 
     for (auto tile : percorso)

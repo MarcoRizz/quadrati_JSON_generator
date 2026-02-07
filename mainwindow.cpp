@@ -340,7 +340,8 @@ void MainWindow::highlightTiles(const std::pair<int, int>* positions, int size) 
     }
 }
 
-void MainWindow::addWord(const QString &word, const Etichette &etichette, customButton_destination dest) {
+void MainWindow::addWord(const QString &word, const Etichette &etichette, customButton_destination dest)
+{
     CustomMenuButton* label = removeWordFromOriginalList(word, dest);
 
     qDebug() << "entro in addWord";
@@ -420,6 +421,7 @@ CustomMenuButton* MainWindow::findWordInLists(
 
 CustomMenuButton* MainWindow::removeWordFromOriginalList(const QString &word, customButton_destination exclude)
 {
+    //TODO URGENTE: qui da quale parte devo rimuovere path e collegamenti
     QList<QWidget*> lists = { ui->boxAccepted, ui->boxBonus, ui->boxQueue };
 
     for (int i = 0; i < lists.size(); ++i) {
@@ -449,6 +451,7 @@ CustomMenuButton* MainWindow::removeWordFromOriginalList(const QString &word, cu
 
 void MainWindow::insertWordInList(CustomMenuButton* btn_new, QWidget* list)
 {
+    //TODO URGENTE: qui da quale parte devo inserire path e collegamenti (?? verificare)
     if (list == ui->boxAccepted)
         qDebug() << "inserisco pulsante " << btn_new->text() << " in boxAccepted";
     else if (list == ui->boxBonus)
