@@ -50,6 +50,20 @@ std::optional<Etichette> Dizionario::cercaParola(const std::string& parola, Etic
     return etichettaValida ? std::optional<Etichette>(corrente->etichette) : std::nullopt;
 }
 
+const Lettera* Dizionario::radiceTrie() const {
+    return radice.get();
+}
+
+const Lettera* Dizionario::figlioDi(const Lettera* nodo, char c) {
+    return nodo ? nodo->getFiglio(c) : nullptr;
+}
+
+std::optional<Etichette> Dizionario::etichetteSeParola(const Lettera* nodo) {
+    if (!nodo || !nodo->fineParola)
+        return std::nullopt;
+    return nodo->etichette;
+}
+
 int Dizionario::contaParole() const {
     return contaParoleRicorsivo(radice.get());
 }

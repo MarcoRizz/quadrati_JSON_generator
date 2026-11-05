@@ -21,9 +21,7 @@ set(PROJECT_SOURCES
     generate_json.h generate_json.cpp
     nlohmann_json.cpp
     dizionario.h dizionario.cpp
-    dynarray.h dynarray.cpp
     lettera.h lettera.cpp
-    wordlist.h wordlist.cpp
     etichette.h
     custommenubutton.h custommenubutton.cpp
     common_enums.h

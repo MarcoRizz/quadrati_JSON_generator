@@ -32,9 +32,10 @@ public:
         const QVector<QVector<CustomGridLetter*>>& percorsi = {},
         QWidget* parent = nullptr);
 
-    void cambiaParola(const QString& text, const Etichette &et = Etichette(), const QVector<QVector<CustomGridLetter*>>& percorsi = {});
+    // Aggiorna testo ed etichette SENZA toccare i percorsi: una parola che cambia
+    // lista (accettate / bonus / coda) resta la stessa parola nella stessa griglia
+    void cambiaParola(const QString& text, const Etichette &et = Etichette());
     bool isBonus() const;
-    int getAlphabeticalIndex() const;
 
     bool addPercorso(const QVector<CustomGridLetter*>& percorso);
     bool removePercorso(const QVector<CustomGridLetter*>& percorso);

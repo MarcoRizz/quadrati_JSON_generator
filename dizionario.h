@@ -50,6 +50,20 @@ public:
     // Cerca un range di parole a partire da "parola"
     std::vector<parola> cercaParoleInRange(const std::string& parola, const int up, const int down);
 
+    // --- Navigazione diretta del trie ---
+    // Serve alle ricerche che scendono lettera per lettera (pruning sui prefissi):
+    // invece di cercare ogni parola dalla radice, si avanza di un nodo per volta e
+    // si abbandona il ramo appena il prefisso non esiste nel dizionario.
+    // ATTENZIONE: i puntatori restituiti sono validi solo finché il dizionario non
+    // viene modificato (inserisciParola / rimuoviParola / caricaDaFileCompatto).
+    const Lettera* radiceTrie() const;
+
+    // Figlio del nodo per il carattere c, oppure nullptr se quel prefisso non esiste
+    static const Lettera* figlioDi(const Lettera* nodo, char c);
+
+    // Etichette del nodo se il nodo chiude una parola, altrimenti nullopt
+    static std::optional<Etichette> etichetteSeParola(const Lettera* nodo);
+
 private:
     // Metodo ricorsivo per eliminare una parola
     bool rimuoviParolaRicorsivo(Lettera* nodo, const std::string& parola, int indice);

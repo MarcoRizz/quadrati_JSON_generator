@@ -1,29 +1,36 @@
 #ifndef GENERATE_JSON_H
 #define GENERATE_JSON_H
 
-#include "custommenubutton.h"
+#include <QObject>
+#include <QPoint>
+#include <QString>
+#include <QVector>
+#include <queue>
+#include <string>
+#include <utility>
+
+#include "common_enums.h"
+#include "dizionario.h"
+
 #define DIM1 4
 #define DIM2 4
 
-#define MAX_LOOPS 10
+#define MIN_WORD_LENGTH 4   // lunghezza minima di una parola valida
+#define MAX_LOOPS 10        // iterazioni di completamento della stessa griglia
+#define MAX_RETRIES 3       // ripartenze da zero prima di rinunciare al JSON
 
-#include <qobject.h>
-#include <queue>
-//#include "wordlist.h" TODO: controllare se si può cancellare la classe
-#include "dizionario.h"
-//#include "dynarray.h" TODO: controllare se si può cancellare la classe
-#include "common_enums.h"
+class MainWindow;        // Forward declaration
+class CustomMenuButton;  // Forward declaration
+class CustomGridLetter;  // Forward declaration
 
 customButton_destination findDestination(const Etichette et);
+
 struct FoundWord
 {
     QString parola;
     Etichette etichette;
-    QVector<QPoint> percorso;   // coordinate tiles
+    QVector<QPoint> percorso;   // coordinate delle tessere attraversate
 };
-
-class MainWindow; // Forward declaration
-class FindPath; // Forward declaration di FindPath
 
 class Generate_JSON : public QObject {
     Q_OBJECT
@@ -32,56 +39,69 @@ public:
     Generate_JSON(MainWindow* mainWindow); // Dichiarazione del costruttore
 
     Dizionario dizionario;
-    QVector<QVector<QChar>> gridSnapshot;
 
     int run();
     void onModifiedWord(std::string parola, Etichette et);
     void aggiorna_dizionario(const std::string& testo, const Etichette& etichette);
 
-    const std::string dictionary_path_json = "C:\\Users\\mav13\\Documents\\Qt\\Dizionari\\dizionario.json";
+    // Scrive il dizionario su file (previo backup giornaliero). Chiamata dai pulsanti S/N.
+    bool salvaDizionario();
+
+    const std::string dictionary_path_json = R"(C:\Users\mav13\Documents\Qt\Dizionari\dizionario.json)";
 
 signals:
     void wordFound(const QString& parola, Etichette et, customButton_destination dest = Accepted);
     void logMessageRequested(const QString& testo);
     void wordsComputationFinished();
-    void wordsReady(QVector<FoundWord> threadResults);
 
 private:
     MainWindow* mainWindow;
 
     std::queue<int> jsons_to_elaborate;
 
-    int n_words_old = 0;
+    // Copie della griglia passate al thread di ricerca: il worker NON tocca la GUI
+    QVector<QVector<QChar>> gridSnapshot;   // lettere
+    QVector<QVector<bool>> oldSnapshot;     // tessere invariate dall'iterazione precedente
 
-    int loop = 0;
+    int loop = 0;        // iterazioni sulla griglia corrente
+    int retries = 0;     // ripartenze da zero sul JSON corrente
+    int n_words = 0;     // parole accettate trovate per questo JSON
     bool wordsComputationRunning = false;
+
+    // Modifiche alle etichette arrivate mentre il worker sta leggendo il trie:
+    // applicarle subito sarebbe una corsa critica sul dizionario.
+    struct PendingEdit { std::string parola; Etichette etichette; };
+    QVector<PendingEdit> pendingDictionaryEdits;
 
     void startNextJson();
     void startGenerationLoop();
     void creazione_grid();
     void creazione_words();
-    void creazione_gridLinks();
     void converti_e_scrivi_JSON();
 
     void processWords(const QVector<FoundWord>& words);
     void waitQueueEmpty();
-
+    void applyPendingDictionaryEdits();
+    bool backupDizionario() const;
 
     class FindPath {
     public:
         explicit FindPath(Generate_JSON& gen_json); // Costruttore che riceve un riferimento a Generate_JSON
 
-        void findPaths(int x, int y, int step, int max_size, QVector<FoundWord>& results, bool analyzedPath = true);
-        void findWordPaths(int x, int y, int step, CustomMenuButton* word);
+        // Trova tutte le parole del dizionario che partono dalla tessera (x, y)
+        void findWords(int x, int y, QVector<FoundWord>& results);
 
     private:
-        bool visited[DIM1][DIM2] = {false}; // Array di visitati
-        std::pair<int, int> path[DIM1 * DIM2]; // Array per memorizzare il percorso
+        Generate_JSON& parent;                 // Riferimento alla classe Generate_JSON
+        bool visited[DIM1][DIM2] = {false};    // Tessere già usate dal percorso corrente
+        std::pair<int, int> path[DIM1 * DIM2]; // Percorso corrente
 
-        Generate_JSON& parent; // Riferimento alla classe Generate_JSON
+        // DFS unica: avanza di un nodo nel trie per ogni tessera e taglia il ramo
+        // appena il prefisso non esiste nel dizionario
+        void esplora(int x, int y, int step, const Lettera* nodo, bool analyzedPath, QVector<FoundWord>& results);
 
-        void returnFinalWord(int pathLength, QVector<FoundWord>& results);
-        bool isValid(int x, int y);
+        void returnFinalWord(int pathLength, const Etichette& etichette, QVector<FoundWord>& results);
+        bool isValid(int x, int y) const;
     };
 
     FindPath pathFinder; // Istanza della classe nidificata

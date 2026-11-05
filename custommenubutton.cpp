@@ -1,5 +1,7 @@
-#include "CustomMenuButton.h"
+#include "custommenubutton.h"
 #include "customgridletter.h"
+
+#include <QSet>
 
 #include <QWidgetAction>
 #include <QPushButton>
@@ -92,11 +94,10 @@ CustomMenuButton::CustomMenuButton(const QString& text, const Etichette &et, con
     aggiornaColoreSfondo();
 }
 
-void CustomMenuButton::cambiaParola(const QString& text, const Etichette &et, const QVector<QVector<CustomGridLetter *> > &perc) {
+void CustomMenuButton::cambiaParola(const QString& text, const Etichette &et) {
     setText(text);
     etichette = et;
     etichette_originale = et;
-    percorsi = perc;
 
     aggiornaColoreSfondo();
 
@@ -145,35 +146,8 @@ bool CustomMenuButton::isBonus() const
 }
 
 
-int CustomMenuButton::getAlphabeticalIndex() const
-{
-    QWidget* p = parentWidget();
-    if (!p) return -1;
-
-    QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(p->layout());
-    if (!layout) return -1;
-
-    QString myText = text();
-    int index = 0;
-
-    for (int i = 0; i < layout->count(); ++i) {
-        QWidget* w = layout->itemAt(i)->widget();
-        if (!w || w == this) break; // siamo arrivati a noi
-        if (auto* btn = qobject_cast<CustomMenuButton*>(w)) {
-            if (QString::compare(btn->text(), myText, Qt::CaseInsensitive) < 0) {
-                ++index;
-            } else {
-                break;
-            }
-        }
-    }
-
-    return index;
-}
-
 bool CustomMenuButton::addPercorso(const QVector<CustomGridLetter*>& percorso)
 {
-    qDebug() << "entro in addPercorso";
     if (percorso.isEmpty() || percorsi.contains(percorso))
         return false;
 
@@ -219,11 +193,35 @@ const QVector<QVector<CustomGridLetter*>>& CustomMenuButton::getPercorsi() const
 
 void CustomMenuButton::checkPaths(CustomGridLetter* tile_eliminata)
 {
-    // Rimuove tutti i percorsi che contengono tile_eliminata
+    // La lettera della tessera è cambiata: tutti i percorsi che la attraversano
+    // non sono più validi
+    QSet<CustomGridLetter*> tessereCoinvolte;
+
     for (int i = percorsi.size() - 1; i >= 0; --i) {
         if (percorsi[i].contains(tile_eliminata)) {
+            for (CustomGridLetter* tessera : std::as_const(percorsi[i]))
+                tessereCoinvolte.insert(tessera);
             percorsi.removeAt(i);
         }
+    }
+
+    // Una tessera deve contare questa parola solo se un percorso superstite la
+    // attraversa ancora: altrimenti resterebbe "verde" e la griglia sembrerebbe
+    // completa senza esserlo
+    for (CustomGridLetter* tessera : std::as_const(tessereCoinvolte)) {
+        if (!tessera)
+            continue;
+
+        bool ancoraUsata = false;
+        for (const QVector<CustomGridLetter*>& percorso : std::as_const(percorsi)) {
+            if (percorso.contains(tessera)) {
+                ancoraUsata = true;
+                break;
+            }
+        }
+
+        if (!ancoraUsata)
+            tessera->disconnectWord(this);
     }
 
     // Se non rimane alcun percorso, emetti un segnale per far eliminare il bottone

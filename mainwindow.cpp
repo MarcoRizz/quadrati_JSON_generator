@@ -145,24 +145,18 @@ void MainWindow::calculateFileNumbers(std::queue<int>* list)
 
 void MainWindow::on_generate_JSON_clicked()
 {
-    saveDictionary = 0;
     generate_json.run();
-}
-
-int MainWindow::getSaveDict() const
-{
-    return saveDictionary;
 }
 
 void MainWindow::on_btnEnd_N_clicked()
 {
-    saveDictionary = -1;
+    logMessage("Modifiche al dizionario NON salvate.");
 }
 
 
 void MainWindow::on_btnEnd_Y_clicked()
 {
-    saveDictionary = 1;
+    generate_json.salvaDizionario();
 }
 
 void MainWindow::logMessage(const QString &message) const
@@ -244,20 +238,16 @@ CustomGridLetter* MainWindow::getTile(const int x, const int y) const
 }
 
 
-void MainWindow::assignWordToTiles(CustomMenuButton* parola, QVector<QPoint> path)
+void MainWindow::assignWordToTiles(CustomMenuButton* parola, const QVector<CustomGridLetter*>& percorso)
 {
-    QVector<CustomGridLetter*> percorso;
-    for (int i = 0; i < parola->text().length(); ++i)
-    {
-        percorso.append(letterGrid[path[i].x()][path[i].y()]);
-    }
+    if (!parola)
+        return;
 
-    for (auto tessera : percorso)
+    for (CustomGridLetter* tessera : percorso)
     {
-        tessera->connectWord(parola, parola->isBonus());
+        if (tessera)
+            tessera->connectWord(parola, parola->isBonus());
     }
-
-    return;
 }
 
 
@@ -268,7 +258,6 @@ bool MainWindow::isGridCompleted() const
 
             if (auto* tessera = letterGrid[r][c]) {
 
-                if (!tessera->isUsed()) this->logMessage(QString("Tile[%1, %2] NOT used").arg(r).arg(c));
                 if (!tessera->isUsed()) return false;
             }
         }
@@ -290,11 +279,6 @@ bool MainWindow::isTileOld(const int x, const int y) const
 
 bool MainWindow::isLetterXYUsed(const int x, const int y) const
 {
-    if (letterGrid[x][y]->isUsed())
-        qDebug() << "letter " << x << ", " << y << ": is used";
-    else
-        qDebug() << "letter " << x << ", " << y << ": is NOT used";
-
     return letterGrid[x][y]->isUsed();
 }
 
@@ -313,13 +297,15 @@ void MainWindow::updateGridColors()
             if (CustomGridLetter* tessera = letterGrid[r][c]) {
 
                 if (tessera->isUsed()) {
-                    tessera->setStyleSheet(
-                        "background-color: green; color: white;"
-                        );
+                    // almeno una parola accettata passa da qui: lettera confermata
+                    tessera->setStyleSheet("background-color: green; color: white;");
+
+                } else if (!tessera->UsedBy(true).isEmpty()) {
+                    // solo parole bonus: la lettera verrà comunque sostituita
+                    tessera->setStyleSheet("background-color: #FFD700; color: black;");
+
                 } else {
-                    tessera->setStyleSheet(
-                        "background-color: lightgrey; color: black;"
-                        );
+                    tessera->setStyleSheet("background-color: lightgrey; color: black;");
                 }
             }
         }
@@ -328,23 +314,41 @@ void MainWindow::updateGridColors()
 
 
 
-void MainWindow::highlightTiles(const std::pair<int, int>* positions, int size) {
-    for (int i = 0; i < size; ++i) {
-        int x = positions[i].first;
-        int y = positions[i].second;
-        CustomGridLetter* label = letterGrid[x][y];
-
-        if (label) {
-            label->setStyleSheet("background-color: yellow; color: black;");
-        }
-    }
-}
-
 void MainWindow::addWord(const QString &word, const Etichette &etichette, customButton_destination dest)
 {
-    CustomMenuButton* label = removeWordFromOriginalList(word, dest);
+    QWidget* list;
+    switch (dest) {
+    case Accepted:
+        list = ui->boxAccepted;
+        break;
+    case Bonus:
+        list = ui->boxBonus;
+        break;
+    case Queue:
+        list = ui->boxQueue;
+        break;
+    default:
+        qWarning() << "Destinazione non valida per la parola" << word;
+        return;
+    }
 
-    qDebug() << "entro in addWord";
+    customButton_destination posizione = NotFound;
+    CustomMenuButton* label = findWordInLists(word, &posizione);
+
+    if (label && posizione == dest) {
+        // già nella lista giusta: aggiorno solo le etichette, i percorsi restano
+        label->cambiaParola(word, etichette);
+        refreshTileLinks(label, dest);
+        return;
+    }
+
+    if (label) {
+        // sfilo il pulsante dalla lista in cui si trova: i percorsi NON si toccano,
+        // cambia solo il ruolo della parola (accettata / bonus / in coda)
+        removeWordFromOriginalList(word, dest);
+        label->cambiaParola(word, etichette);
+    }
+
     if (!label) {
         label = new CustomMenuButton(word, etichette);
 
@@ -360,27 +364,35 @@ void MainWindow::addWord(const QString &word, const Etichette &etichette, custom
         //collegamento per eliminare il pulsante se rimane senza percorsi
         connect(label, &CustomMenuButton::toEliminate,
                 this, &MainWindow::removeWord);
-    } else {
-        label->cambiaParola(word, etichette);
-    }
-
-    QWidget* list;
-    switch (dest) {
-    case Accepted:
-        list = ui->boxAccepted;
-        break;
-    case Bonus:
-        list = ui->boxBonus;
-        break;
-    case Queue:
-        list = ui->boxQueue;
-        break;
-    default:
-        qWarning() << "Layout non trovato in boxBonus!";
-        return;
     }
 
     insertWordInList(label, list);
+    refreshTileLinks(label, dest);
+}
+
+
+// Riallinea i collegamenti parola <-> tessere dopo uno spostamento tra liste:
+// le parole in coda non colorano la griglia, le bonus non la rendono "completa"
+void MainWindow::refreshTileLinks(CustomMenuButton* btn, customButton_destination dest)
+{
+    if (!btn)
+        return;
+
+    const QVector<QVector<CustomGridLetter*>> percorsi = btn->getPercorsi();
+
+    for (const QVector<CustomGridLetter*>& percorso : percorsi) {
+        for (CustomGridLetter* tessera : percorso) {
+            if (!tessera)
+                continue;
+
+            // disconnetto sempre: connectWord non sposta una parola già presente
+            // dall'elenco normale a quello bonus (e viceversa)
+            tessera->disconnectWord(btn);
+
+            if (dest != Queue)
+                tessera->connectWord(btn, dest == Bonus);
+        }
+    }
 }
 
 
@@ -419,9 +431,11 @@ CustomMenuButton* MainWindow::findWordInLists(
 }
 
 
+// Sfila dal layout il pulsante della parola, cercandolo in tutte le liste tranne
+// "exclude". Percorsi e collegamenti alle tessere restano intatti: li riallinea
+// refreshTileLinks() quando il pulsante è nella lista di destinazione.
 CustomMenuButton* MainWindow::removeWordFromOriginalList(const QString &word, customButton_destination exclude)
 {
-    //TODO URGENTE: qui da quale parte devo rimuovere path e collegamenti
     QList<QWidget*> lists = { ui->boxAccepted, ui->boxBonus, ui->boxQueue };
 
     for (int i = 0; i < lists.size(); ++i) {
@@ -451,15 +465,8 @@ CustomMenuButton* MainWindow::removeWordFromOriginalList(const QString &word, cu
 
 void MainWindow::insertWordInList(CustomMenuButton* btn_new, QWidget* list)
 {
-    //TODO URGENTE: qui da quale parte devo inserire path e collegamenti (?? verificare)
-    if (list == ui->boxAccepted)
-        qDebug() << "inserisco pulsante " << btn_new->text() << " in boxAccepted";
-    else if (list == ui->boxBonus)
-        qDebug() << "inserisco pulsante " << btn_new->text() << " in boxBonus";//WARNING TODO: le parole bonus trovate per prime spariscono!!! Non compaiono come pulsanti in GUI
-    else if (ui->boxQueue)
-        qDebug() << "inserisco pulsante " << btn_new->text() << " in boxQueue";
-    else
-        qDebug() << "inserisco pulsante " << btn_new->text() << " in ERRORE";
+    if (!btn_new || !list)
+        return;
 
     QString word = btn_new->text();
 
@@ -517,27 +524,12 @@ void MainWindow::removeWord(CustomMenuButton* btn)
 
 
 
+// Le etichette modificate dal browser del dizionario valgono anche per la griglia
+// in lavorazione, ma solo se quella parola è presente in una delle liste
 void MainWindow::MoveWordIfExist(std::string parola, Etichette et)
 {
-    QList<QWidget*> lists = { ui->boxAccepted, ui->boxBonus, ui->boxQueue };
-    QString qparola = QString::fromStdString(parola);
-
-    for (int i = 0; i < lists.size(); ++i) {
-        QWidget* list = lists[i];
-        QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(list->layout());
-        if (!layout)
-            continue;
-
-        for (int j = 0; j < layout->count(); ++j) {
-            QWidget* widget = layout->itemAt(j)->widget();
-            if (CustomMenuButton* btn = qobject_cast<CustomMenuButton*>(widget)) {
-                if (btn->text() == qparola) {
-                    generate_json.onModifiedWord(parola, et);
-                }
-            }
-        }
-    }
-
+    if (findWordInLists(QString::fromStdString(parola)))
+        generate_json.onModifiedWord(parola, et);
 }
 
 
@@ -566,32 +558,6 @@ QVector<CustomMenuButton*> MainWindow::getAllActiveWords() const
 }
 
 
-int MainWindow::countInList(customButton_destination list)
-{
-    QWidget* targetWidget;
-    switch (list) {
-    case Accepted:
-        targetWidget = ui->boxAccepted;
-        break;
-    case Bonus:
-        targetWidget = ui->boxBonus;
-        break;
-    case Queue:
-        targetWidget = ui->boxQueue;
-        break;
-    default:
-        qWarning() << "Layout non trovato in boxBonus!";
-        return -1;
-    }
-
-    QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(targetWidget->layout());
-    if (!layout)
-        return -1;
-
-    return layout->count();
-}
-
-
 void MainWindow::clearWords()
 {
     auto clearLayout = [](QWidget* list) {
@@ -606,8 +572,11 @@ void MainWindow::clearWords()
         }
     };
 
+    // I pulsanti vengono distrutti subito (non deleteLater): le tessere devono
+    // dimenticarli prima del prossimo controllo su isGridCompleted()
     clearLayout(ui->boxAccepted);
     clearLayout(ui->boxBonus);
+    clearLayout(ui->boxQueue);
 }
 
 

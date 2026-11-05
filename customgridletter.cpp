@@ -8,9 +8,15 @@ CustomGridLetter::CustomGridLetter(QWidget* parent)
 
 void CustomGridLetter::setText(const QString& text)
 {
+    // la tessera è stata ritirata in questo giro: non è più "vecchia",
+    // anche se il sorteggio ha restituito la stessa lettera
+    unchanged = false;
+
+    if (text == this->text())
+        return;             // stessa lettera: i percorsi che la usano restano validi
+
     QLabel::setText(text);  // comportamento originale
-    unchanged = false;      // tua logica aggiuntiva
-    emit tileChanged(this);
+    emit tileChanged(this); // avvisa le parole: i loro percorsi qui non valgono più
 }
 
 void CustomGridLetter::connectWord(CustomMenuButton* word, bool isBonus)
